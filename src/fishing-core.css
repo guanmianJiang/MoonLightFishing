@@ -1,0 +1,66 @@
+/* Keep the scene visible between a small readout and the thumb controls. */
+#fightHold{touch-action:none;user-select:none;-webkit-user-select:none}
+#fightHoldHint{line-height:1.3}
+#game.aiming #cast:not(:disabled){background:linear-gradient(180deg,#f8e7b7,#e1bc76)}
+#game.aiming #status{color:#715325;font-weight:800}
+#game.aiming #hint{font-size:12px}
+#game.aiming #spots .spot.active{opacity:0;pointer-events:none}
+#cast{touch-action:none;user-select:none;-webkit-user-select:none}
+#game.aiming .toolbar{display:grid}
+@media(max-width:780px){
+  #game.aiming #status{display:block}
+}
+@media (max-width:780px){
+  #game.fighting header{opacity:.42;pointer-events:none}
+  #game.fighting #fight:not([hidden]){position:absolute;inset:0;top:0;left:0;bottom:0;width:100%;max-width:none;height:100%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;transform:none;animation:none;pointer-events:none}
+  #fight .fight-heading,#fight #fightBeat,#fight #fightRig,#fight #fightFeedback,#fight .fight-actions{position:absolute;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));width:auto;max-width:520px;margin-left:auto;margin-right:auto;pointer-events:auto}
+  #fight .fight-heading{top:calc(13px + env(safe-area-inset-top));padding:10px 13px;border:1px solid #d8e5d8;border-radius:15px;background:rgba(255,253,244,.94);box-shadow:0 5px 18px #14392b25}
+  #fight #fightMode{font-size:clamp(13px,3.5vw,16px)}
+  #fight #fightPercent{font-size:12px}
+  #fight #fightBeat{top:calc(82px + env(safe-area-inset-top));min-height:39px;margin-top:0;padding:4px 11px;border-radius:12px;background:rgba(255,253,244,.87);box-shadow:0 3px 12px #14392b20}
+  #fight #fightRig{top:calc(130px + env(safe-area-inset-top));height:62px;background:rgba(250,253,245,.83);border-radius:12px}
+  #fight #fightRig svg{height:100%}
+  #fight #fightTravel,#fight .fight-rig-caption{display:none}
+  #fight #fightFeedback{top:calc(198px + env(safe-area-inset-top));min-height:0;margin:0;text-align:center;text-shadow:0 1px 3px #fff}
+  #fight .fight-actions{bottom:calc(16px + env(safe-area-inset-bottom));display:grid;grid-template-columns:minmax(0,.29fr) minmax(0,.71fr);gap:8px;margin-top:0}
+  #fight #fightPump,#fight #fightHold{min-height:84px;margin:0}
+  #fight #fightPump{flex-direction:column;justify-content:center;gap:2px;padding:6px;text-align:center}
+  #fight #fightPump .fight-pump-art{width:28px;height:30px}
+  #fight #fightPump .fight-pump-art svg{width:27px;height:29px}
+  #fight #fightPumpHint{display:none}
+  #fight #fightPumpLabel{font-size:12px}
+  #fight #fightHold{justify-content:center;padding:9px 12px}
+  #fight #fightHoldLabel{font-size:clamp(15px,4vw,19px)}
+  #fight #fightHoldHint{font-size:11px}
+}
+@media(max-width:390px){
+  #fight .fight-heading{padding:8px 10px}
+  #fight #fightPercent{padding:4px 7px;font-size:10px}
+  #fight #fightRig{top:calc(124px + env(safe-area-inset-top));height:50px}
+  #fight #fightFeedback{top:calc(180px + env(safe-area-inset-top))}
+  #fight .fight-actions{grid-template-columns:76px minmax(0,1fr)}
+  #fight #fightHold{gap:7px;padding:7px}
+  #fight .fight-reel-art{width:40px;height:40px}
+}
+@media(max-width:360px){
+  #baits .bait{justify-content:center;min-width:0;padding:4px 1px}
+  #baits .bait-copy{display:none}
+  #baits .bait .symbol{width:32px;height:32px}
+  #baits .bait .symbol img{width:30px;height:30px}
+  #game:not(.aiming):not(.fishing):not(.fighting) #cast{min-width:104px}
+}
+@media(max-height:650px) and (max-width:780px){
+  #fight #fightRig{display:none}
+  #fight #fightFeedback{top:calc(132px + env(safe-area-inset-top))}
+  #fight .fight-actions{bottom:calc(8px + env(safe-area-inset-bottom))}
+}
+
+/* A single, compact read of the float replaces the prescribed one-button action. */
+#game #tactics .tactic-choice-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;padding-top:10px;border-top:1px solid #dce3d2;color:#61786a;font-size:12px;font-weight:750}
+#game #tactics #tacticTimer{min-width:42px;padding:3px 7px;border-radius:7px;background:#e7eddd;color:#416859;font-size:11px;font-weight:850;text-align:center}
+#game #tactics.urgent #tacticTimer{background:#ffe0c2;color:#aa4a34}
+#game #tactics .tactic-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
+#game #tactics .tactic-choices button{min-width:0;min-height:51px;padding:8px 4px;border:1px solid #c9d7c1;border-radius:10px;background:#f1f4e7;box-shadow:0 2px 0 #bccfb6;color:#28584e;font-size:12px;font-weight:850;line-height:1.2;touch-action:manipulation}
+#game #tactics .tactic-choices button:active{transform:translateY(2px);box-shadow:none}
+#game #tactics .tactic-choices button:focus-visible{outline:3px solid #e4a269;outline-offset:2px}
+@media(max-width:430px){#game #tactics .tactic-choices{gap:5px}#game #tactics .tactic-choices button{min-height:53px;padding:6px 2px;font-size:11px}}

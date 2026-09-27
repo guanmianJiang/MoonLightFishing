@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fishingCue,rhythmPresentation,hookTiming,BITE_WINDOW_MS} from '../dist/fishing-rhythm.mjs';
-import {biteGuidance} from '../dist/bite-guidance.mjs';
+import {fishingCue,rhythmPresentation,hookTiming,BITE_WINDOW_MS} from '../src/fishing-rhythm.mjs';
+import {biteGuidance} from '../src/bite-guidance.mjs';
 
 test('fish approach accelerates the water cue and a firm bite has the strongest pulse',()=>{
  const phases=['waiting','approach','reading','nibble','hooked'];

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {tripStory} from '../dist/trip-summary.mjs';
+import {tripStory} from '../src/trip-summary.mjs';
 
 test('trip recap groups repeated actions and keeps goal and ecology outcomes',()=>{
   const story=tripStory({

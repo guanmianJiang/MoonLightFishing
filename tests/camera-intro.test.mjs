@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {introCameraPose} from '../dist/camera-intro.js';
+import {introCameraPose} from '../src/camera-intro.js';
 
 const normal=[2.4,17.8,15.5],aim=[-1,0,1];
 const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);

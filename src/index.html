@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#8fc5ca">
+  <title>等一尾 · 月隐湾</title>
+  <meta name="description" content="在月隐湾选一处水面，抛下竿，等一尾未知。">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23f4f0df'/%3E%3Cpath d='M16 5v20M7 25q9-5 18 0' stroke='%234e756b' fill='none' stroke-width='2'/%3E%3Cpath d='M13 12h6v8h-6z' fill='%23d68969'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=restore-complete-layout-20260924-2">
+  <link rel="stylesheet" href="casual-ui.css?v=27-trip-story">
+  <link rel="stylesheet" href="ui-refinement.css?v=9-quiet-cues">
+  <link rel="stylesheet" href="fishing-core.css?v=6">
+  <link rel="stylesheet" href="ui-calm.css?v=5">
+  <link rel="stylesheet" href="simulator-ui.css?v=9">
+  <link rel="stylesheet" href="portrait-polish.css?v=4">
+</head>
+<body>
+  <main id="game">
+    <div id="world"></div>
+    <div id="renderError" hidden><strong>三维场景暂时无法启动</strong><p>当前浏览器无法创建 WebGL 画面。请在支持 WebGL 的浏览器中打开此页面。</p><button onclick="location.reload()">重新加载</button></div>
+    <header>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">≈</span><div><h1>月隐湾</h1><span class="brand-subtitle">等一尾 <i aria-hidden="true"></i> <span id="weather" class="weather-chip">晨雾</span></span></div></div>
+      <div class="top-actions">
+        <div class="hud-resources"><span id="coinCount" class="coin-chip">◎ 0 金币</span>
+        <div class="trip-meta" aria-label="本轮状态"><span id="tripState">第 1 轮 · 剩 4 竿</span><span id="knowledge">进度 0</span></div>
+        <details id="tripDetails" class="trip-chip">
+          <summary>目标 <span class="detail-chevron" aria-hidden="true">⌄</span></summary>
+          <div class="trip-detail-body"><span class="small-label">本轮目标</span><strong id="tripGoal"></strong><p id="tripProgress"></p><span class="small-label">水域事件</span><strong id="tripEvent"></strong><p id="tripTracking"></p><button type="button" id="tripOpenWater">查看水域记录 ↗</button></div>
+        </details></div>
+        <div class="hud-tools">
+        <button id="sound" aria-label="切换环境声">声 · 关</button>
+        <button id="journal">手记 <span aria-hidden="true">↗</span></button>
+        </div>
+      </div>
+    </header>
+    <div id="spots" aria-label="选择钓点"></div>
+    <div id="story" aria-live="polite"></div>
+    <div id="tripRoute"></div>
+    <div id="rhythmAura" hidden aria-hidden="true"><i></i><i></i><b></b></div>
+    <div id="biteReadout" data-state="waiting" hidden aria-live="polite">
+      <span class="rhythm-orb" aria-hidden="true"><i class="rhythm-orb-wave"></i><i class="rhythm-orb-float"></i><i class="rhythm-orb-wave rhythm-orb-wave-late"></i></span>
+      <span class="rhythm-content">
+        <span class="bite-readout-copy"><strong>浮漂平稳</strong><small>留意水面的变化</small></span>
+      </span>
+    </div>
+    <section id="tactics" hidden aria-label="判断鱼口"><div class="signal-head"><div class="signal-demo" aria-hidden="true"><svg viewBox="0 0 132 70"><path class="signal-water" d="M4 39 Q18 35 32 39 T60 39 T88 39 T116 39 T144 39"/><g class="signal-float"><path d="M66 10v37"/><ellipse cx="66" cy="34" rx="6" ry="11"/><path class="signal-red" d="M66 10v11"/></g><path class="signal-line" d="M70 40 Q89 45 110 49"/><g class="signal-bubbles"><circle cx="93" cy="33" r="2"/><circle cx="101" cy="28" r="3"/><circle cx="108" cy="35" r="1.5"/></g><path class="signal-arrow" d="m91 54 20-5-6-4"/></svg></div><div class="signal-copy"><span>看漂与鱼线</span><strong id="signalText"></strong></div></div><div class="tactic-choice-head"><span>怎么应对？</span><output id="tacticTimer" aria-label="判断剩余时间">7 秒</output></div><div class="tactic-choices" role="group" aria-label="选择鱼口应对"><button type="button" data-tactic="wait">稳住不动</button><button type="button" data-tactic="tease">轻提鱼饵</button><button type="button" data-tactic="shorten">收紧半圈</button></div></section>
+    <section id="fight" hidden aria-label="搏鱼操作">
+      <div class="fight-heading"><div><span class="fight-kicker">搏鱼中</span><strong id="fightMode">观察鱼的发力</strong></div><strong id="fightPercent">离岸 9.0 米</strong></div>
+      <div id="fightBeat" data-state="surge" aria-live="polite"><span class="fight-beat-icon" aria-hidden="true"><svg viewBox="0 0 42 42"><path d="M6 21c8-9 19-9 29 0-10 9-21 9-29 0Zm0 0L2 14v14l4-7Z"/><circle cx="28" cy="18" r="1.5"/></svg></span><span><strong id="fightBeatTitle">鱼正在游动</strong><small id="fightBeatHint">留意竿尖和鱼线</small></span></div>
+      <div id="fightRig" data-line="steady" aria-label="左边是岸，右边是远水；鱼、竿和鱼线会随操作变化">
+        <svg viewBox="0 0 420 148" preserveAspectRatio="none" aria-hidden="true"><path class="fight-rig-horizon" d="M0 55 Q105 51 210 55 T420 55"/><path class="fight-rig-water" d="M0 94 Q40 90 78 94 M115 99 Q180 95 240 99 M260 112 Q328 108 420 112 M128 122 Q230 118 326 122"/><path class="fight-rig-shore" d="M0 56 H43 V113 H0"/><path id="fightRigRod" d="M33 111 Q61 78 84 50"/><path id="fightRigLine" d="M84 50 Q210 85 350 105"/><g id="fightRigWake"><ellipse cx="0" cy="0" rx="25" ry="5"/><ellipse cx="0" cy="0" rx="41" ry="8"/></g><g id="fightRigFish"><path d="M-12 0 Q0 -11 16 0 Q0 11 -12 0 M-12 0 L-21 -8 L-21 8 Z"/><circle cx="8" cy="-2" r="1.5"/></g><circle id="fightRigLineTip" cx="84" cy="50" r="2.5"/></svg>
+        <strong id="fightTravel">鱼在原地挣扎</strong><div class="fight-rig-caption"><span>你在岸边</span><strong id="fightLineState">线较稳</strong><span>远水</span></div>
+      </div>
+      <div id="fightFeedback" aria-live="polite"></div>
+      <div class="fight-actions"><button id="fightPump" class="game-action" type="button" aria-label="鱼放缓时抬竿带鱼"><span class="fight-pump-art game-action__art" aria-hidden="true"><svg viewBox="0 0 48 48"><path class="pump-track" d="M11 38V9m-4 0h8M7 38h8"/><g class="pump-rod"><path d="M12 34 30 14q6-7 12-8"/><circle cx="12" cy="34" r="3.5"/></g><path class="pump-arrow" d="m6 24 5-6 5 6"/></svg></span><span class="fight-pump-copy game-action__copy"><strong id="fightPumpLabel">抬竿带鱼</strong><small id="fightPumpHint">等鱼放缓</small></span></button>
+      <button id="fightHold" class="game-action" type="button" aria-pressed="false" aria-label="按住线轮收线，松手放线"><span class="fight-reel-art game-action__art" aria-hidden="true"><svg viewBox="0 0 72 72"><circle class="reel-body" cx="35" cy="36" r="27"/><circle class="reel-bezel" cx="35" cy="36" r="21"/><g id="fightReelRotor"><circle class="reel-drum" cx="35" cy="36" r="15"/><path class="reel-spokes" d="M35 23v26M22 36h26M26 27l18 18M44 27 26 45"/><circle class="reel-hub" cx="35" cy="36" r="5"/><circle class="reel-knob" cx="49" cy="22" r="4"/></g><path id="fightReelLine" d="M58 36 Q65 43 72 36"/></svg></span><span class="fight-reel-copy game-action__copy"><strong id="fightHoldLabel">按住收线</strong><small id="fightHoldHint">线紧时松手</small></span></button></div>
+    </section>
+    <button id="landFish" class="shore-action game-action" type="button" hidden aria-label="查看本次钓获"><span class="shore-action-art game-action__art" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M8 27c7-9 19-9 28 0-9 9-21 9-28 0Zm0 0-5-6v12l5-6Z"/><circle cx="29" cy="24" r="1.5"/><path d="M32 12v-7m-5 4 5-5 5 5"/></svg></span><span class="shore-action-copy game-action__copy"><strong>查看钓获</strong><small>鱼已收近，镜头跟随</small></span><span class="shore-action-chevron" aria-hidden="true">›</span></button>
+    <div id="landingCue" hidden aria-live="polite"><span id="landingCueStep">上岸中</span><strong id="landingCueText">鱼已靠岸，正在拉起</strong></div>
+    <button id="sceneAction" class="game-action" type="button" data-action="lift" hidden><span class="action-ripple"></span><span class="action-symbol-wrap game-action__art"><svg class="action-symbol" viewBox="0 0 48 48" aria-hidden="true"><path class="action-rod" d="M13 39 Q22 19 35 6"/><path class="action-line" d="M35 6 Q43 22 32 34"/><path class="action-hook" d="M32 34q-5 8-10 1"/><path class="action-arrow" d="m23 17 8-9 1 12"/></svg></span><span class="action-copy game-action__copy"><strong>现在提竿</strong><small>鱼线已经绷紧</small></span><span class="action-countdown" aria-hidden="true"><b id="hookCountdown">6.5</b><small>秒</small></span><span class="action-chevron" aria-hidden="true">›</span><span class="action-timebar" aria-hidden="true"></span></button>
+    <aside class="camera-controls" aria-label="视角与缩放">
+      <button id="viewToggle" class="view-toggle" type="button" aria-label="切到近景" data-target="near">
+        <svg class="camera-icon camera-icon-near" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M3 20c4-3 8-3 12 0s8 3 14 0M16 10v12M13.5 13a2.5 2.5 0 0 1 5 0v4a2.5 2.5 0 0 1-5 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="camera-icon camera-icon-top" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m16 3 12 13-12 13L4 16 16 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="16" r="4" stroke="currentColor" stroke-width="2"/><path d="M16 1v5m0 20v5M1 16h5m20 0h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="viewToggleLabel">近景</span>
+      </button>
+      <div class="zoom-group">
+        <button id="zoomIn" type="button" aria-label="拉近视角" title="拉近视角">＋</button>
+        <button id="zoomOut" type="button" aria-label="拉远视角" title="拉远视角">−</button>
+      </div>
+    </aside>
+    <div class="waterside"><span class="small-label">水边观察</span><p id="observation">浅滩有成群小鱼活动。</p><button id="clueButton">翻看鱼口记录 ↗</button></div>
+    <footer>
+      <div class="footer-top">
+        <span class="step-label" id="stepLabel">准备抛竿</span>
+        <span id="status">选好鱼饵，找一处喜欢的水面。</span>
+        <span id="location">近岸浅滩 · 水深 1.2m</span>
+      </div>
+      <div class="toolbar">
+        <span class="bait-group-label">鱼饵</span>
+        <div id="baits" role="group" aria-label="选择鱼饵"></div>
+        <span class="separator"></span>
+        <button id="cast">抛竿 <span>↗</span></button>
+      </div>
+      <div class="bottom-line"><span id="hint">拖动观察水面</span><span id="saveState"></span></div>
+    </footer>
+  </main>
+  <dialog id="result"><div class="eyebrow" id="resultLabel"></div><div id="specimen"></div><div id="emptyVisual" aria-hidden="true"><svg viewBox="0 0 180 120"><ellipse class="empty-ripple" cx="90" cy="99" rx="42" ry="10"/><ellipse class="empty-ripple empty-ripple-late" cx="90" cy="99" rx="26" ry="6"/><path class="empty-line" d="M102-5 Q88 36 94 76"/><path class="empty-hook" d="M94 76v12q0 13-10 13-10 0-10-9"/><circle class="empty-bait" cx="81" cy="94" r="5"/><circle class="empty-drop" cx="116" cy="82" r="3"/></svg></div><h2 id="catchName"></h2><p id="catchDesc"></p><div id="catchStats"></div><p id="catchMemory"></p><div id="resultChoiceIntro"><span>处理这次钓获</span><strong id="resultChoiceTitle"></strong><small id="resultChoiceHelp"></small></div><div id="processActions" class="process-actions"></div><button id="emptyContinue" type="button">继续垂钓 <span aria-hidden="true">›</span></button></dialog>
+  <dialog id="tripEnd"><div class="trip-end-top"><span class="eyebrow">月隐湾 · 本轮手记</span><button id="dismissTrip" class="close" type="button" aria-label="关闭本轮手记">×</button></div><h2 id="tripTitle">本轮收竿</h2><p class="trip-end-intro"></p><div id="tripSummary"></div><button class="primary" id="nextTrip">继续垂钓 <span aria-hidden="true">↗</span></button></dialog>
+  <dialog id="book" aria-label="湾区记录"><div class="book-top"><div id="bookHeading"></div><button class="close" id="closeBook" aria-label="关闭湾区记录">×</button></div><nav id="bookTabs" aria-label="记录分类"></nav><div id="bookContent"></div></dialog>
+  <script type="module" src="app-final.js?v=portrait-ui-1"></script>
+</body>
+</html>

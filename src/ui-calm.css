@@ -1,0 +1,219 @@
+/* Coastal field notes: a clear view with tactile controls only where needed. */
+:root{--calm-ink:#285951;--calm-muted:#5b8175;--calm-paper:#fff9e9;--calm-glass:rgba(255,250,235,.88);--calm-peach:#edaa82;--calm-sea:#cfe9df;--calm-shadow:0 8px 24px rgba(39,95,87,.13)}
+#game :is(button,summary):focus-visible,dialog :is(button,summary):focus-visible{outline:3px solid #eaa276;outline-offset:3px}
+#game:before{content:"";position:absolute;z-index:4;top:0;right:0;left:0;height:116px;pointer-events:none;background:linear-gradient(180deg,rgba(255,251,235,.53),rgba(255,251,235,.2) 55%,transparent)}
+
+/* Keep the status visible without building a row of dark panels. */
+header{top:19px;left:25px;right:25px;align-items:flex-start;gap:20px}
+.brand{gap:8px;padding:0;border:0;background:none;box-shadow:none;backdrop-filter:none;filter:none}
+.brand-mark{display:grid;place-items:center;width:28px;height:36px;border:0;border-radius:0;background:none;box-shadow:none;color:#39776a;font:700 28px/1 Georgia,serif}
+.brand h1{margin:0;color:#285951;font:700 clamp(21px,1.6vw,27px)/1.05 var(--serif);letter-spacing:.12em;text-shadow:0 1px 7px #fff9e9}
+.brand-subtitle{gap:6px;margin-top:6px;color:#49796d;font-size:12px;text-shadow:0 1px 6px #fff9e9}
+.brand-subtitle i{background:#e7a57d}
+.brand .weather-chip{padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:#4d7769}
+.top-actions{display:flex;align-items:center;gap:17px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none}
+.hud-resources,.hud-tools{display:flex;align-items:center;gap:0;min-height:38px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none}
+.hud-resources>*+*,.hud-tools>*+*{border-left:0!important}
+.hud-resources{gap:14px}
+.hud-tools{gap:8px}
+.hud-resources .coin-chip,.hud-resources .trip-meta,.hud-resources .trip-chip,.hud-tools #sound,.hud-tools #renderSettingsButton,.hud-tools #journal{height:37px;min-height:37px;margin:0;border:0;border-radius:0;background:none;box-shadow:none;color:#315d55}
+.hud-resources .coin-chip{padding:0;color:#8e6949;font-size:13px;text-shadow:0 1px 5px #fff9e9}
+.hud-resources .trip-meta{padding:2px 0;text-align:left;text-shadow:0 1px 5px #fff9e9}
+.hud-resources #tripState{color:#285951;font-size:14px}
+.hud-resources #knowledge{display:none;color:#70958a;font-size:10px}
+.hud-resources .trip-chip summary{height:37px;min-height:37px;padding:0;color:#285951;font-size:13px;text-shadow:0 1px 5px #fff9e9}
+.hud-resources .trip-chip summary:hover,.hud-tools button:hover{background:rgba(255,250,231,.35)!important}
+.hud-tools #sound,.hud-tools #renderSettingsButton{width:40px;min-width:40px;padding:0;border-radius:50%;font-size:0}
+.hud-tools #sound:before{color:#4f8d7d;font-size:20px}
+.hud-tools #renderSettingsButton svg{width:18px;height:18px}
+.hud-tools #journal{padding:0 2px;border-radius:0;font-size:13px;text-shadow:0 1px 5px #fff9e9}
+.hud-tools #journal span{display:none}
+.hud-resources .trip-detail-body{border:0;border-radius:16px;background:#fff9e9;box-shadow:var(--calm-shadow);color:var(--calm-ink)}
+@media(min-width:781px){.hud-resources .coin-chip{font-size:14px}.hud-resources #tripState{font-size:15px}.hud-resources .trip-chip summary,.hud-tools #journal{font-size:14px}}
+
+/* Fishing locations are annotations on the water, not nested badges. */
+#spots .spot,#spots .spot.locked{min-width:0;max-width:164px;gap:6px;padding:4px 5px;border:0;border-radius:0;background:none;box-shadow:none;color:#faffee;text-shadow:0 1px 5px #225a58,0 1px 12px #225a5870;backdrop-filter:none}
+#spots .spot.active{padding:6px 11px;border-radius:999px;background:rgba(255,242,202,.9);color:#285951;box-shadow:0 3px 12px #2b766a22;text-shadow:none}
+#spots .spot.locked{background:none;color:#faffee;box-shadow:none;opacity:.8}
+#spots .spot-order{display:none}
+#spots .spot strong{font-size:13px;line-height:1.2;color:inherit}
+#spots .spot small,#spots .spot.locked small{color:#f5fff2;font-size:10px;line-height:1.2}
+#spots .spot.active small{color:#8a7152}
+#spots .spot:after{opacity:.65}
+#spots .spot:hover{color:#fff;background:none;box-shadow:none}
+#spots .spot.active:hover{color:#285951;background:#fff0cb;box-shadow:0 5px 14px #356f6627}
+
+/* The camera stays on the right edge at vertical center in every viewing state. */
+.camera-controls,#game:is(.fishing,.fighting):not(.overview) .camera-controls{position:absolute;top:50%;right:19px;bottom:auto;left:auto;z-index:8;display:flex;flex-direction:column;align-items:center;gap:8px;width:52px;height:auto;padding:0;border:0;border-radius:0;background:none;box-shadow:none;transform:translateY(-50%);backdrop-filter:none}
+.camera-controls .view-toggle,#viewToggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:52px;min-width:52px;height:58px;min-height:58px;padding:4px 2px;border:0;border-radius:50%;background:rgba(255,250,232,.9);box-shadow:0 4px 16px #23594c25;color:#3b756a;font-size:10px;font-weight:800}
+#viewToggle:hover{background:#fff1c9;color:#315d55}
+.camera-controls .camera-icon{width:22px;height:22px}
+.camera-controls .zoom-group{display:flex;flex-direction:column;gap:7px;width:auto;padding:0;border:0;border-radius:0;background:none}
+.camera-controls .zoom-group button{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:rgba(255,250,235,.82);box-shadow:0 4px 16px #23594c20;color:#477a70;font-size:21px}
+.camera-controls .zoom-group button+button{border:0}
+.camera-controls .zoom-group button:hover{background:#fff4d8}
+.camera-controls :is(.view-toggle,.zoom-group button):active{transform:scale(.91);box-shadow:inset 0 2px 5px #37726536}
+.hud-tools :is(button):active,.hud-resources summary:active{transform:translateY(2px)}
+#game.fighting .camera-controls{display:none}
+#game:has(#tactics:not([hidden])) .camera-controls{display:none}
+
+/* A single pale tray holds the preparation actions; its caption floats above it. */
+footer,.aiming footer,.fishing footer{position:absolute;right:calc(25px + env(safe-area-inset-right));bottom:calc(25px + env(safe-area-inset-bottom));left:auto;width:min(482px,calc(100% - 50px));box-sizing:border-box;padding:0;border:0;border-radius:0;background:none;box-shadow:none;transform:none;backdrop-filter:none}
+.footer-top{display:flex;align-items:center;gap:9px;margin:0 0 8px;padding:0 10px;border:0;text-shadow:0 1px 6px #fff9ed,0 2px 8px #fff9ed}
+#game .step-label{display:none}
+#status,.fishing #status,.aiming #status{flex:1;color:#285951;font-size:13px;font-weight:750;line-height:1.4}
+#location{color:#456d63;font-size:11px}
+.toolbar{display:flex;align-items:center;gap:5px;min-height:72px;padding:5px 5px 5px 12px;border:0;border-radius:36px;background:rgba(255,250,235,.9);box-shadow:0 10px 28px #245d5129;backdrop-filter:blur(14px)}
+.bait-group-label,.separator{display:none}
+#baits{flex:1;gap:0}
+#baits .bait{position:relative;flex:1;min-width:0;min-height:60px;gap:2px;flex-direction:column;padding:4px 2px;border:0;border-radius:0;background:none;box-shadow:none;color:#537e71;transition:color .16s ease,transform .12s ease}
+#baits .bait:hover{background:none;color:#2f6558;transform:translateY(-1px)}
+#baits .bait:active{transform:scale(.96)}
+#baits .bait.selected{border:0;background:none;box-shadow:none;color:#285951}
+#baits .bait.selected:after{content:"";position:absolute;right:26%;bottom:4px;left:26%;height:3px;border-radius:99px;background:#e8aa77}
+#baits .bait .symbol{width:26px;height:27px}
+#baits .bait .symbol img{width:28px;height:28px;filter:drop-shadow(0 2px 2px #3b706928)}
+#baits .bait-copy{align-items:center;gap:0}
+#baits .bait strong{color:inherit;font-size:13px;line-height:1.1}
+#baits .bait small{display:none}
+#cast,.aiming #cast,.fishing #cast{flex:none;width:126px;min-width:0;min-height:62px;padding:7px 12px;border:0;border-radius:31px;background:linear-gradient(180deg,#f4bb91,#ea9d78);box-shadow:inset 0 1px 0 #ffe2bf,0 3px 0 #bd765e;color:#fffdf6;font-size:15px;font-weight:850;text-shadow:0 1px 1px #c67b68;transition:transform .12s ease,background .12s ease,box-shadow .12s ease}
+#cast:hover{background:#ed9c7a;transform:translateY(-1px)}
+#cast:active{transform:translateY(2px) scale(.98);box-shadow:inset 0 2px 4px #bd765e7a}
+#cast:disabled{background:#d8d7c8;color:#788f83}
+.aiming footer{width:min(390px,calc(100% - 50px))}
+.aiming .toolbar,.fishing .toolbar{display:flex}
+.aiming #cast{width:100%;min-height:54px}
+.aiming .bottom-line{justify-content:flex-end;margin-top:6px;color:#5c7f72;text-shadow:0 1px 3px #fff}
+#aimZones{display:flex;gap:0;margin:0 0 7px;padding:3px;border-radius:13px;background:rgba(255,250,235,.84);box-shadow:var(--calm-shadow)}
+#aimZones[hidden]{display:none}
+#aimZones button{flex:1;min-width:0;min-height:48px;border:0;border-radius:10px;background:none;box-shadow:none;color:#5b8074}
+#aimZones button small{font-size:9px}
+#aimZones button.selected{border:0;background:#fce8bf;box-shadow:none;color:#315d55}
+#aimZones button:active{transform:scale(.97)}
+#game.no-cast-action.fishing footer{right:20px;left:auto;width:min(320px,calc(100% - 40px));transform:none}
+
+/* Feedback is a small note. The primary action keeps its own clear silhouette. */
+#biteReadout:not([hidden]),#landingCue:not([hidden]){top:calc(85px + env(safe-area-inset-top));left:20px;right:auto;width:min(300px,calc(100% - 40px));border:0;border-radius:15px;background:rgba(255,249,231,.89);box-shadow:var(--calm-shadow);color:#315d55;backdrop-filter:blur(12px)}
+#biteReadout .bite-readout-copy strong{color:#315d55}
+#biteReadout .bite-readout-copy small{color:#6d8d7f}
+#biteReadout .rhythm-orb{background:#e0f2e9}
+#landingCue{color:#315d55}
+#game #tactics:not([hidden]){right:calc(20px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));left:auto;width:min(365px,calc(100% - 40px));max-height:calc(100dvh - 120px);padding:13px 15px;transform:none;border:0;border-radius:18px;background:rgba(255,249,233,.96);box-shadow:var(--calm-shadow);color:#315d55}
+#tactics .signal-demo{border:0;border-radius:10px}
+#tactics .tactic-next{border-color:#dce8dc}
+#tactics #tacticDo{border:0;border-radius:12px;background:#efa987;box-shadow:none;color:#fffdf7}
+#tactics #tacticDo:hover{background:#ed9c7a}
+#tactics #tacticDo:active{transform:scale(.96);box-shadow:none}
+#game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:calc(20px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));left:auto;width:min(245px,calc(100% - 40px));min-height:72px;padding:9px 12px;gap:8px;transform:none}
+.game-action:is(#sceneAction,#landFish,#fightPump,#fightHold){--action-top:#fff7e5;--action-bottom:#fbeccb;--action-edge:transparent;--action-ink:#315d55;--action-muted:#66887b;--action-icon:transparent;--action-icon-border:transparent;--action-icon-ink:#477c70;border:0;border-radius:17px;background:linear-gradient(150deg,var(--action-top),var(--action-bottom));box-shadow:var(--calm-shadow);color:var(--action-ink);text-shadow:none}
+.game-action:is(#sceneAction,#landFish,#fightPump,#fightHold) .game-action__art{width:42px;height:42px;border:0;border-radius:12px;background:none;box-shadow:none;color:var(--action-icon-ink)}
+.game-action#sceneAction[data-action="lift"],.game-action#landFish,.game-action#fightPump.ready{--action-top:#f9d6af;--action-bottom:#f2b992;--action-ink:#3d5b50;--action-muted:#665f4f}
+.game-action#sceneAction[data-action="retrieve"]{--action-top:#e6f2e8;--action-bottom:#d3e9df;--action-ink:#315d55;--action-muted:#66887b}
+#sceneAction .action-countdown{border:0;background:rgba(255,255,255,.52)}
+#game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]):active,#game #landFish.game-action:not([hidden]):active{transform:scale(.97);box-shadow:var(--calm-shadow)}
+
+/* Fight controls keep their feedback, with the same sea glass and peach palette. */
+#fight:not([hidden]){top:auto;right:calc(20px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));left:auto;width:min(390px,calc(100% - 40px));max-height:calc(100dvh - 115px);transform:none;overflow:auto;border:0;border-radius:19px;background:rgba(255,249,233,.94);box-shadow:var(--calm-shadow)}
+#fight .fight-heading{gap:8px}
+#fight #fightRig{height:96px;border:0;background:#eaf4e9}
+#fight .fight-actions{width:100%;gap:8px;margin-top:10px}
+#fight .fight-actions .game-action{min-height:67px}
+#fight #fightFeedback{min-height:0}
+#fightHold,#fight.danger #fightHold.game-action{--action-top:#d9eee5;--action-bottom:#bfe2d5;--action-ink:#315d55;--action-muted:#4f7b6c;--action-icon-ink:#457b70;border:0;background:linear-gradient(150deg,var(--action-top),var(--action-bottom));box-shadow:var(--calm-shadow);color:var(--action-ink)}
+#fightHold.held,#fight.danger #fightHold.game-action.held{background:#a8d5c6;box-shadow:inset 0 2px 5px #4c8d7960}
+#fightPump,#fightPump.ready{border:0;box-shadow:var(--calm-shadow)}
+
+/* Journal and result pages use open paper with flat sections. */
+dialog::backdrop{background:rgba(35,75,69,.26);backdrop-filter:blur(4px)}
+#book,#result,#tripEnd{border:0;border-radius:22px;background:#fff9ea;box-shadow:0 20px 50px #2c5b513b;color:#315d55}
+#book:before{content:"";position:absolute;right:10px;bottom:10px;width:160px;height:118px;background:url('/assets/journal-fish-watercolor.webp') center/contain no-repeat;opacity:.09;pointer-events:none}
+#book .book-top{padding:0 0 5px;border:0;background:none;color:#315d55}
+#book .book-top h2,#tripEnd h2,#result h2{color:#315d55}
+#book nav{margin-top:18px;background:transparent;border-bottom:1px solid #dce7d9}
+#book nav button{border-bottom:2px solid transparent;color:#6e8a7d}
+#book nav button.active{border-bottom-color:#e6a57f;background:none;color:#315d55}
+#book nav button:hover{background:#f3f2e5}
+#bookContent :is(.market-summary,.collection-head,.water-progress),#tripSummary .trip-note{padding:15px 0;border:0;border-bottom:1px solid #dce7d9;border-radius:0;background:none}
+#bookContent :is(.market-card,.shop-card,.collection-card,.water-row,.gear-item){padding:13px 0;border:0;border-bottom:1px solid #e1e8db;border-radius:0;background:none;box-shadow:none}
+#bookContent :is(.market-grid,.shop-grid,.collection-grid){column-gap:24px;row-gap:0}
+#bookContent .field-notes p{border:0;border-bottom:1px solid #e1e8db;border-radius:0;background:none}
+#bookContent .gear-item.equipped{border-bottom-color:#b5d1c1;background:none}
+#bookContent :is(.market-summary,.market-card,.shop-card) button,#tripEnd .primary{border:0;border-radius:11px;background:#f2bc9a;box-shadow:none;color:#365e54}
+#book .close,#tripEnd .close{border:0;border-radius:50%;background:rgba(221,237,221,.8);box-shadow:none;color:#4e7b6d}
+#result .process-actions button{border:0;box-shadow:none}
+#result .process-actions .process-recommended{border:0;background:#f5c8a5;box-shadow:none;color:#315d55}
+#result .process-actions .process-recommended:hover{background:#f3bb94}
+#result #specimen{background:radial-gradient(ellipse at 50% 60%,#e4f0e5a0,transparent 68%)}
+#result.no-catch .empty-ripple{fill:none;stroke:#8bc6bd;stroke-width:2;opacity:.72}
+#result.no-catch .empty-ripple-late{stroke:#b7dad0;opacity:.9}
+#result.no-catch .empty-line{fill:none;stroke:#86b8aa;stroke-width:2;stroke-linecap:round}
+#result.no-catch .empty-hook{fill:none;stroke:#528a7c;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+#result.no-catch .empty-drop{fill:#a5d9d2}
+#result.no-catch{padding:24px 27px 25px;cursor:default}
+#result.no-catch .eyebrow{padding:0;border:0;border-radius:0;background:none;color:#af805e}
+#result.no-catch #catchName{margin-top:10px;font-size:27px}
+#result.no-catch #catchDesc{margin-bottom:19px;font-size:13px;line-height:1.6}
+#result.no-catch #emptyContinue{min-height:52px;margin-top:0;border:0;border-radius:13px;background:#eeb28b;box-shadow:0 3px 0 #c8876d;color:#315d55}
+#result.no-catch #emptyContinue:hover{background:#f3be99}
+#result.no-catch #emptyContinue:active{transform:translateY(2px);box-shadow:0 1px 0 #c8876d}
+.toast{border:0;border-radius:13px;background:#fff9e9;box-shadow:var(--calm-shadow);color:#315d55}
+
+@media(max-width:780px){
+  header{top:calc(10px + env(safe-area-inset-top));left:12px;right:12px}
+  #game:before{height:96px}
+  .brand h1{font-size:18px}
+  .top-actions{gap:5px}
+  .hud-resources .coin-chip,.hud-resources .trip-meta,.hud-resources .trip-chip,.hud-tools #sound,.hud-tools #renderSettingsButton,.hud-tools #journal{height:34px;min-height:34px}
+  .hud-resources{gap:7px}
+  .hud-tools{gap:1px}
+  .hud-resources .coin-chip{padding-right:3px;font-size:10px}
+  .hud-resources .trip-meta{padding-right:3px}
+  .hud-resources #tripState{font-size:11px}
+  .hud-tools #sound,.hud-tools #renderSettingsButton{width:36px;min-width:36px}
+  .camera-controls,#game:is(.fishing,.fighting):not(.overview) .camera-controls{right:9px;width:48px}
+  .camera-controls .view-toggle,#viewToggle{width:48px;min-width:48px;height:53px;min-height:53px}
+  .camera-controls .zoom-group button{width:38px;min-width:38px;height:38px;min-height:38px}
+  footer,.aiming footer,.fishing footer{right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));width:min(360px,calc(100% - 24px))}
+  .toolbar{min-height:64px;padding:4px 4px 4px 8px}
+  #baits .bait{min-height:55px}
+  #cast,.aiming #cast,.fishing #cast{width:105px;min-height:56px;font-size:12px}
+  .aiming footer{width:min(330px,calc(100% - 24px))}
+  .aiming #cast{width:100%}
+  #game.no-cast-action.fishing footer{right:12px;width:min(300px,calc(100% - 24px))}
+  #biteReadout:not([hidden]),#landingCue:not([hidden]){top:calc(73px + env(safe-area-inset-top));left:12px;width:min(280px,calc(100% - 24px))}
+  #game #tactics:not([hidden]){right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));width:min(335px,calc(100% - 24px))}
+  #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));width:min(235px,calc(100% - 24px))}
+  #game.fighting #fight:not([hidden]){inset:0;width:100%;max-width:none;height:100%;max-height:none;overflow:visible;border:0;background:none;box-shadow:none;pointer-events:none}
+  #fight .fight-heading,#fight #fightRig,#fight #fightFeedback,#fight .fight-actions{right:calc(12px + env(safe-area-inset-right));left:auto;width:min(330px,calc(100% - 24px));max-width:none;margin:0;pointer-events:auto}
+  #fight .fight-heading{top:calc(72px + env(safe-area-inset-top))}
+  #fight #fightRig{top:calc(133px + env(safe-area-inset-top));height:55px}
+  #fight #fightFeedback{top:calc(193px + env(safe-area-inset-top));text-align:right}
+  #fight .fight-actions{bottom:calc(12px + env(safe-area-inset-bottom));grid-template-columns:90px minmax(0,1fr)}
+}
+@media(min-width:601px) and (max-width:780px){header{display:flex}.top-actions{display:flex}.brand{flex:none}}
+@media(max-width:600px){
+  header{display:flex;align-items:flex-start;justify-content:space-between;left:10px;right:10px;gap:7px;grid-template-columns:none;grid-template-rows:none}
+  .brand{flex:none}
+  .top-actions{display:flex;flex:none}
+  .brand h1{font-size:16px}
+  .brand-mark{width:22px;height:29px;font-size:22px}
+  .hud-resources .coin-chip,.hud-resources .trip-chip{display:none}
+  .hud-resources .trip-meta{border:0!important}
+  .hud-tools #journal{max-width:43px;overflow:hidden}
+  footer,.aiming footer,.fishing footer{right:calc(10px + env(safe-area-inset-right));bottom:calc(10px + env(safe-area-inset-bottom));width:min(325px,calc(100% - 20px))}
+  #baits .bait-copy{display:none}
+  #baits .bait .symbol,#baits .bait .symbol img{width:33px;height:33px}
+  #game.no-cast-action.fishing footer{right:10px;width:min(295px,calc(100% - 20px))}
+  .camera-controls,#game:is(.fishing,.fighting):not(.overview) .camera-controls{right:7px}
+  #game #tactics:not([hidden]){right:calc(10px + env(safe-area-inset-right));bottom:calc(10px + env(safe-area-inset-bottom));width:min(325px,calc(100% - 20px))}
+  #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:calc(10px + env(safe-area-inset-right));bottom:calc(10px + env(safe-area-inset-bottom))}
+  #fight .fight-heading,#fight #fightRig,#fight #fightFeedback,#fight .fight-actions{right:calc(10px + env(safe-area-inset-right));width:min(325px,calc(100% - 20px))}
+  #fight .fight-actions{bottom:calc(10px + env(safe-area-inset-bottom))}
+  #result.no-catch{padding:18px 20px 20px}
+  #result.no-catch #catchName{font-size:23px}
+}
+@media(max-height:560px){.camera-controls,#game:is(.fishing,.fighting):not(.overview) .camera-controls{top:53%}.camera-controls .zoom-group{gap:3px}}
+@media(prefers-reduced-motion:reduce){#game button,#book nav button{transition:none}}
+
+/* A failed 3D context presents a single recovery action. */
+#game:has(#renderError:not([hidden])) :is(header,#spots,#story,#biteReadout,#tactics,#fight,#sceneAction,#landFish,#landingCue,.camera-controls,.waterside,footer){display:none!important}

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newSave,migrateSave,processCatch,finishCast,makeCast} from '../dist/engine.mjs';
-import {createFight,stepFight,pumpOpportunity,pumpRod,saleValue,sellBasket,buyUpgrade} from '../dist/reference-loop.mjs';
+import {newSave,migrateSave,processCatch,finishCast,makeCast} from '../src/engine.mjs';
+import {createFight,stepFight,pumpOpportunity,pumpRod,saleValue,sellBasket,buyUpgrade} from '../src/reference-loop.mjs';
 
 test('an old save gains an empty wallet without losing its progress',()=>{
  const save=newSave();save.knowledge=4;delete save.economy;

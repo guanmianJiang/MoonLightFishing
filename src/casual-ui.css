@@ -1,0 +1,576 @@
+/* 月隐湾：海边手记。信息像场景注释，操作才像按钮。 */
+:root{
+  --ink:#315d53;--ink-2:#416e61;--muted:#6d897b;
+  --paper:#faf5e9;--paper-solid:#fffaf0;--soft:#edf3e7;
+  --line:rgba(65,110,94,.17);--line-strong:rgba(65,110,94,.28);
+  --accent:#c98b5b;--gold:#f2cd91;--bite:#cb7e64;
+  --e1:0 4px 14px rgba(40,79,68,.09);--e2:0 12px 30px rgba(39,73,62,.15);--e3:0 24px 60px rgba(31,61,53,.24)
+}
+#world:after{background:linear-gradient(180deg,rgba(255,250,234,.12),transparent 25%,transparent 67%,rgba(243,233,205,.12))}
+header{align-items:flex-start}
+.brand-mark{background:#fffaf0;color:#527e6c;border-color:#fff8e7;box-shadow:0 3px 13px rgba(49,88,72,.13)}
+.brand h1{color:#2e6057;text-shadow:0 1px 11px #f9f6e3}
+.brand h1{font:700 24px/1.16 var(--serif);letter-spacing:.1em;text-shadow:0 1px 3px rgba(255,250,232,.95),0 0 14px rgba(255,250,232,.9)}
+.brand-subtitle,.brand .weather-chip{font-size:12px!important;font-weight:700;letter-spacing:.04em!important;text-shadow:0 1px 8px rgba(255,250,232,.9)}
+.top-actions{gap:8px}
+.trip-meta{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;min-height:42px;margin-right:3px;color:#214e46;text-align:right;text-shadow:0 1px 3px #fffdf1,0 0 10px rgba(255,253,240,.98);font-weight:800;line-height:1.35;white-space:nowrap;pointer-events:none}
+.trip-meta #tripState{font-size:13px;letter-spacing:.02em}
+.trip-meta #knowledge{font-size:11px;font-weight:700;color:#426e5e}
+.trip-chip{border:1px solid rgba(74,116,98,.17);background:rgba(255,251,239,.9);box-shadow:var(--e1);color:#3b695b}
+.trip-chip:hover{background:#fffaf0;box-shadow:var(--e1)}
+.trip-chip summary{min-height:42px;padding:8px 11px;font-size:12px;font-weight:700}
+.trip-chip .detail-chevron{font-size:14px;color:#a57453}
+.trip-chip[open]{border-color:#b9d0b0;background:#f4f5e8}
+.trip-detail-body{border-color:var(--line);background:#fffaf0}
+.top-actions #sound,.top-actions #journal{background:rgba(255,251,239,.92);border-color:rgba(255,255,255,.8);color:#346357;box-shadow:var(--e1)}
+.top-actions #journal{font-size:13px;font-weight:700}
+.top-actions #renderSettingsButton{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:42px;min-height:42px;padding:8px 10px;border:1px solid rgba(255,255,255,.8);border-radius:var(--r-md);background:rgba(255,251,239,.92);box-shadow:var(--e1);color:#346357;font-size:12px;font-weight:700;white-space:nowrap}
+#renderSettingsButton svg{display:block;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+#renderSettingsButton svg circle{fill:#fffaf0}
+.top-actions #renderSettingsButton[aria-expanded="true"]{border-color:#bad3b8;background:#e3eedf}
+.top-actions #sound[aria-pressed="true"]{background:#e2eddf;border-color:#a9c5ac;color:#326754}
+.top-actions #journal span{color:#bc8157}
+#spots .spot,#spots .spot.locked{display:inline-flex;align-items:center;gap:9px;min-width:156px;padding:9px 11px;border:1px solid rgba(77,112,91,.34);border-radius:12px;background:rgba(255,251,239,.94);box-shadow:0 5px 16px rgba(28,70,59,.16);color:#315d53;text-align:left;text-shadow:none;backdrop-filter:blur(5px)}
+#spots .spot:before{display:none}
+#spots .spot:after{content:"";position:absolute;top:100%;left:calc(50% - 7px);width:14px;height:24px;background:linear-gradient(rgba(77,112,91,.68),rgba(77,112,91,.68)) center top/2px 16px no-repeat,radial-gradient(circle,#ca9561 0 3px,#fff9e8 3px 5px,transparent 5px) center bottom/12px 12px no-repeat;pointer-events:none}
+#spots .spot-order{display:grid;flex:none;place-items:center;width:27px;height:27px;border:1px solid #b4c8aa;border-radius:50%;background:#eaf1df;color:#507263;font:800 11px/1 var(--sans)}
+#spots .spot-copy{display:flex;flex-direction:column;min-width:0}
+#spots .spot strong{font-size:12px;font-weight:800;line-height:1.3}
+#spots .spot small{display:block;margin:2px 0 0;color:#668373;font-size:10px;font-weight:650;line-height:1.25;opacity:1}
+#spots button.spot:hover{border-color:#c79664;background:#fff9e9;box-shadow:0 8px 22px rgba(28,70,59,.19)}
+#spots .spot.active{border-color:#d7a66c;background:rgba(255,246,221,.97);box-shadow:0 5px 18px rgba(95,79,40,.18);color:#315d53;pointer-events:none;animation:none}
+#spots .spot.active .spot-order{border-color:#d5a46d;background:#eac28a;color:#35584b}
+#spots .spot.active small{color:#936d43}
+#spots .spot.active:after{background:linear-gradient(#c48e59,#c48e59) center top/2px 16px no-repeat,radial-gradient(circle,#ca9561 0 3px,#fff9e8 3px 5px,transparent 5px) center bottom/12px 12px no-repeat}
+#spots .spot.locked{border-color:rgba(91,121,102,.25);background:rgba(251,249,239,.86);color:#648072;box-shadow:0 4px 13px rgba(28,70,59,.1)}
+#spots .spot.locked .spot-order{border-color:#c6d1bd;background:#eef0e6;color:#738b79}
+#spots .spot.locked small{color:#82978a}
+.aiming #spots .spot.active{background:rgba(255,246,221,.97);border-radius:12px}
+.waterside{border:1px solid rgba(255,255,255,.85);background:rgba(255,250,235,.9);color:#3d6758;box-shadow:var(--e1)}
+.waterside button{color:#a66d48}
+.waterside p{font-size:13px;font-weight:650;line-height:1.5}
+.waterside button{font-size:12px;font-weight:700}
+footer,.fishing footer,.aiming footer{border:1px solid rgba(255,255,255,.9);background:linear-gradient(135deg,rgba(255,252,242,.98),rgba(248,244,228,.96));box-shadow:0 12px 35px rgba(29,67,57,.17),0 2px 4px rgba(29,67,57,.08);color:#315f52}
+.footer-top{margin-bottom:7px;border-bottom:1px solid rgba(100,142,115,.17)}
+.aiming .footer-top,.fishing .footer-top{margin-bottom:0;border-bottom:0}
+.step-label,.fishing .step-label{color:#a96f45;font-size:11px;font-weight:800;letter-spacing:.04em}
+#status,.fishing #status{color:#2d594e;font-size:14px;font-weight:750}
+#location{color:#58796a;font-size:12px;font-weight:650}
+.bait-group-label{color:#718e7d;font-size:12px}
+.bait{border:1px solid transparent;color:#4d7566}
+.bait strong{font-size:14px;font-weight:750}
+.bait:hover{background:#f4f4e7;color:#315f52}
+.bait.selected{border-color:#b8d0af;background:#e9f1e3;color:#2d6650;box-shadow:inset 0 1px rgba(255,255,255,.75)}
+.bait.selected .symbol{background:rgba(176,208,166,.18)}
+.bait.selected:after{background:#8dad82}
+#cast{border-color:#dfb982;background:#f0c98e;color:#345444;box-shadow:0 3px 0 #d8ad75,inset 0 1px rgba(255,255,255,.56);font-size:15px;font-weight:800}
+#cast:hover,.aiming #cast:hover{background:#f6d6a1;box-shadow:0 4px 0 #d8ad75}
+#cast.ready{border-color:#c9a776;background:#e9d29d;color:#315545}
+#cast:disabled{border-color:#d5dccd;background:#e9ebdf;color:#899c8c;box-shadow:none}
+#cast[hidden]{display:none!important}
+#game.no-cast-action.fishing footer{display:block;width:min(470px,calc(100% - 44px));padding:12px 16px}
+#game.no-cast-action .footer-top{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:5px 12px;min-height:38px;margin:0;padding:0;border:0}
+#game.no-cast-action .step-label{align-self:start}
+#game.no-cast-action #status{font-size:13px;line-height:1.45;white-space:normal}
+#game.no-cast-action #location,#game.no-cast-action .toolbar,#game.no-cast-action .bottom-line{display:none}
+#game.fishing.no-cast-action:not(.overview):is([data-phase="casting"],[data-phase="waiting"],[data-phase="approach"],[data-phase="reading"],[data-phase="responding"],[data-phase="nibble"],[data-phase="spooked"]) footer{display:none}
+#result.no-catch .empty-bait{fill:#d6a35e;stroke:#8f6d48;stroke-width:1.5}
+#result.no-catch:not(.bait-remains) .empty-bait{display:none}
+#biteReadout,#biteReadout[data-state="approach"],#biteReadout[data-state="reading"],#biteReadout[data-state="responding"],#biteReadout[data-state="nibble"],#biteReadout[data-state="hooked"],#biteReadout[data-state="spooked"],#biteReadout[data-state="empty"]{border-color:rgba(255,255,255,.86);background:rgba(255,250,236,.96);color:#325d51;box-shadow:var(--e2)}
+#biteReadout[data-state="hooked"],#biteReadout[data-urgency="fading"]{border-color:#e8c49a;box-shadow:0 0 0 5px rgba(241,203,146,.18),var(--e2)}
+#biteReadout .bite-readout-label,.rhythm-tempo{color:#a67551}
+#biteReadout .bite-readout-copy strong{color:#315e52}
+#biteReadout .bite-readout-copy small{color:#6a8779}
+.rhythm-orb{background:#e4f1e7}
+.rhythm-steps{gap:8px}
+.rhythm-steps span{padding:2px 0;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:#789687;font-weight:600}
+.rhythm-steps span:before{width:3px;height:3px;background:#9fb9a4}
+#biteReadout[data-step="wait"] [data-cue-step="wait"],#biteReadout[data-step="read"] [data-cue-step="read"],#biteReadout[data-step="lift"] [data-cue-step="lift"],#biteReadout[data-step="return"] [data-cue-step="return"]{border:0;border-bottom:2px solid #a6bd95;border-radius:0;background:none;color:#356b55;font-weight:800;transform:none}
+#tactics{border-color:rgba(255,255,255,.9);background:rgba(255,250,237,.97);box-shadow:var(--e2);color:#315f52}
+.signal-copy span{color:#a47550}
+.signal-copy strong{color:#315f52}
+.tactic-list button{border-color:#d3e0cc;background:#f4f5e9;color:#315f52}
+.tactic-list button:hover,.tactic-list button:focus-visible{border-color:#a2bf96;background:#e6efdd;color:#2d5d4e}
+.tactic-list small{color:#698376}
+#tactics{width:min(700px,calc(100% - 28px));padding:18px 20px}
+.reading:not(.overview) #biteReadout{display:none}
+.signal-head{display:flex;align-items:center;gap:13px}
+.signal-demo{flex:none;width:122px;height:66px;border:1px solid #c7dfd7;border-radius:13px;background:linear-gradient(#e5f4ed 55%,#9dd5cf 55%);overflow:hidden}
+.signal-demo svg{display:block;width:100%;height:100%}
+.signal-demo path{fill:none;stroke:#346d65;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.signal-demo .signal-water{stroke:#5db0ac;stroke-width:2}
+.signal-demo .signal-float ellipse{fill:#fff7de;stroke:#8b7658}
+.signal-demo .signal-red{stroke:#b55e4e;stroke-width:5}
+.signal-demo .signal-line{stroke:#e8edd9;stroke-width:1.7}
+.signal-demo .signal-bubbles{fill:#effff2;opacity:0}
+.signal-demo .signal-arrow{stroke:#fff5db;opacity:0}
+#tactics[data-signal="dart"] .signal-float,#tactics[data-signal="peck"] .signal-float{animation:bite-demo-tap 1.2s ease-in-out infinite}
+#tactics[data-signal="deep"] .signal-float{animation:bite-demo-drag 2.3s ease-in-out infinite}
+#tactics[data-signal="deep"] .signal-arrow{opacity:1;animation:bite-demo-arrow 2.3s ease-in-out infinite}
+#tactics[data-signal="broad"] .signal-float,#tactics[data-signal="steady"] .signal-float{animation:bite-demo-pause 2.5s ease-in-out infinite}
+#tactics[data-signal="peck"] .signal-bubbles,#tactics[data-signal="deep"] .signal-bubbles{opacity:1;animation:bite-demo-bubble 1.7s ease-in-out infinite}
+@keyframes bite-demo-tap{0%,16%,38%,54%,100%{transform:translateY(0)}23%,45%{transform:translateY(8px)}}
+@keyframes bite-demo-drag{0%,15%{transform:translateX(0)}80%,100%{transform:translateX(16px)}}
+@keyframes bite-demo-arrow{0%,20%{transform:translateX(0);opacity:0}55%,80%{transform:translateX(8px);opacity:1}100%{opacity:0}}
+@keyframes bite-demo-pause{0%,35%{transform:translateX(0)}60%,82%{transform:translateX(8px)}100%{transform:translateX(0)}}
+@keyframes bite-demo-bubble{0%,100%{transform:translateY(3px);opacity:.2}50%{transform:translateY(-3px);opacity:1}}
+.signal-copy{display:grid;gap:4px;padding:0}
+.signal-copy span{font-size:11px;letter-spacing:.08em}
+.signal-copy strong{font-size:16px;line-height:1.45}
+.tactic-question{margin:8px 0 13px;color:#627e70;font-size:12px;line-height:1.5}
+.tactic-list{gap:9px}
+.tactic-list button{min-height:78px;padding:12px 13px;gap:9px;flex-direction:row;align-items:center}
+.tactic-icon{display:grid;flex:none;place-items:center;width:36px;height:36px;border:1px solid #c9dbd0;border-radius:10px;background:#e6f0e5;color:#3e7464;font:700 25px/1 var(--sans);transition:transform .2s ease}
+.tactic-icon svg{width:29px;height:29px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tactic-icon ellipse{fill:#fff9e6}
+.tactic-list button:hover .tactic-icon,.tactic-list button:focus-visible .tactic-icon{transform:scale(1.12)}
+.tactic-label{display:flex;min-width:0;flex-direction:column;align-items:flex-start;text-align:left}
+.tactic-list strong{font-size:14px}
+.tactic-list small{margin:0;overflow:visible;font-size:11px;line-height:1.45;text-overflow:clip;white-space:normal}
+.gesture-help{display:flex;justify-content:center;gap:20px;margin-top:11px;color:#648475;font-size:10px;font-weight:700}
+.gesture-help span{white-space:nowrap}
+@media(max-width:600px){
+ #tactics{max-height:calc(100dvh - 120px);overflow:auto;padding:14px}
+ .signal-head{gap:9px}
+ .signal-demo{width:82px;height:56px}
+ .signal-copy strong{font-size:14px}
+ .tactic-question{margin:7px 0 10px;font-size:11px}
+ .tactic-list{grid-template-columns:1fr;gap:6px}
+ .tactic-list button{min-height:0;padding:9px 12px;align-items:center;text-align:left}
+ .tactic-icon{width:31px;height:31px;font-size:21px}
+ .tactic-list strong{font-size:12px}
+ .tactic-list small{display:block;font-size:10px}
+ .gesture-help{flex-wrap:wrap;justify-content:flex-start;gap:4px 12px;font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){.signal-demo *,.tactic-icon{animation:none!important;transition:none!important}}
+#fightHold,#fight.danger #fightHold,#fight.danger #fightHold.held{border-color:#a8c4a7;background:#dcebdc;box-shadow:0 3px 0 #a9c4a9;color:#2d5e4d}
+#fightHold.held{background:#c5dec8;box-shadow:0 1px 0 #9cba9c}
+.fight-reel-copy small{color:#557c66}
+#fightHold kbd{border-color:#acc6ae;background:#edf6ea;color:#3f6e55}
+
+/* The two fight actions have distinct shapes and pressure states. The beat panel carries the detailed hint. */
+.fight-actions{grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr)}
+#fightPump{border-color:#688975;background:linear-gradient(180deg,#e6f0e4,#cadfce);box-shadow:inset 0 1px 0 #ffffffd9,0 4px 0 #6d9279;color:#204a3d}
+#fightPump.ready{border-color:#a7783a;background:linear-gradient(180deg,#ffe8b8,#edc783);box-shadow:inset 0 1px 0 #ffffffbf,0 4px 0 #a7783a,0 0 0 3px #e4b46140;color:#503822}
+#fightPump:active,#fightPump.lifting{transform:translateY(3px);box-shadow:inset 0 2px 5px #26463438,0 1px 0 #6d9279}
+#fightPump.ready:active,#fightPump.ready.lifting{box-shadow:inset 0 2px 5px #79542d40,0 1px 0 #a7783a}
+#fightPump .fight-pump-copy small,#fightPump kbd{display:none}
+#fightPump .fight-pump-copy strong{font-size:14px;white-space:nowrap}
+#fightPump.ready .fight-pump-art{border-color:#78572f;background:linear-gradient(180deg,#986e3b,#78532f)}
+#fightHold,#fight.danger #fightHold,#fight.danger #fightHold.held{border-color:#1d4d41;background:linear-gradient(180deg,#306858,#204f43);box-shadow:inset 0 1px 0 #ffffff29,0 4px 0 #163d34;color:#fffdf5}
+#fightHold.held{transform:translateY(3px);background:linear-gradient(180deg,#204e42,#173f35);box-shadow:inset 0 2px 5px #0d2e2a80,0 1px 0 #163d34}
+#fight.danger #fightHold.held{transform:translateY(3px);background:linear-gradient(180deg,#204e42,#173f35);box-shadow:inset 0 2px 5px #0d2e2a80,0 1px 0 #163d34}
+#fightHold .fight-reel-copy small{color:#cde8d5}
+#fightHold kbd{border-color:#ffffff73;background:#ffffff24;color:#fffdf5}
+@media(max-width:600px){.fight-actions{grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr)}#fightPump .fight-pump-copy strong{font-size:13px}}
+#fightLineState,#fightRig[data-line="strained"] #fightLineState{padding:0;border:0;border-radius:0;background:none;box-shadow:none;font-weight:800}
+#book{background:#fffaf0}
+#book .book-top{border-bottom:1px solid #e4e7d6;background:#f4f0df;color:#315e52}
+#book .book-top h2{color:#315e52}
+#book .book-top .eyebrow{color:#ad7851}
+#bookSubtitle{color:#708a79}
+#book .close{border-color:#d8e2d0;background:#fffaf0;color:#426f5c}
+#book .close:hover{background:#e7efdf}
+#book nav{background:#fffaf0}
+#book nav button.active{border-bottom-color:#9cbd95;color:#315f50}
+#bookContent .market-summary,#bookContent .collection-head,#bookContent .water-progress{background:#edf3e7}
+#bookContent .market-summary button,#bookContent .market-card button,#bookContent .shop-card button{border:1px solid #a8c5a5;border-radius:10px;background:#e0eddc;color:#2f5f4d;font-weight:750;box-shadow:0 2px 0 #afc8aa}
+#bookContent .market-summary button:hover,#bookContent .market-card button:hover,#bookContent .shop-card button:hover{background:#d1e5cf}
+.market-summary button:disabled,.shop-card button:disabled{box-shadow:none}
+.market-card,.shop-card,.collection-card,.water-row,.gear-item{border-radius:12px}
+dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter:blur(3px)}
+#result,#tripEnd{border-color:#e7e7d3;background:#fffaf0;color:#315e52}
+#tactics{width:min(480px,calc(100% - 24px));padding:15px 17px}
+#tactics .signal-head{gap:11px}
+#tactics .signal-demo{width:84px;height:58px}
+#tactics .signal-copy{display:grid;gap:2px;padding:0}
+#tactics .signal-copy span{font-size:10px}
+#tactics .signal-copy strong{font:750 15px/1.35 var(--sans)}
+.tactic-next{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:11px;margin-top:13px;padding-top:12px;border-top:1px solid #e0e8d7}
+.tactic-next>div{display:grid;gap:2px}
+.tactic-next span{font-size:10px;font-weight:800;color:#a3764c}
+.tactic-next strong{font-size:15px;line-height:1.3;color:#315e50}
+.tactic-next small{font-size:11px;line-height:1.4;color:#688474}
+#tacticDo{min-height:42px;padding:8px 15px;border:1px solid #d3ae72;border-radius:10px;background:#f1cf93;color:#365848;font-size:12px;font-weight:800;white-space:nowrap}
+#tacticDo:hover{background:#f6daa7}
+#tacticDo[hidden],#tacticWait[hidden]{display:none}
+#tacticWait{margin-top:10px;padding:8px 10px;border-radius:9px;background:#e7f0df;color:#426b53;font-size:11px;font-weight:750;text-align:center}
+#result.no-catch{width:min(360px,calc(100% - 28px));padding:22px 22px 18px;cursor:pointer}
+#result.no-catch #emptyVisual{height:104px}
+#result.no-catch #emptyVisual svg{height:104px}
+#result.no-catch #catchName{margin:8px 0 5px}
+#result.no-catch #catchDesc{margin:0 0 12px}
+#result.no-catch #catchStats,#result.no-catch #catchMemory,#result.no-catch #processActions{display:none}
+#emptyDismissHint{display:none}
+#result.no-catch #emptyDismissHint{display:block;padding-top:11px;border-top:1px solid #e1e9dd;color:#729180;font-size:11px;font-weight:700}
+@media(max-width:600px){#tactics{padding:12px 13px}#tactics .signal-demo{width:70px;height:54px}#tactics .signal-copy strong{font-size:13px}.tactic-next{gap:7px}.tactic-next strong{font-size:13px}.tactic-next small{font-size:10px}#tacticDo{min-height:38px;padding:7px 10px;font-size:11px}}
+#catchStats>div{color:#315e52}
+#catchMemory{color:#7e8063}
+.process-actions button[data-process="study"]{border-color:#a7c6a8;background:#e4efde;color:#315e4e}
+.process-actions button[data-process="study"] small{color:#62816d}
+.process-actions button.primary,#tripEnd .primary{border-color:#d8b681;background:#f0ca8d;color:#355846;box-shadow:0 3px 0 #d6ad75}
+.process-actions button.primary small{color:#55745f}
+.toast{border-color:rgba(255,255,255,.9);background:#fffaf0;color:#315f52;box-shadow:var(--e2)}
+.render-settings-panel{top:76px;right:18px;width:min(390px,calc(100vw - 24px));max-height:calc(100dvh - 88px);padding:18px;border:1px solid #d5e1cf;border-radius:18px;background:#fffaf0;color:#315d51;box-shadow:0 18px 50px rgba(30,68,54,.2);font:14px/1.55 var(--sans)}
+.render-settings-panel header{align-items:center;gap:12px;padding:0 0 9px;border-bottom:1px solid #dfe8d9}
+.render-settings-panel header strong{font:700 20px/1.25 var(--serif);color:#315d51}
+.render-settings-panel header button{width:36px;height:36px;min-height:36px;padding:0;border-radius:10px;background:#edf3e7;color:#315d51}
+.render-settings-panel p{color:#5c796b;font-size:12px;line-height:1.55}
+.render-settings-panel summary{padding:9px 0;font-size:14px;font-weight:750;color:#315d51}
+.render-settings-panel .render-setting-row{grid-template-columns:110px minmax(48px,1fr) 62px;gap:7px;margin:10px 0;font-size:12px}
+.render-settings-panel input[type=range]{accent-color:#7ba887}
+.render-settings-panel input[type=number],.render-settings-panel select{border-color:#c4d6c2;border-radius:8px;background:#fffdf6;color:#315d51;font-size:12px}
+.render-settings-panel footer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.render-settings-panel footer button{min-height:42px;margin:0;padding:7px 8px;border:1px solid #c7d9c3;border-radius:10px;background:#e8f0e2;color:#315d51;font-size:12px;font-weight:750}
+.render-settings-panel footer button[data-action="reset"]{background:#f6efe0;border-color:#e4d7bd}
+.render-settings-panel footer output{grid-column:1 / -1;width:auto;min-height:17px;color:#587a63;font-size:11px}
+@media(max-width:600px){
+  header{grid-template-columns:minmax(0,1fr) 40px 40px auto;grid-template-rows:42px auto;align-items:start}
+  .brand h1{font-size:19px}
+  .brand-subtitle,.brand .weather-chip{font-size:11px!important}
+  .top-actions #sound{grid-column:2;grid-row:1;width:40px;min-width:40px}
+  .top-actions #renderSettingsButton{grid-column:3;grid-row:1;width:40px;min-width:40px;min-height:42px;padding:0}
+  #renderSettingsButton span{display:none}
+  .top-actions #journal{grid-column:4;grid-row:1;font-size:11px}
+  .trip-meta{grid-column:1 / 3;grid-row:2;align-items:flex-start;margin:2px 0 0;text-align:left}
+  #tripDetails{grid-column:3 / 5;grid-row:2;justify-self:end}
+  .trip-chip summary{min-height:34px;padding:5px 9px;font-size:11px}
+  .trip-detail-body{left:auto;right:0}
+  #spots .spot,#spots .spot.locked{min-width:136px;max-width:136px;gap:6px;padding:7px 8px;white-space:normal}
+  #spots .spot-order{width:24px;height:24px;font-size:10px}
+  #spots .spot strong{font-size:11px}
+  #spots .spot small{font-size:9px}
+  #spots .spot[data-spot="bridge"]{transform:translate(-70%,-100%)}
+  #spots .spot[data-spot="bridge"]:after{left:calc(70% - 7px)}
+  footer,.fishing footer,.aiming footer{background:linear-gradient(135deg,#fffdf4,#f9f4e6)}
+  .footer-top{margin-bottom:6px}
+  #status,.fishing #status,.aiming #status{font-size:13px;line-height:1.45}
+  .bait strong{font-size:13px}
+  #cast,.fishing #cast,.aiming #cast{font-size:14px}
+  #game.no-cast-action.fishing footer{width:calc(100% - 20px);min-height:0;padding:11px 13px}
+  #game.no-cast-action .footer-top{grid-template-columns:1fr;gap:2px;min-height:0}
+  #game.no-cast-action #status{font-size:13px}
+  #result::backdrop{background:rgba(45,87,72,.28);backdrop-filter:blur(3px)}
+  .render-settings-panel{top:calc(62px + env(safe-area-inset-top));right:12px;max-height:calc(100dvh - 74px - env(safe-area-inset-top));padding:15px}
+}
+@media(max-width:380px){
+  .brand h1{font-size:18px}
+  .trip-meta #tripState{font-size:12px}
+  .trip-meta #knowledge{font-size:10px}
+  .trip-chip summary{font-size:10px}
+  .top-actions #journal{padding:6px 8px;font-size:10px}
+}
+
+/* Compact touch HUD: the camera mode is the primary action; zoom stays secondary. */
+.camera-controls{top:48%;right:15px;z-index:8;display:flex;flex-direction:column;align-items:center;gap:4px;width:62px;padding:5px;border:1px solid rgba(255,255,255,.36);border-radius:20px;background:rgba(20,64,60,.78);box-shadow:0 5px 20px rgba(9,42,42,.18);transform:translateY(-50%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#viewToggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:50px;min-width:50px;height:55px;min-height:55px;padding:3px 0;border:0;border-radius:15px;background:#f2d597;color:#28564b;font-size:10px;font-weight:750;line-height:1.15;letter-spacing:0}
+#viewToggle:hover{background:#ffe0a1;color:#28564b}
+.camera-icon{width:24px;height:24px}
+#viewToggle[data-target="near"] .camera-icon-top,#viewToggle[data-target="top"] .camera-icon-near{display:none}
+.camera-controls .zoom-group{display:flex;flex-direction:column;gap:0;width:50px;padding:0;border-radius:13px;background:rgba(255,255,255,.1)}
+.camera-controls .zoom-group button{width:50px;min-width:50px;height:40px;min-height:40px;padding:0;border:0;border-radius:0;background:transparent;color:#f9f4e8;font-size:23px;font-weight:400;line-height:1}
+.camera-controls .zoom-group button+button{border-top:1px solid rgba(255,255,255,.16)}
+.camera-controls .zoom-group button:hover{background:rgba(255,255,255,.15)}
+.fishing .camera-controls button:not(.view-toggle),.aiming .camera-controls button:not(.view-toggle){opacity:1}
+.fighting .camera-controls{pointer-events:auto;opacity:1}
+@media(max-width:600px){
+  .camera-controls{top:45%;right:8px;width:58px;padding:4px;border-radius:18px}
+  #viewToggle{width:48px;min-width:48px;height:52px;min-height:52px}
+  .camera-controls .zoom-group,.camera-controls .zoom-group button{width:48px;min-width:48px}
+  .camera-controls .zoom-group button{height:39px;min-height:39px}
+}
+
+/* Mobile reading scale: reserve tiny type for decorative labels, not instructions. */
+@media(max-width:600px){
+  :root{--mobile-title:23px;--mobile-body:13px;--mobile-detail:12px;--mobile-label:11px}
+  #result{max-height:calc(91dvh - env(safe-area-inset-top));padding:16px 16px calc(16px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+  #result .eyebrow{padding:2px 8px;font-size:var(--mobile-label);letter-spacing:.1em}
+  #result #specimen{width:min(280px,100%);height:118px;margin:5px auto 0}
+  #result h2{margin:4px 0 3px;font-size:var(--mobile-title);line-height:1.25;letter-spacing:.03em}
+  #catchDesc{margin:4px 0 9px;font-size:var(--mobile-body);line-height:1.5}
+  #catchStats{margin:7px 0;padding:11px 0}
+  #catchStats>div{font-size:20px;line-height:1.2}
+  #catchStats small{margin-top:4px;font-size:var(--mobile-label);line-height:1.2}
+  #catchMemory{margin:8px 0 0;padding:8px 10px;font-size:var(--mobile-detail);line-height:1.45}
+  #result .process-actions{gap:8px;margin-top:12px}
+  #result .process-actions button{min-height:62px;padding:9px 11px}
+  #result .process-actions strong{font-size:14px;line-height:1.25}
+  #result .process-actions small{margin-top:4px;font-size:var(--mobile-detail);line-height:1.35}
+  #result.no-catch #emptyVisual,#result.no-catch #emptyVisual svg{height:88px}
+  #result.no-catch #catchName{margin:6px 0 5px}
+  #result.no-catch #catchDesc{margin:0 0 10px}
+  #result.no-catch #emptyDismissHint{font-size:var(--mobile-detail)}
+
+  #status,.fishing #status,.aiming #status,#game.no-cast-action #status{font-size:var(--mobile-body);line-height:1.45}
+  #location,.step-label,.fishing .step-label,.bait-group-label{font-size:var(--mobile-label)}
+  .bait strong{font-size:var(--mobile-body)}
+  #spots .spot strong{font-size:var(--mobile-detail)}
+  #spots .spot small{font-size:var(--mobile-label);line-height:1.3}
+  .waterside p{font-size:var(--mobile-body);line-height:1.45}
+  .waterside button{font-size:var(--mobile-detail)}
+  .toast{font-size:var(--mobile-body);line-height:1.4}
+
+  #biteReadout .bite-readout-copy strong,.signal-copy strong,#tactics .signal-copy strong{font-size:14px;line-height:1.3}
+  #biteReadout .bite-readout-copy small,.tactic-question,.tactic-next small,.tactic-list small,#tacticWait{font-size:var(--mobile-detail);line-height:1.4}
+  .tactic-list strong,.tactic-next strong{font-size:var(--mobile-body);line-height:1.3}
+  #tacticDo{min-height:42px;font-size:var(--mobile-body)}
+  .gesture-help{font-size:var(--mobile-label);line-height:1.35}
+  #fightBeat strong,.fight-pump-copy strong,.fight-reel-copy strong{font-size:14px;line-height:1.3}
+  #fightMode{font-size:16px;line-height:1.25}
+  #fightBeat small,#fightFeedback,.fight-pump-copy small,.fight-reel-copy small{font-size:var(--mobile-detail);line-height:1.35}
+  #fightTravel,.fight-rig-caption,#fightLineState,#fightLoop span{font-size:var(--mobile-label)}
+
+  #book .book-top h2,#tripEnd h2{font-size:22px;line-height:1.25}
+  #bookSubtitle,.trip-end-intro,#tripSummary p,#bookContent .entry p,#bookContent .market-card p,#bookContent .shop-card p,#bookContent .collection-card p,#bookContent .water-row p,#bookContent .field-notes p,#bookContent .book-note{font-size:var(--mobile-body);line-height:1.5}
+  #book nav button{font-size:var(--mobile-body)}
+  #bookContent .entry h3,#bookContent .collection-card h3,#bookContent .water-row h3{font-size:14px;line-height:1.3}
+  #bookContent .gear-item small,#bookContent .collection-head span,#bookContent .collection-head p,#bookContent .water-progress span,#bookContent .record-grid span{font-size:var(--mobile-detail);line-height:1.4}
+  #bookContent .market-card button,#bookContent .shop-card button,#bookContent .collection-card button{min-height:40px;font-size:var(--mobile-body)}
+  #tripSummary span{font-size:var(--mobile-label)}
+  .render-settings-panel p,.render-settings-panel .render-setting-row,.render-settings-panel input[type=number],.render-settings-panel select,.render-settings-panel footer button,.render-settings-panel footer output{font-size:var(--mobile-body);line-height:1.4}
+}
+@media(max-width:380px){
+  #result{padding-right:13px;padding-left:13px}
+  #result #specimen{height:104px}
+  #result .process-actions{gap:6px}
+  #result .process-actions button{min-height:60px;padding:8px 9px}
+}
+
+/* The hook decision is a screen control, never a marker over the 3D float. */
+#game.no-cast-action[data-phase="hooked"] footer,#game.no-cast-action[data-phase="empty"] footer{display:none}
+#game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]){display:flex!important;top:auto;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;z-index:10;flex-direction:row;justify-content:flex-start;gap:10px;width:min(370px,calc(100% - 28px));height:74px;padding:10px 16px 10px 12px;border:1px solid #d4a760;border-radius:17px;background:linear-gradient(180deg,#ffe4ab,#eac181);box-shadow:0 5px 0 #ab7b43,0 13px 26px #133f3250;color:#25493e;text-align:left;text-shadow:none;opacity:1;filter:none;transform:translateX(-50%);isolation:auto;touch-action:manipulation}
+#game[data-phase="hooked"] #sceneAction:not([hidden]):hover{background:linear-gradient(180deg,#ffe9bc,#efcc91)}
+#game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]):active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 #ab7b43,0 7px 16px #133f3240;filter:none}
+#sceneAction:before,#sceneAction .action-ripple{display:none}
+#sceneAction .action-symbol-wrap{display:grid;flex:none;place-items:center;width:50px;height:50px;border:1px solid #be995f;border-radius:13px;background:#294f43;color:#fff2d3}
+#sceneAction .action-symbol{width:31px;height:31px;stroke:currentColor;filter:none}
+#sceneAction .action-arrow{stroke:#ffe2a1}
+#sceneAction .bite-timer{inset:7px auto auto 5px;width:58px;height:58px;z-index:1}
+#sceneAction .bite-timer-track{stroke:#fff4d6a8}
+#sceneAction .bite-timer-stroke{stroke:#8b6837}
+#sceneAction .action-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px;align-items:flex-start}
+#sceneAction strong{font:800 17px/1.2 var(--sans);letter-spacing:0;color:#24483b}
+#sceneAction small{margin:0;font:600 12px/1.3 var(--sans);letter-spacing:0;color:#66573a;opacity:1}
+#sceneAction .action-chevron{flex:none;color:#6b5738;font:500 29px/1 var(--sans)}
+#game[data-phase="empty"] #sceneAction:not([hidden]){border-color:#b7d2c2;background:linear-gradient(180deg,#fffef0,#e6f0e3);box-shadow:0 4px 0 #8aa998,0 11px 24px #133f3238;color:#285548;opacity:1}
+#game[data-phase="empty"] #sceneAction:not([hidden]):active{box-shadow:0 1px 0 #8aa998,0 6px 15px #133f3230}
+#sceneAction[data-action="retrieve"] .bite-timer{display:none}
+#sceneAction[data-action="retrieve"] .action-symbol-wrap{border-color:#b5d2bf;background:#e5f1e5;color:#315f50}
+#sceneAction[data-action="retrieve"] .action-symbol{stroke:#315f50}
+#sceneAction[data-action="retrieve"] small{color:#628071}
+@media(max-width:600px){
+  #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]){bottom:calc(12px + env(safe-area-inset-bottom));height:72px;padding:9px 13px 9px 11px}
+  #sceneAction strong{font-size:16px}
+  #sceneAction small{font-size:12px}
+}
+
+/* Mobile HUD reading hierarchy: short labels, clear action, readable explanation. */
+#biteReadout{border-color:#e8d9bd;background:#fffaf0;box-shadow:0 9px 28px rgba(25,65,58,.2)}
+#biteReadout .bite-readout-label,.rhythm-tempo{color:#805637;opacity:1}
+#biteReadout .bite-readout-copy strong{color:#214c40;font-family:var(--sans);font-weight:800}
+#biteReadout .bite-readout-copy small{color:#466658;font-weight:600}
+#spots .spot strong{color:#234e41}
+#spots .spot small{color:#4b6b5b}
+#spots .spot.active small{color:#765432}
+@media(max-width:600px){
+  :root{--mobile-body:14px;--mobile-detail:13px;--mobile-label:12px}
+  #biteReadout{width:min(358px,calc(100% - 24px));max-width:calc(100% - 24px);grid-template-columns:44px minmax(0,1fr);gap:12px;padding:12px 14px;border-radius:16px}
+  .rhythm-orb{width:42px;height:42px}
+  .rhythm-content{gap:5px}
+  .rhythm-heading{gap:8px}
+  #biteReadout .bite-readout-label,.rhythm-tempo{font-size:12px;line-height:1.25;letter-spacing:.03em}
+  #biteReadout .bite-readout-copy{gap:3px}
+  #biteReadout .bite-readout-copy strong{font-size:18px;line-height:1.25;letter-spacing:0}
+  #biteReadout .bite-readout-copy small{font-size:13px;line-height:1.4}
+  .rhythm-steps{flex-wrap:wrap;gap:7px;margin-top:5px}
+  .rhythm-steps span{font-size:11px;line-height:1.3}
+  #spots .spot,#spots .spot.locked{min-width:156px;max-width:min(174px,calc(100vw - 24px));gap:8px;padding:9px 10px}
+  #spots .spot-order{width:28px;height:28px;font-size:12px}
+  #spots .spot strong{font-size:14px;line-height:1.3}
+  #spots .spot small{font-size:12px;line-height:1.35}
+  #status,.fishing #status,.aiming #status,#game.no-cast-action #status{font-size:14px;line-height:1.4}
+  .step-label,.fishing .step-label,#location{font-size:12px}
+  .tactic-list strong,.tactic-next strong{font-size:14px}
+  #fightBeat strong,.fight-pump-copy strong,.fight-reel-copy strong{font-size:15px}
+  #fightBeat small,#fightFeedback,.fight-pump-copy small,.fight-reel-copy small{font-size:13px}
+}
+@media(max-width:360px){
+  #biteReadout{grid-template-columns:40px minmax(0,1fr);gap:9px;padding:11px 12px}
+  .rhythm-orb{width:39px;height:39px}
+  #biteReadout .bite-readout-copy strong{font-size:17px}
+  #spots .spot,#spots .spot.locked{min-width:148px;max-width:148px}
+}
+
+/* 搏鱼信息留在左上，操作按钮独立贴近右下角。 */
+#fight:not([hidden]){top:96px;bottom:auto;left:24px;right:auto;width:min(430px,calc(100% - 48px));max-height:calc(100svh - 205px);padding:16px 18px;transform:none;animation:none;overflow:visible}
+#fight .fight-actions{position:fixed;right:24px;bottom:24px;left:auto;z-index:9;grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr);gap:10px;width:min(440px,calc(100vw - 48px));margin:0}
+#fight .fight-actions button{min-height:74px}
+#game.fighting footer{display:none!important}
+#game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]){left:auto;right:24px;bottom:24px;width:min(250px,calc(100% - 48px));transform:none}
+#game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]):active{transform:translateY(3px)}
+#game[data-phase="landed"] footer{display:none}
+.shore-action{position:absolute;right:24px;bottom:24px;z-index:10;display:flex;align-items:center;gap:10px;width:min(250px,calc(100% - 48px));min-height:74px;padding:10px 14px 10px 11px;border:1px solid #a7783a;border-radius:17px;background:linear-gradient(180deg,#ffe8b8,#edc783);box-shadow:inset 0 1px 0 #ffffffbf,0 5px 0 #a7783a,0 13px 26px #133f3250;color:#503822;text-align:left;touch-action:manipulation}
+.shore-action:hover{background:linear-gradient(180deg,#ffedc5,#f3d194)}
+.shore-action:active{transform:translateY(3px);box-shadow:inset 0 2px 5px #79542d40,0 2px 0 #a7783a,0 7px 16px #133f3240}
+.shore-action-art{flex:none;display:grid;place-items:center;width:50px;height:50px;border:1px solid #78572f;border-radius:13px;background:linear-gradient(180deg,#986e3b,#78532f);color:#fff2d3}
+.shore-action-art svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.shore-action-art svg path:first-child{fill:#fff2d3;stroke:#fff2d3}
+.shore-action-art svg circle{fill:#78532f;stroke:none}
+.shore-action-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.shore-action-copy strong{font:800 17px/1.2 var(--sans)}
+.shore-action-copy small{font:600 12px/1.3 var(--sans);color:#66573a}
+.shore-action-chevron{font:500 29px/1 var(--sans);opacity:.6}
+@media(max-width:600px){
+  #fight:not([hidden]){top:calc(112px + env(safe-area-inset-top));left:12px;width:calc(100% - 24px);max-height:calc(100svh - 245px);padding:13px 14px}
+  #fight #fightRig{height:108px}
+  #game.fighting .camera-controls{display:none}
+  #fight .fight-actions{right:12px;bottom:calc(12px + env(safe-area-inset-bottom));width:calc(100vw - 24px);gap:7px}
+  #fight .fight-actions button{min-height:70px}
+  #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]),.shore-action{right:12px;bottom:calc(12px + env(safe-area-inset-bottom));width:min(250px,calc(100% - 24px));min-height:72px}
+}
+@media(max-height:660px){
+  #fight:not([hidden]){top:76px;max-height:calc(100svh - 170px);padding:10px 13px}
+  #fight #fightRig{height:95px}
+  #fight #fightBeat{margin:7px 0}
+  #fight .fight-actions{bottom:12px}
+}
+
+/* 游戏提示：短句先讲眼前发生的事，细节留在次级文字。 */
+#story:not(:empty){max-width:min(390px,calc(100% - 30px));padding:10px 16px;border:1px solid rgba(255,246,212,.3);border-radius:14px;background:rgba(20,62,55,.83);box-shadow:0 9px 28px rgba(8,47,42,.21);color:#fff8e7;font:700 15px/1.45 var(--sans);letter-spacing:.04em;white-space:normal;backdrop-filter:blur(8px)}
+.waterside{width:255px;padding:12px 15px;border:1px solid rgba(255,255,255,.82);border-left:3px solid #c9955c;border-radius:14px;background:linear-gradient(135deg,rgba(255,252,239,.96),rgba(244,248,232,.91));box-shadow:0 8px 25px rgba(19,70,61,.15)}
+.waterside .small-label{display:inline-flex;align-items:center;gap:7px;color:#96683f;font-size:11px;font-weight:850;letter-spacing:.08em;opacity:1}
+.waterside .small-label:before{content:"";width:6px;height:6px;border-radius:50%;background:#d9a367;box-shadow:0 0 0 3px #f4dfba}
+.waterside p{margin:7px 0 8px;color:#294f43;font-size:13px;font-weight:700;line-height:1.5}
+.waterside button{color:#9e6b43;font-size:11px;font-weight:800;text-decoration:underline;text-decoration-color:#d4b18b;text-underline-offset:3px}
+.footer-top{gap:8px;padding-bottom:8px}
+.step-label{padding:4px 9px;border:1px solid #e0c68f;border-radius:999px;background:#f8e9c6;color:#806039;font-size:10px;font-weight:850;letter-spacing:.04em}
+#status{color:#244c40;font-size:13px;font-weight:750;line-height:1.4}
+#location{color:#6b8b77;font-size:11px;font-weight:700}
+.bottom-line{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px;color:#5f7e6f;font-size:11px;font-weight:650;line-height:1.35;text-align:left}
+.tip-marker{flex:none;padding:2px 6px;border:1px solid #d3ddc7;border-radius:6px;background:#ecf1e6;color:#557963;font-size:10px;font-weight:850;white-space:nowrap}
+#hint{min-width:0}
+#saveState:empty{display:none}
+#biteReadout .rhythm-heading{align-items:center}
+#biteReadout .bite-readout-copy strong{font-weight:850;letter-spacing:.01em}
+#tactics .signal-copy span,#tactics .tactic-next span{font-size:10px;font-weight:850;letter-spacing:.1em}
+#tactics .tactic-next{margin-top:13px;padding:11px 12px;border:1px solid #e5e7d4;border-radius:11px;background:#f5f5e9}
+#tactics #tacticWhy{color:#607b6d}
+#fightFeedback:not(:empty){display:inline-block;margin-top:9px;padding:5px 9px;border:1px solid #dbe7d5;border-radius:8px;background:#f1f6eb;color:#315e4c}
+#landingCue{border-color:#e6dec5;background:#fff9e9;box-shadow:0 10px 30px rgba(17,70,57,.18)}
+.toast{top:86px;right:24px;left:auto;display:flex;align-items:center;gap:10px;width:min(320px,calc(100vw - 32px));max-width:none;padding:11px 13px;transform:none;border:1px solid #dce7d5;border-radius:14px;background:#fffaf0;box-shadow:0 12px 32px rgba(19,70,61,.2);color:#2a5546;text-align:left;animation:game-toast-in .22s ease-out both}
+.toast-mark{flex:none;display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:#e3efdf;color:#3e7555;font:850 16px/1 var(--sans)}
+.toast-body{display:flex;min-width:0;flex-direction:column;gap:1px}
+.toast-body small{color:#926a42;font-size:10px;font-weight:850;letter-spacing:.09em}
+.toast-body strong{font-size:12px;font-weight:750;line-height:1.4}
+.toast-reward{border-color:#ecd39d;background:#fff7e7}
+.toast-reward .toast-mark{background:#f5e2b6;color:#94692b}
+.toast-warning{border-color:#e8c7ac;background:#fff5ea}
+.toast-warning .toast-mark{background:#f5dbc8;color:#a3573d}
+#game:is(.fishing,.fighting,[data-phase="landed"]) ~ .toast{top:auto;bottom:108px}
+@keyframes game-toast-in{from{opacity:0;translate:0 -7px}to{opacity:1;translate:0 0}}
+@media(max-width:600px){
+  .brand h1{white-space:nowrap}
+  .brand-subtitle{gap:0;margin-top:3px;font-size:0!important;white-space:nowrap}
+  .brand-subtitle i{display:none}
+  .brand .weather-chip{padding:2px 6px;font-size:10px!important;white-space:nowrap}
+  .top-actions #sound{font-size:0!important}
+  .top-actions #sound:before{content:"♫";font-size:19px;line-height:1}
+  #story:not(:empty){top:29%;max-width:calc(100% - 32px);padding:8px 11px;font-size:13px}
+  .waterside{left:12px;width:190px;padding:9px 10px}
+  .waterside p{font-size:12px;line-height:1.45}
+  .waterside button{font-size:11px}
+  .footer-top{gap:4px 7px}
+  .step-label{padding:3px 7px;font-size:10px}
+  #status{font-size:13px;line-height:1.4}
+  .bottom-line{justify-content:flex-start;font-size:10px}
+  .tip-marker{font-size:9px}
+  #tactics .tactic-next{padding:8px 9px}
+  .toast{top:116px;right:12px;width:min(285px,calc(100vw - 24px));padding:9px 10px}
+  #game:is(.fishing,.fighting,[data-phase="landed"]) ~ .toast{bottom:96px}
+}
+
+/* One control family for hook, pump, reel and landing actions. */
+.game-action:is(#fightPump,#fightHold,#sceneAction,#landFish){--action-top:#fff4d8;--action-bottom:#f2d69e;--action-edge:#ad8046;--action-ink:#3e4938;--action-muted:#746248;--action-icon:#315e50;--action-icon-border:#244e43;--action-icon-ink:#fff6df;position:relative;display:flex;align-items:center;gap:10px;box-sizing:border-box;min-height:76px;padding:10px 13px 10px 10px;border:1px solid var(--action-edge);border-radius:16px;background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink);text-align:left;text-shadow:none;cursor:pointer;touch-action:manipulation;transition:transform .1s ease,box-shadow .1s ease,filter .15s ease}
+.game-action[hidden]{display:none!important}
+.game-action:hover{filter:brightness(1.045)}
+.game-action:focus-visible{outline:3px solid #fff9df;outline-offset:3px}
+.game-action:is(#fightPump,#fightHold,#sceneAction,#landFish):active,.game-action#fightPump.lifting,.game-action#fightHold.held{transform:translateY(3px);box-shadow:inset 0 2px 5px #1d473034,0 1px 0 var(--action-edge),0 5px 13px #123e3433}
+.game-action:is(#fightPump,#fightHold,#sceneAction,#landFish) .game-action__art{flex:none;display:grid;place-items:center;width:48px;height:48px;box-sizing:border-box;border:1px solid var(--action-icon-border);border-radius:12px;background:var(--action-icon);box-shadow:inset 0 1px 0 #ffffff30;color:var(--action-icon-ink);filter:none}
+.game-action .game-action__copy{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:3px}
+.game-action .game-action__copy strong,.game-action#sceneAction strong,.game-action#fightPump .game-action__copy strong,.game-action#fightHold .game-action__copy strong{color:inherit;font:800 15px/1.2 var(--sans);letter-spacing:0;white-space:normal}
+.game-action .game-action__copy small,.game-action#sceneAction small,.game-action#fightPump .game-action__copy small,.game-action#fightHold .game-action__copy small{display:block;margin:0;color:var(--action-muted);font:650 11px/1.25 var(--sans);letter-spacing:0;opacity:1;white-space:normal}
+.game-action kbd,.game-action .action-chevron,.game-action .shore-action-chevron{display:none}
+.game-action#fightPump{--action-top:#f2f6eb;--action-bottom:#dae8d8;--action-edge:#819e86;--action-ink:#254d3d;--action-muted:#5c7864;--action-icon:#315e50;--action-icon-border:#244e43;--action-icon-ink:#fff6df}
+.game-action#fightPump.ready,.game-action#sceneAction[data-action="lift"],.game-action#landFish{--action-top:#fff4d8;--action-bottom:#f2d69e;--action-edge:#ad8046;--action-ink:#473b2d;--action-muted:#745f42;--action-icon:#8d643c;--action-icon-border:#79522e;--action-icon-ink:#fff6df}
+.game-action#fightHold,#fight.danger #fightHold.game-action{--action-top:#376b58;--action-bottom:#245345;--action-edge:#183f35;--action-ink:#fff9e9;--action-muted:#d3e7d4;--action-icon:#254f43;--action-icon-border:#9ebdaf;--action-icon-ink:#fff9e9}
+#fight.danger #fightHold.game-action{border-color:var(--action-edge);background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink)}
+.game-action#fightHold.held,#fight.danger #fightHold.game-action.held{background:linear-gradient(180deg,#285746,#1c463b)}
+.game-action#sceneAction[data-action="retrieve"]{--action-top:#f2f6eb;--action-bottom:#dae8d8;--action-edge:#819e86;--action-ink:#254d3d;--action-muted:#5c7864;--action-icon:#315e50;--action-icon-border:#244e43;--action-icon-ink:#fff6df}
+.game-action#fightPump .fight-pump-art svg{width:34px;height:39px}
+.game-action#fightHold .fight-reel-art{transform:translateX(var(--torque-shift,0px))}
+.game-action#fightHold .fight-reel-art svg{width:43px;height:43px}
+.game-action#sceneAction .action-symbol{width:32px;height:32px}
+.game-action#sceneAction .bite-timer{inset:3px auto auto 3px;width:62px;height:62px}
+.game-action#sceneAction .bite-timer-track{stroke:#fff8df90}
+.game-action#sceneAction .bite-timer-stroke{stroke:#694e2e}
+.game-action#sceneAction,.game-action#landFish{position:absolute}
+.game-action#sceneAction{animation:none;filter:none;isolation:auto}
+#game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:24px;bottom:24px;left:auto;width:min(250px,calc(100% - 48px));height:auto;min-height:76px;padding:10px 13px 10px 10px;gap:10px;border:1px solid var(--action-edge);border-radius:16px;background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink);transform:none}
+#game[data-phase="hooked"] #sceneAction.game-action:not([hidden]):hover{background:linear-gradient(180deg,var(--action-top),var(--action-bottom));filter:brightness(1.045)}
+#game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]):active,#game #landFish.game-action:not([hidden]):active{transform:translateY(3px);box-shadow:inset 0 2px 5px #1d473034,0 1px 0 var(--action-edge),0 5px 13px #123e3433}
+#fight .fight-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);width:min(460px,calc(100vw - 48px))}
+#fight .fight-actions .game-action{min-width:0;min-height:76px}
+#game:is([data-phase="hooked"],[data-phase="empty"]) footer{display:none!important}
+#fight[data-next="lift"] #fightPump,#fight[data-next="reel"] #fightHold{outline:2px solid #f8e2a8;outline-offset:2px}
+#fight[data-next="release"] #fightHold{outline:2px solid #e2d2a7;outline-offset:2px}
+#fightHold.tap-flash{filter:brightness(1.13)}
+@media(max-width:600px){
+  #fight .fight-actions{width:calc(100vw - 24px);grid-template-columns:minmax(0,1fr) minmax(0,1.06fr)}
+  #fight .fight-actions .game-action{min-height:72px;padding:8px;gap:7px}
+  .game-action:is(#fightPump,#fightHold,#sceneAction,#landFish) .game-action__art{width:43px;height:43px;border-radius:11px}
+  .game-action .game-action__copy strong,.game-action#sceneAction strong,.game-action#fightPump .game-action__copy strong,.game-action#fightHold .game-action__copy strong{font-size:13px}
+  .game-action .game-action__copy small,.game-action#sceneAction small,.game-action#fightPump .game-action__copy small,.game-action#fightHold .game-action__copy small{font-size:10px}
+  .game-action#sceneAction .bite-timer{inset:3px auto auto 3px;width:55px;height:55px}
+  #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:12px;bottom:calc(12px + env(safe-area-inset-bottom));width:min(250px,calc(100% - 24px));height:72px;min-height:72px}
+}
+
+/* Keep the settings drawer independent of the game's full-screen header and footer. */
+body > .render-settings-panel{position:fixed;z-index:30;top:76px;right:18px;bottom:auto;left:auto;display:flex;flex-direction:column;box-sizing:border-box;width:min(410px,calc(100vw - 36px));height:min(780px,calc(100dvh - 92px));max-height:none;overflow:hidden;transform:none;pointer-events:auto}
+body > .render-settings-panel[hidden]{display:none!important}
+body > .render-settings-panel > header{position:static;inset:auto;display:flex;flex:none;align-items:center;justify-content:space-between;min-height:38px;margin:0 0 9px;padding:0 0 10px;transform:none;pointer-events:auto}
+body > .render-settings-panel > header button{flex:none;cursor:pointer}
+body > .render-settings-panel > p{flex:none;margin:0 0 10px}
+body > .render-settings-panel > .render-settings-fields{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 5px 6px 0;scrollbar-width:thin}
+body > .render-settings-panel > .render-settings-fields details{margin:0;border-top:1px solid #dfe8d9}
+body > .render-settings-panel > .render-settings-fields summary{cursor:pointer;list-style-position:inside}
+body > .render-settings-panel .render-setting-row{display:grid;grid-template-columns:110px minmax(0,1fr) 72px;align-items:center;gap:7px}
+body > .render-settings-panel .render-setting-row > span{min-width:0;line-height:1.35}
+body > .render-settings-panel .render-setting-row input[type=range]{min-width:0;width:100%}
+body > .render-settings-panel .render-setting-row input[type=number]{box-sizing:border-box;width:72px;min-width:0;padding:5px 5px}
+body > .render-settings-panel .render-color-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;font-size:12px}
+body > .render-settings-panel .render-color-row select{max-width:190px;min-width:0;padding:6px}
+body > .render-settings-panel > footer{position:static;inset:auto;display:grid;flex:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;box-sizing:border-box;width:100%;max-width:none;min-height:0;margin:10px 0 0;padding:10px 0 0;border:0;border-top:1px solid #dfe8d9;border-radius:0;background:none;box-shadow:none;backdrop-filter:none;transform:none;opacity:1;pointer-events:auto}
+body > .render-settings-panel > footer button{width:100%;min-width:0;cursor:pointer}
+body > .render-settings-panel > footer button[hidden]{display:none!important}
+body > .render-settings-panel > footer output{display:block;grid-column:1/-1}
+@media(max-width:600px){body > .render-settings-panel{top:calc(62px + env(safe-area-inset-top));right:10px;width:calc(100vw - 20px);height:calc(100dvh - 74px - env(safe-area-inset-top));padding:14px}body > .render-settings-panel .render-setting-row{grid-template-columns:86px minmax(0,1fr) 72px}body > .render-settings-panel .render-setting-row input[type=number]{width:72px}}
+
+/* The trip recap reads like a short field note, with outcomes kept scannable. */
+#tripEnd{display:none;max-height:min(82dvh,680px);overflow:auto}
+#tripEnd[open]{display:block}
+#tripEnd .trip-end-intro{margin:7px 0 18px;color:#3b6656;font-size:15px;font-weight:600;line-height:1.55}
+#tripSummary{display:grid;gap:9px;margin:0 0 19px}
+#tripSummary .trip-note{padding:12px 14px;border:1px solid #e4e5d5;border-radius:12px;background:#f6f5e9}
+#tripSummary .trip-note-goal{border-color:#dfd5ba;background:#faf1db}
+#tripSummary .trip-note span{display:block;color:#866443;font-size:11px;font-weight:800;letter-spacing:.08em}
+#tripSummary .trip-note h3{margin:3px 0 4px;color:#244e41;font-size:16px;font-weight:800;line-height:1.3}
+#tripSummary .trip-note p{margin:0;color:#4d695a;font-size:13px;line-height:1.5}
+@media(max-width:600px){
+  #tripEnd{max-height:calc(100dvh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:20px 18px}
+  #tripEnd .trip-end-intro{font-size:14px;line-height:1.55}
+  #tripSummary{gap:8px;margin-bottom:16px}
+  #tripSummary .trip-note{padding:11px 12px}
+  #tripSummary .trip-note span{font-size:11px}
+  #tripSummary .trip-note h3{font-size:16px}
+  #tripSummary .trip-note p{font-size:13px;line-height:1.45}
+}

@@ -1,0 +1,86 @@
+import {SPOTS,BAITS,FISH,GEAR,PROCESS_ACTIONS,TRIP_GOALS,TRIP_RULES,CLUES,TACTICS,SIGNALS,WEATHERS} from './data/catalog.mjs';
+export {SPOTS,BAITS,FISH,GEAR,PROCESS_ACTIONS,TRIP_GOALS,TRIP_RULES,CLUES,TACTICS} from './data/catalog.mjs';
+import {GAME_RULES} from './config/game-rules.mjs';
+import {newEconomy,migrateEconomy,addToBasket,saleValue} from './reference-loop.mjs';
+import {castZone,castPreset} from './cast-target.mjs';
+export function goalForTrip(number){const goal=TRIP_GOALS[(number-1)%TRIP_GOALS.length];return {...goal,progress:0,complete:false}}
+export function ruleForTrip(number){return {...TRIP_RULES[(number-1)%TRIP_RULES.length],triggers:0}}
+export function biteWindowForTrip(number){return GAME_RULES.biteWindowsMs[Math.min(Math.max(1,number||1),GAME_RULES.biteWindowsMs.length)-1]}
+export function weatherAt(t){return WEATHERS[Math.floor(t/GAME_RULES.weatherPeriodMs)%WEATHERS.length]}
+export function newSave(){return {version:GAME_RULES.saveVersion,casts:0,log:[],clues:[],observations:[],collection:[],tracked:[],skill:{streak:0,best:0,awards:0},knowledge:0,economy:newEconomy(),ecosystem:{carp:1,minnow:1,shrimp:1,perch:1,catfish:1},gear:{rod:'willow',reel:'wood',line:'linen',float:'cork'},trip:{number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[],goal:goalForTrip(1),rule:ruleForTrip(1)},pending:null,spot:'reed',bait:'grain',created:Date.now()}}
+export function migrateSave(s){if(!s||![1,2].includes(s.version))return newSave();if(s.version===1){s.version=2;s.collection=[];s.tracked=[];s.skill={streak:0,best:0,awards:0};s.knowledge=0;s.ecosystem={carp:1,minnow:1,shrimp:1,perch:1,catfish:1};s.gear={rod:'willow',reel:'wood',line:'linen',float:'cork'};s.trip={number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[],goal:goalForTrip(1),rule:ruleForTrip(1)}}s.economy=migrateEconomy(s.economy);s.observations=Array.isArray(s.observations)?s.observations:[];s.collection=Array.isArray(s.collection)?s.collection:[];s.tracked=Array.isArray(s.tracked)?s.tracked.slice(0,GAME_RULES.trackedLimit):[];s.skill=s.skill&&Number.isFinite(s.skill.streak)?s.skill:{streak:0,best:0,awards:0};s.trip=s.trip&&Number.isFinite(s.trip.castsLeft)?s.trip:{number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[]};s.trip.changes=Array.isArray(s.trip.changes)?s.trip.changes:[];if(!s.trip.goal)s.trip.goal=goalForTrip(s.trip.number||1);if(!s.trip.rule)s.trip.rule=ruleForTrip(s.trip.number||1);if(!Number.isFinite(s.trip.rule.triggers))s.trip.rule.triggers=0;if(s.pending&&!Number.isFinite(s.pending.biteWindowMs))s.pending.biteWindowMs=biteWindowForTrip(s.trip.number);const selected=SPOTS.find(p=>p.id===s.spot);if(!selected||s.knowledge<selected.unlock)s.spot='reed';return s}
+export function validSave(s){const valid=!!s&&s.version===GAME_RULES.saveVersion&&Number.isInteger(s.casts)&&s.casts>=0&&Array.isArray(s.log)&&s.log.every(c=>FISH.some(f=>f.id===c.id)&&Number.isFinite(c.weight)&&Number.isFinite(c.length)&&Number.isFinite(c.time))&&Array.isArray(s.clues)&&SPOTS.some(p=>p.id===s.spot)&&BAITS.some(b=>b.id===s.bait)&&s.gear&&s.trip&&(!s.pending||(Number.isFinite(s.pending.readyAt)&&Number.isFinite(s.pending.start)&&SPOTS.some(p=>p.id===s.pending.spot)&&BAITS.some(b=>b.id===s.pending.bait)&&['cast','result'].includes(s.pending.phase)&&(!s.pending.catch||FISH.some(f=>f.id===s.pending.catch.id))));return valid}
+export function spotUnlocked(s,id){const spot=SPOTS.find(p=>p.id===id);return !!spot&&s.knowledge>=spot.unlock}
+export function equipGear(s,slot,id){const item=GEAR[slot]?.find(g=>g.id===id);if(!item||s.knowledge<item.unlock)return false;s.gear[slot]=id;return true}
+function weighted(items,rng){let n=rng()*items.reduce((s,i)=>s+i[1],0);for(const [id,w]of items){n-=w;if(n<=0)return id}return items.at(-1)[0]}
+export function makeCast(s,t=Date.now(),rng=Math.random,castPoint=null){
+ const selectedZone=castZone(s.spot,castPoint),targetZone=selectedZone||'middle',targetPoint=selectedZone?[...castPoint]:castPreset(s.spot);
+ const weather=weatherAt(t);const weights=s.spot==='reed'?{carp:40,minnow:35,shrimp:20,perch:5}:s.spot==='bridge'?{carp:15,shrimp:10,perch:32,catfish:20,bottle:15,bell:8}:{minnow:10,perch:22,catfish:52,bottle:10,bell:6};
+ for(const id of Object.keys(weights))if(s.ecosystem?.[id])weights[id]*=Math.max(.35,s.ecosystem[id]);
+ const rule=s.trip?.rule?.id;if(rule==='shoal'&&s.spot==='reed'){if(weights.carp)weights.carp*=1.55;if(weights.minnow)weights.minnow*=1.55}if(rule==='bottom'){for(const id of ['shrimp','catfish','bottle','bell'])if(weights[id])weights[id]*=1.6}if(rule==='predator'){if(weights.perch)weights.perch*=1.55;if(weights.catfish)weights.catfish*=1.55}
+ if(s.bait==='grain'){if(weights.carp)weights.carp*=2;if(weights.minnow)weights.minnow*=2}
+ if(s.bait==='worm'){if(weights.catfish)weights.catfish*=2;if(weights.perch)weights.perch*=1.5}
+ if(s.bait==='glow'){if(weights.bottle)weights.bottle*=2;if(weights.shrimp)weights.shrimp*=1.4}
+ if(s.spot==='bridge'&&s.bait==='grain'&&weather.id==='rain'&&s.clues.includes('gold2'))weights.oldgold=45;
+ if(s.spot==='deep'&&s.bait==='glow'&&weather.id==='moon'&&s.clues.includes('moon2'))weights.moon=48;
+ if(s.gear?.line==='copper'){if(weights.bottle)weights.bottle*=1.8;if(weights.bell)weights.bell*=1.8}
+ if(s.gear?.float==='mirror'&&s.spot==='deep'&&s.clues.includes('moon1'))weights.moon=(weights.moon||0)+22;
+ const floatLevel=s.economy?.upgrades?.float||0;if(floatLevel){for(const id of ['perch','catfish','oldgold','moon'])if(weights[id])weights[id]*=1+floatLevel*(id==='oldgold'||id==='moon'?.12:.08)}
+ if(targetZone==='near'){for(const id of ['carp','minnow','shrimp'])if(weights[id])weights[id]*=1.18;for(const id of ['perch','catfish'])if(weights[id])weights[id]*=.88}
+ if(targetZone==='far'){for(const id of ['perch','catfish'])if(weights[id])weights[id]*=1.18;for(const id of ['carp','minnow','shrimp'])if(weights[id])weights[id]*=.88}
+ const eligible=(s.tracked||[]).filter(x=>x.spot===s.spot&&weights[x.id]),trackChance=Math.min(.55,eligible.reduce((sum,x)=>sum+.18+(x.releases||1)*.09,0)),returning=eligible.length&&rng()<trackChance?eligible[Math.floor(rng()*eligible.length)]:null;
+ const miss=false,fishId=returning?.id||weighted(Object.entries(weights),rng),fish=FISH.find(f=>f.id===fishId),sizeBoost=(s.gear?.rod==='tide'?1.16:1)*(1+(s.economy?.upgrades?.rod||0)*.1)*(targetZone==='near'?.94:targetZone==='far'?1.10:1);const weight=returning?+Math.min(fish.max*1.35,Math.max(returning.weight*1.08,returning.weight*(1.08+rng()*.12))).toFixed(3):+Math.min(fish.max,fish.min+(fish.max-fish.min)*Math.pow(rng(),2)*sizeBoost).toFixed(3);const length=+(fish.length*Math.cbrt(weight/((fish.min+fish.max)/2))).toFixed(1);
+ const mutationRoll=rng(),mutation=returning&&(returning.releases||1)>=3?'潮痕个体':fish.special?'特殊个体':fish.object?'沉水物':mutationRoll<.035?'雨水附着':mutationRoll<.09?'浅金体色':null,variation=returning?`追踪个体 · 已放流 ${returning.releases||1} 次`:fish.special?'已确认的特殊个体':fish.object?'沉水物':mutation==='雨水附着'?'离水后仍持续滴水':mutation==='浅金体色'?'少见的浅金色':rng()<.12?'尾鳍有旧伤':'普通体色';
+ const readyAt=t+GAME_RULES.castWaitBaseMs+rng()*GAME_RULES.castWaitRandomMs+(targetZone==='near'?-700:targetZone==='far'?700:0),signal=signalFor(fish.id),biteWindowMs=biteWindowForTrip(s.trip?.number);
+ return {start:t,readyAt,decisionAt:readyAt-GAME_RULES.decisionLeadMs,biteWindowMs,spot:s.spot,bait:s.bait,castPoint:targetPoint,castZone:targetZone,weather,phase:'cast',catch:{id:fish.id,weight,length,variation,mutation,time:t,spot:s.spot,bait:s.bait,weather:weather.name,...(returning?{tagId:returning.tagId,returnCount:returning.releases||1}: {})},signal,tactic:null,tacticSuccess:null,reaction:null,clue:s.spot==='bridge'?(s.clues.includes('gold1')?'gold2':'gold1'):s.spot==='deep'?(s.clues.includes('moon1')?'moon2':'moon1'):(!s.clues.includes('reed')?'reed':null)}
+}
+export function signalFor(id){const key=id==='perch'?'dart':id==='catfish'?'deep':id==='oldgold'?'broad':id==='shrimp'||id==='minnow'?'peck':'steady';return {id:key,...SIGNALS[key]}}
+export function chooseTactic(s,id,now=Date.now(),rng=Math.random){
+ const p=s.pending;if(!p||p.phase!=='cast'||p.tactic||now<p.decisionAt)return null;
+ const signal=SIGNALS[p.signal?.id]||SIGNALS.steady,success=id===signal.tactic,tripNumber=s.trip?.number||1,forgiven=!success&&(tripNumber===1||tripNumber===2&&rng()<.65),landed=success||forgiven;p.tactic=id;p.tacticSuccess=landed;p.reaction=success?signal.success:forgiven?'鱼被动作惊了一下，但仍留在饵旁。继续看浮漂。':signal.fail;p.reactedAt=now;p.readyAt=now+(landed?2400:1800);
+ if(!landed)p.catch=null;
+ const skill=s.skill||(s.skill={streak:0,best:0,awards:0});if(success){skill.streak++;skill.best=Math.max(skill.best,skill.streak);if(skill.streak%3===0){skill.awards++;s.knowledge+=1;}}else skill.streak=0;const note={time:now,spot:p.spot,signal:p.signal?.id||'steady',tactic:id,success,forgiven,text:p.reaction,streak:skill.streak,streakAward:success&&skill.streak%3===0};s.observations=[note,...(s.observations||[])].slice(0,GAME_RULES.observationLimit);return note;
+}
+export function finishCast(s){const p=s.pending;if(!p||p.phase==='result')return false;s.casts++;if(p.catch)s.log.unshift(p.catch);if(p.clue&&!s.clues.includes(p.clue))s.clues.push(p.clue);s.log=s.log.slice(0,GAME_RULES.catchLogLimit);p.phase='result';return true}
+export function trackRelease(s,c,spot=s.spot,now=Date.now()){
+ if(!c||FISH.find(x=>x.id===c.id)?.object)return {tracked:false};s.tracked=Array.isArray(s.tracked)?s.tracked:[];let item=c.tagId&&s.tracked.find(x=>x.tagId===c.tagId);
+ if(item){item.weight=Math.max(item.weight,c.weight);item.releases=(item.releases||1)+1;item.spot=spot;item.lastSeen=now;return {tracked:true,upgraded:true,item};}
+ if(s.tracked.length>=GAME_RULES.trackedLimit)return {tracked:false,full:true};item={tagId:c.tagId||`tag-${now.toString(36)}-${s.casts}`,id:c.id,weight:c.weight,releases:1,spot,lastSeen:now};s.tracked.push(item);return {tracked:true,upgraded:false,item};
+}
+function resolveTracked(s,c){if(!c?.tagId)return false;const before=s.tracked?.length||0;s.tracked=(s.tracked||[]).filter(x=>x.tagId!==c.tagId);return s.tracked.length<before}
+export function processHint(s,action,c=s.pending?.catch){
+ if(!c)return action==='study'?'结算本竿，不增加调查进度':'空钩无法执行该操作';const f=FISH.find(x=>x.id===c.id),rule=s.trip?.rule?.id;
+ if(action==='basket')return `鱼市参考价 ${saleValue(c)} 金币`;
+ if(action==='keep')return f.object?'占用 1 个收藏位，水域状态不变':c.tagId?'占用 1 个收藏位，并结束该个体的追踪':rule==='predator'&&['perch','catfish'].includes(c.id)?'占用 1 个收藏位，后续捕食鱼明显减少':'占用 1 个收藏位，后续同类减少';
+ if(action==='release')return f.object?'放回原位置，不计入活体放流目标':c.tagId?`继续追踪；下次出现会更重（已放流 ${c.returnCount||1} 次）`:(s.tracked?.length||0)>=GAME_RULES.trackedLimit?'追踪位已满；只提高后续同类出现率':rule==='shoal'?'加入追踪，后续同类大幅增加':'加入追踪，后续同类增加';
+ if(action==='study'){const base=f.special?3:c.mutation?2:1,bonus=rule==='bottom'&&(f.object||c.mutation)?1:0,returnBonus=c.tagId?Math.min(3,c.returnCount||1):0;return `调查进度 +${base+bonus+returnBonus}${returnBonus?'，并结束追踪':''}`;}
+ return '';
+}
+export function processCatch(s,action){
+ const p=s.pending,c=p?.catch;if(!p||p.phase!=='result'||p.processed)return null;
+ const f=c&&FISH.find(x=>x.id===c.id),result={action,tripEnded:false,eventTriggered:false,text:''};
+ if(c&&action==='keep'&&s.collection.length>=GAME_RULES.collectionLimit)return {error:'收藏位已满。先到水域册放回一个样本。'};
+ if(c&&action==='basket'&&s.economy.basket.length>=GAME_RULES.basketLimit)return {error:'鱼篓已满。先到鱼市出售一些鱼。'};
+ if(!['keep','basket','release','study'].includes(action))return null;p.processed=action;
+ if(!c){result.text='本竿为空钩，没有获得样本。';}
+ else if(action==='basket'){addToBasket(s.economy,c);resolveTracked(s,c);result.text=`已把${f.name}放入鱼篓，去鱼市可出售换取金币。`;}
+ else if(action==='keep'){
+  const resolved=resolveTracked(s,c);s.collection.unshift({...c,keptAt:Date.now()});if(!f.object){const drop=s.trip?.rule?.id==='predator'&&['perch','catfish'].includes(c.id)?.34:.18;s.ecosystem[c.id]=Math.max(.5,(s.ecosystem[c.id]||1)-drop);result.eventTriggered=drop>.2;result.text=`已收藏${f.name}。后续抛竿中同类出现率${drop>.2?'明显':''}下降${resolved?'，该个体追踪结束':''}。`;}else result.text=`已收藏${f.name}，占用 1 个收藏位。`;
+ }else if(action==='release'){
+  if(!f.object){const boost=s.trip?.rule?.id==='shoal'?.35:.22,tracking=trackRelease(s,c,p.spot);s.ecosystem[c.id]=Math.min(2.5,(s.ecosystem[c.id]||1)+boost);c.released=true;result.eventTriggered=boost>.3;result.tracking=tracking.tracked;result.trackingText=tracking.upgraded?`追踪更新：已放流 ${tracking.item.releases} 次，下次出现会更重。`:tracking.tracked?'已加入追踪名单，之后可能再次钓到。':'追踪位已满，本次只改变鱼群数量。';result.text=`已放回${f.name}。${result.trackingText}`;}
+  else{result.text=`已把${f.name}放回原位置。`;}
+ }else if(action==='study'&&c){
+  const base=f.special?3:c.mutation?2:1,bonus=s.trip?.rule?.id==='bottom'&&(f.object||c.mutation)?1:0,returnBonus=c.tagId?Math.min(3,c.returnCount||1):0,gain=base+bonus+returnBonus,resolved=resolveTracked(s,c);s.knowledge+=gain;result.eventTriggered=!!bonus;result.text=`已记录${f.name}，调查进度 +${gain}${bonus?'（本轮事件 +1）':''}${returnBonus?`（追踪样本 +${returnBonus}）`:''}${resolved?'，该个体追踪结束':''}。`;
+ }else return null;
+ if(result.eventTriggered)s.trip.rule.triggers=(s.trip.rule.triggers||0)+1;
+ const goal=s.trip.goal,qualifies=!!c&&goal&&(goal.action===action)&&!(action==='release'&&f.object);if(qualifies){goal.progress=Math.min(goal.target,goal.progress+1);goal.complete=goal.progress>=goal.target;}
+ s.trip.castsLeft=Math.max(0,s.trip.castsLeft-1);s.trip.changes.push(result.text);
+ if(s.trip.castsLeft===0){if(goal?.complete&&!goal.rewarded){goal.rewarded=true;s.knowledge+=goal.reward;s.trip.changes.push(`本轮目标完成：${goal.name}。调查进度 +${goal.reward}。`)}else if(goal&&!goal.complete)s.trip.changes.push(`本轮目标未完成：${goal.name}（${goal.progress}/${goal.target}）。`);s.trip.changes.push(`水域事件：${s.trip.rule.name}，本轮触发 ${s.trip.rule.triggers||0} 次。`);simulateWater(s);result.tripEnded=true;result.summary=[...s.trip.changes];}
+ return result;
+}
+export function simulateWater(s,rng=Math.random){
+ const e=s.ecosystem;if(e.minnow>1.15)e.perch=Math.min(2.5,(e.perch||1)+.10);if(e.shrimp>1.15)e.catfish=Math.min(2.5,(e.catfish||1)+.08);
+ for(const id of Object.keys(e))e[id]=+Math.max(.5,e[id]*(.97+rng()*.06)).toFixed(2);
+ const changes=[];if(e.perch>1.2)changes.push('生态变化：白条数量上升，红鳍鲈的近岸出现率提高。');if(e.catfish>1.15)changes.push('生态变化：底层食物增加，岩底鲶的出现率提高。');if(!changes.length)changes.push('生态变化：当前鱼群结构基本稳定。');s.trip.changes.push(...changes);
+}
+export function startNextTrip(s){if(s.trip.castsLeft>0)return false;const number=s.trip.number+1;s.trip={number,castsLeft:GAME_RULES.castsPerTrip,changes:[],goal:goalForTrip(number),rule:ruleForTrip(number)};return true}

@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {newSave,processCatch} from '../dist/engine.mjs';
+import {newSave,processCatch} from '../src/engine.mjs';
 
-const source=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8');
+const source=readFileSync(new URL('../src/app-final.js',import.meta.url),'utf8');
 function setup(castsLeft=4, caught=null){
  const state=newSave();state.trip.castsLeft=castsLeft;
  state.pending={phase:'result',catch:caught,spot:'reed'};
@@ -18,17 +18,17 @@ function setup(castsLeft=4, caught=null){
 for(const route of ['confirm','close','escape'])test(`empty result settles and closes via ${route}`,()=>{
  const {state,$}=setup();
  if(route==='confirm')$('#processActions').click({target:{closest:()=>({dataset:{process:'study'}})}});
- if(route==='close')$('#closeEmptyResult').onclick();
+ if(route==='close')$('#emptyContinue').onclick();
  if(route==='escape')$('#result').cancel({preventDefault(){}});
  assert.equal($('#result').open,false);
  assert.equal(state.pending,null);
  assert.equal(state.trip.castsLeft,3);
  assert.equal(state.knowledge,0);
- $('#closeEmptyResult').onclick();
+ $('#emptyContinue').onclick();
  assert.equal(state.trip.castsLeft,3);
 });
 test('closing the last empty result opens the trip summary',()=>{
- const {$,state,summaries}=setup(1);$('#closeEmptyResult').onclick();
+ const {$,state,summaries}=setup(1);$('#emptyContinue').onclick();
  assert.equal(state.trip.castsLeft,0);assert.equal(summaries(),1);
 });
 test('Escape leaves a caught specimen awaiting an explicit choice',()=>{

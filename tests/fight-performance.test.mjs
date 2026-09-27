@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fightPerformance} from '../dist/fight-performance.mjs';
+import {fightPerformance} from '../src/fight-performance.mjs';
 
 test('a taut, loaded line braces the angler while slack releases the pose',()=>{
  const taut=fightPerformance({slack:0,tension:.65,load:.5,surge:.4,spoolVelocity:-1.2});

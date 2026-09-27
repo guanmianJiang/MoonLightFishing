@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {GLTFLoader} from '../dist/vendor/loaders/GLTFLoader.js';
-import {Box3,Vector3} from '../dist/three.module.js';
-import {sampleAnglerMotion,sampleCastMotion,castEffort,reelAnimationTime,isLargeCatch,shouldStandForCatch} from '../dist/angler-motion.js';
-import {castFlight,CAST_RELEASE_TIME} from '../dist/cast-flight.mjs';
+import {GLTFLoader} from '../src/vendor/loaders/GLTFLoader.js';
+import {Box3,Vector3} from '../src/three.module.js';
+import {sampleAnglerMotion,sampleCastMotion,castEffort,reelAnimationTime,isLargeCatch,shouldStandForCatch} from '../src/angler-motion.js';
+import {castFlight,CAST_RELEASE_TIME} from '../src/cast-flight.mjs';
 
 test('Blender cast releases after the backswing and returns to rest continuously',()=>{
  const backswing=sampleAnglerMotion('cast',.63),release=sampleAnglerMotion('cast',CAST_RELEASE_TIME),rest=sampleAnglerMotion('cast',1.85);
@@ -105,7 +105,7 @@ test('large fish stays standing through the landing and sits after processing',(
 });
 
 for(const name of ['upper_sleeve','forearm','trouser_thigh','trouser_shin'])test(`${name} is a normalized Y-axis joint skin`,async()=>{
- const bytes=await readFile(new URL(`../dist/assets/models/angler-gull/${name}.glb`,import.meta.url));
+ const bytes=await readFile(new URL(`../public/assets/models/angler-gull/${name}.glb`,import.meta.url));
  const gltf=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
  const box=new Box3().setFromObject(gltf.scene),size=box.getSize(new Vector3());
  assert.ok(size.y>.9&&size.y<1.1);

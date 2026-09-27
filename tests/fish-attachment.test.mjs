@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Group,Vector3} from '../dist/three.module.js';
-import {fishMouthWorld,alignFishMouth,alignFishMouthHorizontal} from '../dist/fish-attachment.mjs';
+import {Group,Vector3} from '../src/three.module.js';
+import {fishMouthWorld,alignFishMouth,alignFishMouthHorizontal} from '../src/fish-attachment.mjs';
 
 test('fish mouth remains on the hook through scaling and rotation',()=>{
  const fish=new Group();fish.userData.mouthLocal=new Vector3(-.53,-.06,0);

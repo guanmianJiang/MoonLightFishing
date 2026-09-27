@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {coastGeometry,shore,shoreGLSL,terrainY} from '../dist/coast.js';
-import {renderSettings,defaultRenderSettings,settingsUniforms} from '../dist/render-settings.js';
-import {waterSurfaceGLSL} from '../dist/water-surface.js';
+import {coastGeometry,shore,shoreGLSL,terrainY} from '../src/coast.js';
+import {renderSettings,defaultRenderSettings,settingsUniforms} from '../src/render-settings.js';
+import {waterSurfaceGLSL} from '../src/water-surface.js';
 
 test('served entry points load the current shoreline modules with cache versions',()=>{
- const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
- const app=readFileSync(new URL('../dist/app-final.js',import.meta.url),'utf8');
- const scene=readFileSync(new URL('../dist/scene.js',import.meta.url),'utf8');
+ const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
+ const app=readFileSync(new URL('../src/app-final.js',import.meta.url),'utf8');
+ const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
  assert.match(html,/app-final\.js\?v=[\w-]+/);
  assert.match(app,/\.\/scene\.js\?v=[\w-]+/);
  assert.match(scene,/\.\/coast\.js\?v=[\w-]+/);
@@ -16,8 +16,8 @@ test('served entry points load the current shoreline modules with cache versions
  assert.ok(!scene.includes('scene-final.js'));
 });
 test('moving water contact owns wet depth before scene props are drawn',()=>{
- const scene=readFileSync(new URL('../dist/scene.js',import.meta.url),'utf8');
- const water=readFileSync(new URL('../dist/water.js',import.meta.url),'utf8');
+ const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  assert.ok(scene.includes('ground.renderOrder=-2'));
  assert.ok(water.includes('depthTest:true,depthFunc:T.AlwaysDepth,depthWrite:true'));
  assert.ok(water.includes('side:T.DoubleSide,depthTest:true,depthFunc:T.AlwaysDepth,depthWrite:true'));
@@ -27,12 +27,12 @@ test('moving water contact owns wet depth before scene props are drawn',()=>{
  assert.ok(!water.includes('uDebugWater'));
 });
 test('physical underwater fish write receiver depth for refraction and absorption',()=>{
- const scene=readFileSync(new URL('../dist/scene.js',import.meta.url),'utf8');
+ const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
  assert.ok(scene.includes('o.material.transparent=false;o.material.opacity=1;o.material.depthTest=true;o.material.depthWrite=true;'));
  assert.ok(scene.includes('o.material.depthWrite=base.depthWrite;'));
  assert.ok(!scene.includes('o.material.depthWrite=base.depthWrite&&amount<.01'));
  for(const name of ['reef_shark','shoal_fish','silver_fish','reef_tall','reef_shelf','reef_small']){
-  const glb=readFileSync(new URL(`../dist/assets/models/${name}.glb`,import.meta.url));
+  const glb=readFileSync(new URL(`../public/assets/models/${name}.glb`,import.meta.url));
   const json=JSON.parse(glb.subarray(20,20+glb.readUInt32LE(12)).toString());
   assert.ok(json.materials.every(material=>!material.alphaMode||material.alphaMode==='OPAQUE'),`${name} should have opaque materials`);
  }
@@ -46,7 +46,7 @@ function scalarGLSL(source,name,args,bindings={}){
  let end=open+1,depth=1;
  for(;depth;end++){if(source[end]==='{')depth++;if(source[end]==='}')depth--;}
  const body=source.slice(open+1,end-1).replace(/\bfloat\b/g,'let');
- const fn=new Function(...Object.keys(bindings),...args,`const {sin,cos,pow,abs,max,min,sign,sqrt}=Math;const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));const smoothstep=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};${body}`);
+ const fn=new Function(...Object.keys(bindings),...args,`const {sin,cos,pow,abs,max,min,sign,sqrt,exp}=Math;const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));const smoothstep=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};${body}`);
  return (...values)=>fn(...Object.values(bindings),...values);
 }
 
@@ -92,12 +92,14 @@ test('sea mesh resolves the physical meniscus without densifying sand',()=>{
  sea.dispose();sand.dispose();
 });
 test('underwater sand extends gently offshore and matches the water bed profile',()=>{
- const water=readFileSync(new URL('../dist/water.js',import.meta.url),'utf8');
- assert.match(water,/sd\*\.05/);
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
+ const coast=readFileSync(new URL('../src/coast.js',import.meta.url),'utf8');
+ assert.ok(water.includes('seabedHeight(q)'));
+ assert.ok(coast.includes('seabedHeight(vec2(p.x,z))-.14'));
  for(const x of [-16,0,16]){
   const at=d=>terrainY(x,shore(x)+d);
-  assert.ok(at(10)-at(30)>.85&&at(10)-at(30)<1.15);
-  assert.ok(at(30)>-1.5);
+  assert.ok(at(10)-at(30)>1.8&&at(10)-at(30)<2.8);
+  assert.ok(at(30)>-4);
  }
 });
 test('dry beach rolls into broad dunes without a flat inland shelf',()=>{
@@ -110,7 +112,7 @@ test('dry beach rolls into broad dunes without a flat inland shelf',()=>{
  }
 });
 test('visible beach keeps a resolved shoreline instead of a collapsed replacement mesh',()=>{
- const scene=readFileSync(new URL('../dist/scene.js',import.meta.url),'utf8');
+ const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
  assert.ok(scene.includes('const geo=coastGeometry(false,{stride:2,shoreDense:true});'));
  assert.ok(!scene.includes("load('./assets/models/beach_terrain.glb'"));
  const beach=coastGeometry(false,{stride:2,shoreDense:true});
@@ -124,8 +126,8 @@ test('visible beach keeps a resolved shoreline instead of a collapsed replacemen
  beach.dispose();
 });
 test('underwater terrain cannot rise through the thin contact water',()=>{
- const scene=readFileSync(new URL('../dist/scene.js',import.meta.url),'utf8');
- assert.ok(scene.includes('float waterSide=smoothstep(1.2,3.2,position.z-shore(position.x));'));
+ const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
+ assert.ok(scene.includes('float waterSide=smoothstep(2.,8.,position.z-shore(position.x));'));
  assert.ok(scene.includes('float waterY=.14+waterSurface(position.xz,uTime).z;'));
  assert.ok(scene.includes('float flooded=smoothstep(-.015,.045,shoreContactDistance(position.xz,uTime));'));
  assert.ok(scene.includes('transformed.y=mix(bedY,min(bedY,waterY-.045),flooded);'));
@@ -137,8 +139,8 @@ test('underwater terrain cannot rise through the thin contact water',()=>{
  }
 });
 test('camera-focused water grid keeps dense rows on contact and nearby sea',()=>{
- const water=readFileSync(new URL('../dist/water.js',import.meta.url),'utf8');
- const scene=readFileSync(new URL('../dist/scene.js',import.meta.url),'utf8');
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
+ const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
  assert.ok(water.includes('new T.PlaneGeometry(2,2,128,160)'));
  assert.ok(water.includes('const rings=32,segments=96'));
  assert.equal(128*160*2,40960);
@@ -177,7 +179,7 @@ test('camera-focused water grid keeps dense rows on contact and nearby sea',()=>
  }
 });
 test('sea and film share lighting; meniscus survives the shore composite',()=>{
- const water=readFileSync(new URL('../dist/water.js',import.meta.url),'utf8');
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  assert.equal(water.split('${waterSurfaceGLSL}').length-1,2);
  assert.ok(water.includes('Object.assign(material.uniforms,lighting)'));
  assert.ok(water.includes('uNormalA:{value:waterNormal07},uNormalB:{value:waterNormal07}'));
@@ -222,7 +224,7 @@ test('sea and film share lighting; meniscus survives the shore composite',()=>{
  assert.ok(water.includes('vec3 refracted=source*trans+inScatter;'));
 });
 test('shallow flooded sand gets a continuous water coat without full-strength sparkle',()=>{
- const water=readFileSync(new URL('../dist/water.js',import.meta.url),'utf8');
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  assert.ok(water.includes('float shallowSurfaceScatter=smoothstep(0.,.85,contactDistance)'));
  assert.ok(water.includes('*(1.-smoothstep(.55,2.6,waterDepth))*.27;'));
  assert.ok(water.includes('refracted=mix(refracted,waterBody,shallowSurfaceScatter);'));
@@ -236,8 +238,8 @@ test('shallow flooded sand gets a continuous water coat without full-strength sp
  assert.equal(coat(.85,2.6),0);
 });
 test('water absorption changes underwater receivers even when they match the water hue',()=>{
- const water=readFileSync(new URL('../dist/water.js',import.meta.url),'utf8');
- const panel=readFileSync(new URL('../dist/render-settings-panel.js',import.meta.url),'utf8');
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
+ const panel=readFileSync(new URL('../src/render-settings-panel.js',import.meta.url),'utf8');
  assert.ok(water.includes('float angularPath=min(1./max(abs(view.y),.001),1.6);'));
  assert.ok(water.includes('float opticalDepthBase=receiverSubmersion*angularPath;'));
  assert.ok(water.includes('float opticalDepth=min(24.,max(0.,mix(geometricOpticalDepth,opticalDepthBase,opticalReceiverBlend)));'));
@@ -263,8 +265,8 @@ test('water absorption changes underwater receivers even when they match the wat
  assert.ok(green(4)-green(10)>.20,'upper slider values should remain visibly distinct at ordinary fish depth');
 });
 test('sun angles update the real light, shadow map and reflected highlight',()=>{
- const scene=readFileSync(new URL('../dist/scene.js',import.meta.url),'utf8');
- const water=readFileSync(new URL('../dist/water.js',import.meta.url),'utf8');
+ const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  assert.ok(scene.includes('function updateSunDirection(){'));
  assert.ok(scene.includes('const az=renderSettings.sunAzimuth*Math.PI/180,el=renderSettings.sunElevation*Math.PI/180;'));
  assert.ok(scene.includes('sun.position.set(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el)).multiplyScalar(21.4);'));
@@ -311,7 +313,7 @@ test('liquid lens eases into water and bends both sides without a cutoff',()=>{
  }
 });
 test('meniscus controls expose independent curve and highlight tuning',()=>{
- const panel=readFileSync(new URL('../dist/render-settings-panel.js',import.meta.url),'utf8');
+ const panel=readFileSync(new URL('../src/render-settings-panel.js',import.meta.url),'utf8');
  for(const [key,min,max] of [
   ['meniscusCrown',.12,.55],['meniscusBulge',.25,1.5],
   ['meniscusGlintReach',.15,.7],['meniscusHighlightStrength',0,2]
@@ -332,8 +334,8 @@ test('liquid catchlight is directional and concentrated just inside contact',()=
  assert.equal(highlight(.5,1,1),0);
 });
 test('water reconstructs all underwater receivers from captured depth for caustics',()=>{
- const scene=readFileSync(new URL('../dist/scene.js',import.meta.url),'utf8');
- const water=readFileSync(new URL('../dist/water.js',import.meta.url),'utf8');
+ const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  assert.ok(water.includes('uInvProjection*vec4(uv*2.-1.,depth*2.-1.,1.)'));
  assert.ok(water.includes('uInvView*vec4(view.xyz/max(view.w,.00001),1.)'));
  assert.ok(water.includes('receiverWorldPosition(refrUV,min(receiverRawDepth,.9999))'));
@@ -356,7 +358,7 @@ test('water reconstructs all underwater receivers from captured depth for causti
  assert.ok(smooth(.15,.75,.03)<.01,'moving shoreline contact should not gain a bright caustic edge');
 });
 test('bloom keeps HDR targets until final tone mapping',()=>{
- const post=readFileSync(new URL('../dist/postprocessing.js',import.meta.url),'utf8');
+ const post=readFileSync(new URL('../src/postprocessing.js',import.meta.url),'utf8');
  assert.ok(post.includes('type:T.HalfFloatType'));
  assert.ok(post.includes('renderer.toneMapping=T.NoToneMapping'));
  assert.ok(post.includes('#include <tonemapping_fragment>'));
@@ -366,8 +368,9 @@ test('bloom keeps HDR targets until final tone mapping',()=>{
 test('surge moves the physical contact from sea to beach and meets terrain',()=>{
  let reach=0;
  const slope=x=>(shore(x+1e-5)-shore(x-1e-5))/2e-5;
+ const seabedHeight=scalarGLSL(shoreGLSL,'seabedHeight',['p'],{shore});
  const height=scalarGLSL(shoreGLSL,'shoreWaterHeight',['p','t'],{
-  shore,shoreSlope:slope,shoreRunupReach:()=>reach
+  shore,shoreSlope:slope,shoreRunupReach:()=>reach,seabedHeight,vec2:(x,y)=>({x,y})
  });
  for(let x=-16;x<=16;x+=.5){
   let previous=-Infinity;

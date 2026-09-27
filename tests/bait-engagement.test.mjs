@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {baitEngagement,baitFishOpacity} from '../dist/bait-engagement.mjs';
+import {baitEngagement,baitFishOpacity} from '../src/bait-engagement.mjs';
 
 test('the fish tests the bait before committing its mouth to the hook',()=>{
  const early=baitEngagement('reading',0),probe=baitEngagement('reading',.3);

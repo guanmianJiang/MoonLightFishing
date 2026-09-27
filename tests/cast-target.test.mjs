@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CAST_AREAS,castZone,castPreset,castPointFromDrag} from '../dist/cast-target.mjs';
-import {shore} from '../dist/coast.js';
-import {newSave,makeCast} from '../dist/engine.mjs';
+import {CAST_AREAS,castZone,castPreset,castPointFromDrag} from '../src/cast-target.mjs';
+import {shore} from '../src/coast.js';
+import {newSave,makeCast} from '../src/engine.mjs';
 
 test('each fishing location has reachable near, middle and far presets',()=>{
  for(const spot of Object.keys(CAST_AREAS))for(const zone of ['near','middle','far'])assert.equal(castZone(spot,castPreset(spot,zone)),zone);

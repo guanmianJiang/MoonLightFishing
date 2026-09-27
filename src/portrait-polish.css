@@ -1,0 +1,170 @@
+@font-face {
+  font-family: 'Moonwater Sans';
+  src: url('/assets/fonts/noto-sans-sc-ui.woff2?v=2') format('woff2');
+  font-style: normal; font-weight: 100 900; font-display: swap;
+}
+@font-face {
+  font-family: 'Moonwater Serif';
+  src: url('/assets/fonts/noto-serif-sc-ui.woff2?v=2') format('woff2');
+  font-style: normal; font-weight: 100 900; font-display: swap;
+}
+:root {
+  --ui-ink: #274c4a;
+  --ui-muted: #67827c;
+  --ui-paper: #f9f7ec;
+  --ui-line: rgba(77, 111, 101, .2);
+  --ui-accent: #c78160;
+  --ui-shadow: 0 9px 24px rgba(32, 74, 69, .13);
+  --sans: 'Moonwater Sans', 'Noto Sans SC', sans-serif;
+  --serif: 'Moonwater Serif', 'Noto Serif SC', serif;
+}
+body, button, dialog { font-family: var(--sans); }
+button { letter-spacing: 0; }
+
+/* The water is the canvas; controls are quiet annotations. */
+#game:before { height: 104px; background: linear-gradient(180deg, rgba(247, 245, 231, .55), transparent); }
+header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
+.brand {
+  min-height: 0; gap: 7px; padding: 0; border: 0; border-radius: 0;
+  background: none; box-shadow: none;
+}
+.brand-mark {
+  width: 22px; height: 22px; border: 1px solid rgba(47, 96, 87, .36);
+  border-radius: 50%; background: rgba(250, 249, 238, .5); box-shadow: none;
+  color: #376c64; font: 400 19px/21px Georgia, serif;
+}
+.brand h1 {
+  color: #244f4a; font-family: var(--serif); font-size: 21px; font-weight: 600;
+  letter-spacing: .16em; line-height: 1.1; text-shadow: 0 1px 9px rgba(255, 251, 235, .8);
+}
+.brand-subtitle { margin-top: 3px; color: #52766e; font-size: 10px; font-weight: 500; letter-spacing: .06em; }
+.brand .weather-chip { color: #a17052; font-weight: 600; }
+.top-actions {
+  min-height: 40px; gap: 1px; padding: 3px 5px; border: 1px solid rgba(255, 255, 247, .8);
+  border-radius: 12px; background: rgba(249, 248, 237, .82);
+  box-shadow: 0 4px 15px rgba(43, 82, 74, .09); color: var(--ui-ink);
+}
+.hud-resources, .hud-tools { min-height: 33px; }
+.hud-resources .trip-meta { min-height: 32px; height: 32px; padding: 0 4px; }
+.hud-resources #tripState, .hud-tools #journal, .hud-tools #sound,
+.hud-tools #renderSettingsButton, .hud-resources .trip-chip summary {
+  color: var(--ui-ink); font-size: 11px; font-weight: 600;
+}
+.hud-tools #sound:before { color: #487d73; }
+.hud-tools #journal { padding: 0 6px; }
+.hud-resources .trip-chip summary:hover, .hud-tools button:hover { background: rgba(67, 112, 100, .09) !important; }
+
+/* Water markers stay readable without becoming dashboard panels. */
+#spots .spot, #spots .spot.locked {
+  max-width: 142px; padding: 5px 8px; border: 1px solid rgba(250, 250, 236, .7);
+  border-radius: 9px; background: rgba(249, 248, 236, .8);
+  box-shadow: 0 3px 10px rgba(26, 77, 72, .11); color: #355f58;
+}
+#spots .spot.active {
+  border-color: rgba(199, 129, 96, .55); background: rgba(255, 249, 228, .97);
+  box-shadow: 0 3px 12px rgba(39, 82, 73, .14); color: #28534d;
+}
+#spots .spot small, #spots .spot.locked small { color: #678a7f; }
+#spots .spot.active small { color: #a27b5c; }
+#spots .spot.locked { opacity: .83; }
+#spots .spot.locked {
+  border-color: transparent; background: none; box-shadow: none;
+  color: #f8faec; text-shadow: 0 1px 6px rgba(25, 66, 62, .72);
+}
+#spots .spot.locked small { color: #e1eee1; }
+#spots .spot:hover { background: #fff9e8; color: #28534d; }
+
+/* A small field note carries the outing objective. */
+.route-card {
+  padding: 12px 13px 10px; border: 1px solid rgba(255, 255, 245, .82);
+  border-left: 3px solid #cf9270; border-radius: 9px;
+  background: #f9f8eb; box-shadow: var(--ui-shadow); color: var(--ui-ink);
+}
+.route-card__top { color: var(--ui-muted); font-weight: 600; letter-spacing: .04em; }
+.route-card__top strong { color: #a27152; font-weight: 650; }
+.route-card__goal { font-family: var(--serif); font-size: 14px; font-weight: 600; line-height: 1.35; }
+.route-card__progress { color: var(--ui-muted); }
+.route-card__casts i { height: 4px; background: #c78969; }
+.route-card__casts i.spent { background: #cad6c8; }
+.route-card button {
+  border-color: var(--ui-line); color: #4d7468; font-weight: 600;
+}
+.route-card button span { color: #a66e50; }
+.route-card button:hover { color: #9d644b; }
+
+/* The lower controls read as one light touch surface. */
+.footer-top { gap: 6px; margin-bottom: 7px; }
+#status, .fishing #status, .aiming #status, #location {
+  padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
+  color: #f8f8eb; font-size: 11px; font-weight: 600;
+  text-shadow: 0 1px 3px rgba(20, 60, 57, .8), 0 1px 9px rgba(20, 60, 57, .55);
+}
+#location { color: #f9f2d9; font-size: 10px; }
+.toolbar {
+  min-height: 70px; gap: 4px; padding: 5px;
+  border: 1px solid rgba(255, 255, 246, .75); border-radius: 18px;
+  background: rgba(249, 248, 236, .92); box-shadow: 0 9px 24px rgba(24, 71, 65, .18);
+}
+#baits .bait {
+  min-height: 58px; border-radius: 12px; color: #779088;
+  transition: background .18s ease, color .18s ease, transform .15s ease;
+}
+#baits .bait:hover { background: rgba(220, 236, 225, .65); color: #3b6b61; }
+#baits .bait.selected { background: #e5eee3; color: #315e55; }
+#baits .bait.selected:after { display: none; }
+#baits .bait strong { font-weight: 650; }
+#baits .bait-copy { display: flex; align-items: center; }
+#baits .bait-copy strong { font-size: 10px; line-height: 1.2; }
+#cast, .aiming #cast, .fishing #cast {
+  min-height: 58px; border: 0; border-radius: 13px;
+  background: #34695f; box-shadow: inset 0 1px rgba(255,255,255,.17), 0 3px 8px rgba(40, 85, 74, .22);
+  color: #fff9e8; font-size: 13px; font-weight: 650; text-shadow: none;
+}
+#cast:hover { background: #407a6e; }
+#cast:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgba(13, 55, 49, .35); }
+#cast:disabled { background: #a9b7aa; color: #f6f6ed; box-shadow: none; }
+.camera-controls .view-toggle, #viewToggle, .camera-controls .zoom-group button {
+  border: 1px solid rgba(255,255,247,.78); border-radius: 12px;
+  background: rgba(248, 248, 236, .86); box-shadow: 0 4px 12px rgba(26, 73, 68, .12);
+  color: #3c7569;
+}
+.camera-controls .zoom-group button { border-radius: 11px; }
+
+/* The journal and catch result use the same calm page typography. */
+#book, #result, #tripEnd {
+  border: 1px solid #e2e6d9; border-radius: 16px; background: #fbfaf1;
+  box-shadow: 0 24px 65px rgba(24, 59, 56, .26); color: var(--ui-ink);
+}
+#book .book-top h2, #result h2, #tripEnd h2 {
+  font-family: var(--serif); font-weight: 600; letter-spacing: .035em; color: #2d5c54;
+}
+#book .eyebrow, #result .eyebrow, #tripEnd .eyebrow {
+  color: #a57658; font-size: 10px; font-weight: 600; letter-spacing: .1em;
+}
+#book nav { border-radius: 9px; background: #ebf0e7; }
+#book nav button { border-radius: 7px; color: #557970; font-size: 12px; font-weight: 550; }
+#book nav button.active { background: #d6e6db; box-shadow: none; color: #2a5e54; font-weight: 700; }
+#bookContent { color: #42665e; font-size: 13px; }
+#book .close, #tripEnd .close { border-radius: 9px; background: #e3eee6; color: #366a60; }
+#result:not(.no-catch) #specimen { border-color: #e1e9db; border-radius: 11px; }
+#result:not(.no-catch) #processActions .process-recommended,
+#result.no-catch #emptyContinue, #tripEnd .primary {
+  border: 0; border-radius: 10px; background: #397166; box-shadow: none; color: #fffaf0;
+}
+#result:not(.no-catch) #processActions .process-recommended:hover,
+#result.no-catch #emptyContinue:hover, #tripEnd .primary:hover { background: #498176; }
+
+@media (max-width: 780px) {
+  header { top: calc(12px + env(safe-area-inset-top)); }
+  .brand h1 { font-size: 19px; }
+  .brand-mark { width: 20px; height: 20px; font-size: 17px; line-height: 19px; }
+  .top-actions { min-height: 38px; }
+  #spots .spot, #spots .spot.locked { max-width: 135px; }
+}
+@media (min-width: 781px) {
+  .brand h1 { font-size: 19px; }
+  .top-actions { min-height: 38px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #baits .bait { transition: none; }
+}

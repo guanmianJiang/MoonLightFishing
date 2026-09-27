@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newSave,migrateSave,makeCast,chooseTactic,signalFor,finishCast,trackRelease,processHint,processCatch,startNextTrip,spotUnlocked,equipGear,goalForTrip,ruleForTrip,biteWindowForTrip} from '../dist/engine.mjs';
-import {phaseOf} from '../dist/fishing-motion.js';
-import {hookTiming} from '../dist/fishing-rhythm.mjs';
-import {createFight,stepFight} from '../dist/reference-loop.mjs';
+import {newSave,migrateSave,makeCast,chooseTactic,signalFor,finishCast,trackRelease,processHint,processCatch,startNextTrip,spotUnlocked,equipGear,goalForTrip,ruleForTrip,biteWindowForTrip} from '../src/engine.mjs';
+import {phaseOf} from '../src/fishing-motion.js';
+import {hookTiming} from '../src/fishing-rhythm.mjs';
+import {createFight,stepFight} from '../src/reference-loop.mjs';
 
 function sequence(values){let i=0;return()=>values[i++]??.5}
 function resolveCast(state,action,index=0){state.pending=makeCast(state,1_000+index*100,sequence([.2,.4,.5,.5,.5]));finishCast(state);return processCatch(state,action)}

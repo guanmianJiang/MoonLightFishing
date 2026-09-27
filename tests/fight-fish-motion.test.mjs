@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fightFishMotion} from '../dist/fight-fish-motion.mjs';
+import {fightFishMotion} from '../src/fight-fish-motion.mjs';
 
 const fish={startDistance:9,distance:7,progress:2/7.2,fishPosition:.5,fishVelocity:0,surge:0,load:.4,pumpPulse:0,radialVelocity:-1,seed:1};
 

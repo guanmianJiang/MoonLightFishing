@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createWaterFlow,interactionDriveFromSpeed,sampleInteractionStroke} from '../dist/water-flow.js';
+import {createWaterFlow,interactionDriveFromSpeed,sampleInteractionStroke} from '../src/water-flow.js';
 
 test('fast pointer jumps are sampled continuously and independent of event batching',()=>{
  const radius=2.2,whole=sampleInteractionStroke(.8,0,.8,0,radius);

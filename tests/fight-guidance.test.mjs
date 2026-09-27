@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createFight} from '../dist/reference-loop.mjs';
-import {fightGuidance} from '../dist/fight-guidance.mjs';
+import {createFight} from '../src/reference-loop.mjs';
+import {fightGuidance} from '../src/fight-guidance.mjs';
 
 test('fight guidance follows the line and gives a usable next action',()=>{
  const f=createFight({weight:.6});

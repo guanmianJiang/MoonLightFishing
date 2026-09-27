@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {landingPose,landingDynamics,landingFishPose} from '../dist/landing-motion.mjs';
+import {landingPose,landingDynamics,landingFishPose} from '../src/landing-motion.mjs';
 
 test('landed fish rises in one pull with a small rebound and reaches the angler',()=>{
  const start={x:2.1,y:.55,z:0},hold={x:.65,y:2.2,z:0};

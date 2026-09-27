@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {idleLookTarget} from '../dist/idle-look.mjs';
+import {idleLookTarget} from '../src/idle-look.mjs';
 
 const origin={x:0,y:.5,z:0},forward={x:0,z:1},spot={x:0,y:.12,z:9};
 

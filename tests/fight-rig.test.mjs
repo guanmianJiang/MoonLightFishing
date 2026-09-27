@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createFight,pumpRod,stepFight} from '../dist/reference-loop.mjs';
-import {fightRigGeometry} from '../dist/fight-rig.mjs';
+import {createFight,pumpRod,stepFight} from '../src/reference-loop.mjs';
+import {fightRigGeometry} from '../src/fight-rig.mjs';
 
 test('the diagram follows real fish distance, line slack and rod load',()=>{
  const fight=createFight({weight:2});

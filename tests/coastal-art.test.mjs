@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import * as T from '../dist/three.module.js';
-import {GLTFLoader} from '../dist/vendor/loaders/GLTFLoader.js';
-import {FERRY_ROUTES,gullRoute} from '../dist/coastal-motion.js';
+import * as T from '../src/three.module.js';
+import {GLTFLoader} from '../src/vendor/loaders/GLTFLoader.js';
+import {FERRY_ROUTES,gullRoute} from '../src/coastal-motion.js';
 for(const name of ['angler_body','seagull'])test(`${name} loads with valid geometry and semantic parts`,async()=>{
- const bytes=await readFile(new URL(`../dist/assets/models/angler-gull/${name}.glb`,import.meta.url));
+ const bytes=await readFile(new URL(`../public/assets/models/angler-gull/${name}.glb`,import.meta.url));
  const {scene}=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
  let tris=0;scene.traverse(o=>{if(o.isMesh){assert.ok([...o.geometry.attributes.position.array].every(Number.isFinite));tris+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3}});assert.ok(tris>1000&&tris<24000);
  if(name==='seagull'){

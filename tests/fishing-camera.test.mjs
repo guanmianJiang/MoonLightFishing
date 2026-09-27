@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as T from '../dist/three.module.js';
-import {cameraTransitionBlend,fightCameraFov,fightCameraPose,reelCameraPose,lureFocusEnvelope,lureCameraPose,landedFishCameraPose} from '../dist/fishing-camera.mjs';
+import * as T from '../src/three.module.js';
+import {cameraTransitionBlend,fightCameraFov,fightCameraPose,reelCameraPose,lureFocusEnvelope,lureCameraPose,landedFishCameraPose} from '../src/fishing-camera.mjs';
 
 const spots=[[-1.5,3.4],[2,8],[5,12]];
 const angler=new T.Vector3(-1.2,.5,.35);

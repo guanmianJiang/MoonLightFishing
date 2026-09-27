@@ -1,7 +1,7 @@
-import {writeFile,rename,cp} from 'node:fs/promises';
+import {writeFile,rename} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import solid from 'vite-plugin-solid';
-import {defaultRenderSettings} from './dist/render-settings.js';
+import {defaultRenderSettings} from './src/render-settings.js';
 
 function validDefaults(value,template=defaultRenderSettings){
  if(typeof template==='number')return typeof value==='number'&&Number.isFinite(value)&&Math.abs(value)<=10000;
@@ -11,8 +11,12 @@ function validDefaults(value,template=defaultRenderSettings){
  return value!==null&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===Object.keys(template).length&&Object.keys(template).every(k=>Object.hasOwn(value,k)&&validDefaults(value[k],template[k]));
 }
 export default {
- root:'dist',base:'./',publicDir:false,
- build:{outDir:'../build',emptyOutDir:true,assetsDir:'bundles'},
+ root:'src',base:'./',publicDir:fileURLToPath(new URL('./public/',import.meta.url)),
+ build:{outDir:'../build',emptyOutDir:true,assetsDir:'bundles',rollupOptions:{output:{manualChunks(id){
+  if(id.includes('/src/three.core.js'))return 'three-core';
+  if(id.includes('/src/three.module.js')||id.includes('/src/vendor/'))return 'three-addons';
+  if(id.includes('/node_modules/solid-js/'))return 'solid';
+ }}}},
  server:{host:'0.0.0.0',allowedHosts:['terminal.local']},
  plugins:[solid(),{
   name:'save-render-defaults',
@@ -30,7 +34,7 @@ export default {
      let body='';for await(const chunk of req){body+=chunk;if(body.length>32768){reply(413,{error:'Too large'});return;}}
      const values=JSON.parse(body);
      if(!validDefaults(values)){reply(400,{error:'Invalid settings'});return;}
-     const target=fileURLToPath(new URL('./dist/render-defaults.js',import.meta.url));
+     const target=fileURLToPath(new URL('./src/render-defaults.js',import.meta.url));
      const temporary=target+'.tmp';
      // The editor already has these values; avoid a reload while it is being used.
      server.watcher.unwatch([target,temporary]);
@@ -41,14 +45,6 @@ export default {
      reply(200,{saved:true});
     }catch{reply(500,{error:'Unable to save defaults'});}
    });
-  }
- },{
-  name:'copy-runtime-assets',
-  apply:'build',
-  async closeBundle(){
-   const source=fileURLToPath(new URL('./dist/assets/',import.meta.url));
-   const target=fileURLToPath(new URL('./build/assets/',import.meta.url));
-   await cp(source,target,{recursive:true,force:true});
   }
  }]
 };

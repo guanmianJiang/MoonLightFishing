@@ -1,0 +1,595 @@
+/* ============================================================
+   等一尾 · 月隐湾 — UI 设计系统
+   调性：海边手记 · 欧卡休闲（暖纸奶油 / 深松绿 / 琥珀金）
+   规则：深色只给"场景里的 HUD"（底部操作栏、鱼口读数），
+        浅色奶油只给"纸面界面"（对话框、搏鱼面板、手记抽屉）。
+        所有按钮有立体按压边，触屏目标 ≥44px。
+   ============================================================ */
+:root{
+  color-scheme:light;
+  /* 色板 */
+  --paper:#f6f0e0;
+  --surface:#fffdf4;
+  --surface-soft:#f4eedd;
+  --surface-sunk:#ece4cd;
+  --pine:#1c4a3e;
+  --pine-2:#2f6a5a;
+  --pine-deep:#123833;
+  --ink:#22443b;
+  --muted:#688173;
+  --faint:#8ba093;
+  --sage:#8fae97;
+  --sage-deep:#5e826c;
+  --gold:#e9b96e;
+  --gold-deep:#c8934a;
+  --gold-soft:#f7e3bc;
+  --gold-tint:#fbf0d8;
+  --gold-ink:#8a6420;
+  --bite:#e07856;
+  --bite-deep:#b85a3e;
+  --cream-text:#fbf3df;
+  --cream-dim:#c4d8cc;
+  /* 圆角 */
+  --r-sm:10px;--r-md:14px;--r-lg:18px;--r-pill:999px;
+  /* 阴影 */
+  --e1:0 2px 6px rgba(24,60,50,.10);
+  --e2:0 10px 26px rgba(24,60,50,.16);
+  --e3:0 22px 55px rgba(24,60,50,.26);
+  /* 动效 */
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --ease:cubic-bezier(.22,.9,.32,1);
+  /* 字体 */
+  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","STSong",serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  /* 控件基准 */
+  --control:44px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:#8fc5ca;color:var(--ink);font:14px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line,transparent);background:var(--surface);border-radius:var(--r-md);padding:9px 15px;
+  transition:transform .16s var(--spring),box-shadow .16s ease,background .2s ease,border-color .2s ease,color .2s ease,filter .2s ease;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
+button:disabled{cursor:default;opacity:.55;transform:none}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+::selection{background:var(--gold-soft)}
+
+#game{position:relative;height:100svh;min-height:560px;overflow:hidden;isolation:isolate}
+#world{position:absolute;inset:0;z-index:-1}
+#world canvas{display:block;width:100%;height:100%}
+#world:after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(10,48,44,.05),transparent 22%,transparent 74%,rgba(8,42,38,.12)),
+  radial-gradient(ellipse at 50% 44%,transparent 58%,rgba(8,42,38,.10) 118%)}
+.reading #world:after{background:radial-gradient(ellipse at 50% 50%,transparent 30%,rgba(6,42,40,.16) 112%)}
+.bite #world:after{background:radial-gradient(ellipse at 50% 52%,transparent 34%,rgba(6,42,40,.18) 112%)}
+
+/* ============ 顶栏：品牌 + 状态簇 ============ */
+header{position:absolute;top:20px;left:24px;right:24px;z-index:6;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;pointer-events:none}
+.brand{display:flex;align-items:center;gap:12px;pointer-events:auto}
+.brand-mark{width:46px;height:46px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.7);border-radius:var(--r-md);
+  background:var(--surface);box-shadow:var(--e1);font:32px/1 Georgia,serif;color:var(--pine-2);transition:transform .45s var(--spring)}
+.brand:hover .brand-mark{transform:rotate(-8deg) scale(1.07)}
+.brand h1{margin:0;font:600 22px/1.15 var(--serif);letter-spacing:.14em;color:var(--pine);text-shadow:0 1px 12px rgba(255,253,240,.9)}
+.brand-subtitle{display:flex;align-items:center;gap:7px;margin-top:5px;color:var(--pine-2);font-size:12px;font-weight:600;letter-spacing:.05em}
+.brand-subtitle i{width:4px;height:4px;border-radius:50%;background:var(--gold-deep)}
+.brand .weather-chip{padding:2px 10px;border-radius:var(--r-pill);background:rgba(255,253,244,.9);box-shadow:var(--e1);color:var(--pine-2);font-size:11px;font-weight:700}
+.top-actions{display:flex;align-items:center;gap:8px;pointer-events:auto}
+
+/* 金币：琥珀底胶囊 */
+.coin-chip{display:inline-flex;align-items:center;gap:6px;height:var(--control);padding:0 14px;
+  border:1px solid #ecd8a6;border-radius:var(--r-md);background:var(--gold-tint);box-shadow:var(--e1);
+  color:var(--gold-ink);font-size:13px;font-weight:800;white-space:nowrap}
+.coin-chip i{font-style:normal;color:var(--gold-deep);font-size:14px}
+.coin-chip b{font-weight:800}
+.coin-unit{font-size:11px;font-weight:700;opacity:.7}
+
+/* 本轮：奶油胶囊，展开详情 */
+.trip-chip{position:relative;padding:0;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);box-shadow:var(--e1);color:var(--ink)}
+.trip-chip summary{display:flex;align-items:center;gap:8px;height:var(--control);padding:0 13px;list-style:none;cursor:pointer;white-space:nowrap;font-size:12.5px;font-weight:700}
+.trip-chip summary::-webkit-details-marker{display:none}
+.trip-sep{width:4px;height:4px;border-radius:50%;background:var(--faint)}
+#knowledge{color:var(--gold-deep);font-weight:800}
+.detail-chevron{font-size:13px;line-height:1;color:var(--gold-deep);transition:transform .25s var(--ease)}
+.trip-chip[open] .detail-chevron{transform:rotate(180deg)}
+.trip-detail-body{position:absolute;top:calc(100% + 8px);right:0;width:min(300px,calc(100vw - 32px));padding:16px 18px;
+  border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--e2);color:var(--ink);
+  font-size:13px;white-space:normal;animation:pop-in .24s var(--spring) both}
+.trip-detail-body .small-label{display:block;margin:10px 0 3px;color:var(--muted);font-size:10.5px;font-weight:800;letter-spacing:.12em}
+.trip-detail-body .small-label:first-child{margin-top:0}
+.trip-detail-body strong{display:block;font-size:14.5px;line-height:1.4;color:var(--pine)}
+.trip-detail-body p{margin:3px 0 8px;color:var(--muted);font-size:12px;line-height:1.5}
+.trip-detail-body button{width:100%;margin-top:4px;background:var(--surface-soft);font-size:12px;font-weight:700}
+
+/* 声音 / 手记 / 画面设置：统一奶油方钮 */
+#sound,#journal,#renderSettingsButton{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:var(--control);
+  padding:0 13px;border:1px solid var(--line-strong);border-radius:var(--r-md);background:var(--surface);box-shadow:var(--e1);
+  color:var(--pine-2);font-size:12.5px;font-weight:700;white-space:nowrap}
+#sound:hover,#journal:hover,#renderSettingsButton:hover{transform:translateY(-1px);box-shadow:var(--e2)}
+#sound:active,#journal:active,#renderSettingsButton:active{transform:translateY(1px);box-shadow:var(--e1)}
+#sound{width:var(--control);padding:0}
+#sound svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#sound .sound-wave{opacity:.3}
+#sound[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:var(--gold)}
+#sound[aria-pressed="true"] .sound-wave{opacity:1}
+#journal span{color:var(--gold-deep)}
+#renderSettingsButton{width:var(--control);padding:0}
+#renderSettingsButton svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+#renderSettingsButton[aria-expanded="true"]{background:var(--pine);border-color:var(--pine);color:var(--gold)}
+
+/* ============ 钓点标签 ============ */
+#spots{position:absolute;inset:0;z-index:3;pointer-events:none}
+#game[data-phase="landed"] #spots,#game.reeling #spots{display:none}
+.spot{position:absolute;left:clamp(96px,var(--spot-x),calc(100% - 96px));transform:translate(-50%,-100%);
+  display:flex;align-items:center;gap:10px;max-width:min(210px,calc(100vw - 24px));padding:8px 13px;
+  border:1px solid var(--line-strong);border-radius:var(--r-md);background:var(--surface);box-shadow:var(--e1);
+  color:var(--ink);font-size:12.5px;font-weight:700;line-height:1.3;text-align:left;pointer-events:auto;
+  backdrop-filter:blur(4px);white-space:normal;
+  transition:opacity .22s ease,background .25s ease,border-color .25s ease,box-shadow .3s ease,color .25s ease}
+.spot:hover{border-color:var(--gold-deep);background:#fffdf6;box-shadow:var(--e2);transform:translate(-50%,-104%)}
+.spot:after{content:"";position:absolute;top:100%;left:calc(50% - 7px);width:14px;height:22px;pointer-events:none;
+  background:linear-gradient(rgba(28,74,62,.55),rgba(28,74,62,.55)) center top/2px 14px no-repeat,
+  radial-gradient(circle,var(--gold) 0 3px,#fff9e8 3px 5px,transparent 5px) center bottom/12px 12px no-repeat}
+.spot-order{display:grid;flex:none;place-items:center;width:26px;height:26px;border:1px solid #c8d8c2;border-radius:50%;
+  background:var(--surface-soft);color:var(--sage-deep);font:800 12px/1 var(--sans)}
+.spot-copy{display:flex;min-width:0;flex-direction:column}
+.spot strong{font-size:12.5px;font-weight:800}
+.spot small{display:block;margin-top:1px;color:var(--muted);font-size:10.5px;font-weight:600;line-height:1.3}
+.spot.active{border-color:var(--pine);background:var(--pine);color:var(--cream-text);box-shadow:var(--e2);animation:spot-bob 3.4s ease-in-out infinite}
+.spot.active:hover{transform:translate(-50%,-104%)}
+.spot.active .spot-order{border-color:rgba(233,185,110,.5);background:rgba(233,185,110,.16);color:var(--gold)}
+.spot.active small{color:var(--cream-dim)}
+@keyframes spot-bob{0%,100%{translate:0 0}50%{translate:0 -4px}}
+.spot.locked{border-style:dashed;background:rgba(255,253,244,.82);color:var(--faint);box-shadow:none}
+.spot.locked:after{opacity:.45}
+.spot.locked .spot-order{border-color:#d8dfd2;background:#eef0e6;color:#9db3a4}
+.spot.locked small{color:#9db3a4}
+.spot.waiting{opacity:0;pointer-events:none}
+.aiming .spot:not(.active),.fishing .spot:not(.active),.fighting .spot{opacity:0;pointer-events:none}
+.aiming .spot.active{padding:6px 11px}
+.aiming .spot.active small{display:none}
+@keyframes pop-in{from{opacity:0;transform:translateY(-6px) scale(.96)}to{opacity:1;transform:none}}
+
+/* ============ 叙事字 ============ */
+#story{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;
+  color:#fffaec;font:600 19px/1.7 var(--serif);letter-spacing:.14em;text-align:center;
+  text-shadow:0 2px 18px rgba(6,48,45,.6),0 0 30px rgba(6,48,45,.35);white-space:nowrap;
+  transition:opacity .4s ease}
+.casting #story{animation:story-beat .75s var(--ease) both}
+@keyframes story-beat{0%{opacity:0;transform:translate(-50%,-35%) scale(.94)}45%{opacity:1}100%{transform:translate(-50%,-50%) scale(1)}}
+
+/* ============ 呼吸光环（浮漂旁） ============ */
+#rhythmAura{--rhythm-duration:3.4s;--aura-color:rgba(163,239,217,.5);position:absolute;z-index:2;left:50%;top:50%;
+  width:184px;height:184px;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 0 12px var(--aura-color))}
+#rhythmAura i,#rhythmAura b{position:absolute;inset:22%;border:2px solid var(--aura-color);border-radius:50%;
+  box-shadow:inset 0 0 16px var(--aura-color);animation:rhythm-aura var(--rhythm-duration) ease-out infinite}
+#rhythmAura i:nth-child(2){animation-delay:calc(var(--rhythm-duration) * -.5)}
+#rhythmAura b{inset:43%;border-width:1px;opacity:.6;animation:rhythm-core var(--rhythm-duration) ease-in-out infinite}
+#game[data-phase="approach"] #rhythmAura{--aura-color:rgba(244,222,158,.6)}
+#game[data-phase="reading"] #rhythmAura,#game[data-phase="responding"] #rhythmAura{--aura-color:rgba(255,207,125,.7)}
+#game[data-phase="nibble"] #rhythmAura{--aura-color:rgba(255,184,100,.82)}
+#game[data-phase="hooked"] #rhythmAura{--aura-color:rgba(255,143,91,.95);width:228px;height:228px}
+#game[data-phase="empty"] #rhythmAura,#game[data-phase="spooked"] #rhythmAura{--aura-color:rgba(193,218,207,.3)}
+@keyframes rhythm-aura{0%{transform:scale(.55);opacity:.65}75%{opacity:.34}100%{transform:scale(1.45);opacity:0}}
+@keyframes rhythm-core{0%,100%{transform:scale(.75);opacity:.36}50%{transform:scale(1.2);opacity:.72}}
+
+/* ============ 鱼口读数：场景内的深色 HUD ============ */
+#biteReadout{--rhythm-duration:3.4s;--rhythm-light:#abe7d9;--rhythm-wash:rgba(118,210,191,.22);
+  position:absolute;z-index:5;left:50%;top:84px;width:min(400px,calc(100% - 28px));transform:translateX(-50%);
+  display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;align-items:center;padding:12px 15px;
+  border:1px solid rgba(233,185,110,.35);border-radius:var(--r-lg);background:rgba(20,56,49,.92);
+  box-shadow:var(--e2);color:var(--cream-text);backdrop-filter:blur(10px);
+  transition:background .3s ease,border-color .3s ease,box-shadow .3s ease}
+#biteReadout.phase-enter{animation:rhythm-arrive .42s cubic-bezier(.18,.75,.2,1) both}
+.rhythm-orb{position:relative;width:46px;height:46px;display:grid;place-items:center;flex:none;border-radius:50%;
+  background:radial-gradient(circle,rgba(240,255,240,.2) 0,rgba(118,210,191,.10) 62%,transparent 72%);
+  box-shadow:0 0 0 1px rgba(198,242,223,.42),0 0 18px var(--rhythm-wash);
+  animation:rhythm-orb-breathe var(--rhythm-duration) ease-in-out infinite}
+.rhythm-orb-wave{position:absolute;inset:2px;border:1.5px solid var(--rhythm-light);border-radius:50%;opacity:.55;
+  animation:rhythm-wave var(--rhythm-duration) ease-out infinite}
+.rhythm-orb-wave-late{animation-delay:calc(var(--rhythm-duration) * -.5)}
+.rhythm-orb-float{position:relative;z-index:1;width:9px;height:26px;border-radius:6px;
+  background:linear-gradient(#e77f62 0 48%,#fff7d8 49% 100%);box-shadow:0 1px 4px #0b3537;
+  animation:rhythm-float var(--rhythm-duration) ease-in-out infinite}
+.rhythm-content{display:flex;min-width:0;flex-direction:column;gap:4px}
+.rhythm-heading{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.bite-readout-label{font:800 11px/1.2 var(--sans);letter-spacing:.14em;color:var(--gold)}
+.rhythm-tempo{font:700 10px/1.2 var(--sans);letter-spacing:.08em;color:var(--cream-dim)}
+.bite-readout-copy{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0}
+.bite-readout-copy strong{color:#fffaec;font:800 18px/1.25 var(--sans);letter-spacing:.02em}
+.bite-readout-copy small{color:var(--cream-dim);font-size:11px;font-weight:600;line-height:1.4}
+.rhythm-steps{display:flex;gap:5px;margin-top:4px}
+.rhythm-steps span{display:flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid rgba(219,239,222,.23);
+  border-radius:var(--r-sm);color:rgba(229,241,224,.72);font:700 10px/1.15 var(--sans);white-space:nowrap;
+  transition:background .25s ease,color .25s ease,transform .25s ease}
+.rhythm-steps span:before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor}
+#biteReadout[data-step="wait"] [data-cue-step="wait"],
+#biteReadout[data-step="read"] [data-cue-step="read"],
+#biteReadout[data-step="lift"] [data-cue-step="lift"],
+#biteReadout[data-step="return"] [data-cue-step="return"]{color:#fff7da;background:rgba(255,245,207,.18);border-color:rgba(255,243,207,.55);transform:translateY(-1px)}
+#biteReadout[data-step="settle"] .rhythm-steps span{opacity:.52}
+#biteReadout[data-state="approach"]{--rhythm-light:#f5dda7;--rhythm-wash:rgba(244,207,128,.3);background:rgba(48,62,51,.9);border-color:rgba(246,218,151,.6)}
+#biteReadout[data-state="reading"],#biteReadout[data-state="responding"]{--rhythm-light:#ffe0a6;--rhythm-wash:rgba(246,183,105,.38);background:rgba(66,58,43,.93);border-color:rgba(248,205,134,.7)}
+#biteReadout[data-state="nibble"]{--rhythm-light:#ffd096;--rhythm-wash:rgba(255,166,85,.48);background:rgba(91,58,40,.94);border-color:rgba(255,184,105,.78)}
+#biteReadout[data-state="hooked"]{--rhythm-light:#fff0bd;--rhythm-wash:rgba(255,153,90,.62);background:rgba(24,72,62,.96);border-color:var(--gold);box-shadow:0 0 0 5px rgba(255,156,91,.16),0 14px 42px rgba(69,27,26,.35)}
+#biteReadout[data-state="hooked"] .rhythm-orb-float{animation:rhythm-strike var(--rhythm-duration) ease-in-out infinite}
+#biteReadout[data-state="spooked"],#biteReadout[data-state="empty"]{--rhythm-light:#c7ddd3;--rhythm-wash:rgba(176,206,188,.13);background:rgba(35,65,63,.86);border-color:rgba(185,217,200,.35)}
+#biteReadout[data-state="empty"] .rhythm-orb-wave,#biteReadout[data-state="spooked"] .rhythm-orb-wave{opacity:.22}
+#biteReadout[data-state="waiting"] .rhythm-steps,#biteReadout[data-state="approach"] .rhythm-steps,
+#biteReadout[data-state="spooked"] .rhythm-steps,#biteReadout[data-state="empty"] .rhythm-steps{display:none}
+#biteReadout[data-urgency="fading"]{--rhythm-duration:.4s;box-shadow:0 0 0 7px rgba(255,151,83,.17),0 16px 45px rgba(69,27,26,.42)}
+#biteReadout[data-urgency="fading"] .rhythm-tempo{color:#ffe3a2}
+@keyframes rhythm-arrive{from{opacity:.25;transform:translate(-50%,-8px) scale(.97)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes rhythm-orb-breathe{0%,100%{transform:scale(.84);filter:brightness(.82)}50%{transform:scale(1.08);filter:brightness(1.22)}}
+@keyframes rhythm-wave{from{transform:scale(.7);opacity:.65}to{transform:scale(1.65);opacity:0}}
+@keyframes rhythm-float{0%,100%{transform:translateY(2px) rotate(-4deg)}50%{transform:translateY(-2px) rotate(4deg)}}
+@keyframes rhythm-strike{0%,100%{transform:translateY(-5px) rotate(-8deg)}50%{transform:translateY(8px) rotate(12deg)}}
+/* 读漂进行时让位给操作面板 */
+#game.reading:not(.overview) #biteReadout{display:none}
+
+/* ============ 读漂操作面板（纸面） ============ */
+#tactics{position:absolute;z-index:5;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  width:min(560px,calc(100% - 26px));padding:15px 17px;border:1px solid var(--line);border-radius:var(--r-lg);
+  background:var(--surface);box-shadow:var(--e3);color:var(--ink);animation:tactics-in .38s var(--spring) both}
+.signal-head{display:flex;align-items:center;gap:13px}
+.signal-demo{flex:none;width:108px;height:64px;border:1px solid #c9e0d6;border-radius:var(--r-md);
+  background:linear-gradient(#e7f4ee 55%,#a5d8d1 55%);overflow:hidden}
+.signal-demo svg{display:block;width:100%;height:100%}
+.signal-demo path{fill:none;stroke:#346d65;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.signal-demo .signal-water{stroke:#5db0ac}
+.signal-demo .signal-float ellipse{fill:#fff7de;stroke:#8b7658}
+.signal-demo .signal-red{stroke:#c96a58;stroke-width:5}
+.signal-demo .signal-line{stroke:#eef3e2;stroke-width:1.7}
+.signal-demo .signal-bubbles{fill:#effff2;opacity:0}
+.signal-demo .signal-arrow{stroke:#fff5db;opacity:0}
+#tactics[data-signal="dart"] .signal-float,#tactics[data-signal="peck"] .signal-float{animation:bite-demo-tap 1.2s ease-in-out infinite}
+#tactics[data-signal="deep"] .signal-float{animation:bite-demo-drag 2.3s ease-in-out infinite}
+#tactics[data-signal="deep"] .signal-arrow{opacity:1;animation:bite-demo-arrow 2.3s ease-in-out infinite}
+#tactics[data-signal="broad"] .signal-float,#tactics[data-signal="steady"] .signal-float{animation:bite-demo-pause 2.5s ease-in-out infinite}
+#tactics[data-signal="peck"] .signal-bubbles,#tactics[data-signal="deep"] .signal-bubbles{opacity:1;animation:bite-demo-bubble 1.7s ease-in-out infinite}
+@keyframes bite-demo-tap{0%,16%,38%,54%,100%{transform:translateY(0)}23%,45%{transform:translateY(8px)}}
+@keyframes bite-demo-drag{0%,15%{transform:translateX(0)}80%,100%{transform:translateX(16px)}}
+@keyframes bite-demo-arrow{0%,20%{transform:translateX(0);opacity:0}55%,80%{transform:translateX(8px);opacity:1}100%{opacity:0}}
+@keyframes bite-demo-pause{0%,35%{transform:translateX(0)}60%,82%{transform:translateX(8px)}100%{transform:translateX(0)}}
+@keyframes bite-demo-bubble{0%,100%{transform:translateY(3px);opacity:.2}50%{transform:translateY(-3px);opacity:1}}
+.signal-copy{display:grid;gap:3px;min-width:0}
+.signal-copy span{color:var(--gold-deep);font-size:11px;font-weight:800;letter-spacing:.1em}
+.signal-copy strong{font:700 15px/1.45 var(--sans);color:var(--pine)}
+.tactic-next{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
+  margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-strong)}
+.tactic-next>div{display:grid;gap:2px;min-width:0}
+.tactic-next span{color:var(--muted);font-size:10.5px;font-weight:800;letter-spacing:.1em}
+.tactic-next strong{font:700 15px/1.3 var(--sans);color:var(--pine)}
+.tactic-next small{color:var(--muted);font-size:11px;line-height:1.4}
+#tacticDo{min-height:46px;padding:10px 18px;border:1px solid var(--gold-deep);border-radius:var(--r-md);
+  background:linear-gradient(180deg,#f2c886,var(--gold));box-shadow:0 3px 0 var(--gold-deep),var(--e1);
+  color:#43310e;font-size:13.5px;font-weight:800;white-space:nowrap}
+#tacticDo:hover{filter:brightness(1.06);transform:translateY(-1px)}
+#tacticDo:active{transform:translateY(2px);box-shadow:0 1px 0 var(--gold-deep)}
+#tacticWait{margin-top:10px;padding:9px 12px;border-radius:var(--r-md);background:var(--surface-soft);
+  color:var(--pine-2);font-size:12px;font-weight:700;text-align:center}
+@keyframes tactics-in{from{opacity:0;transform:translate(-50%,16px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+
+/* ============ 提竿 / 收线：底部主操作胶囊 ============ */
+#sceneAction{position:absolute;z-index:7;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  display:none;align-items:center;gap:12px;width:min(390px,calc(100% - 28px));min-height:76px;
+  padding:10px 14px 10px 10px;border:1px solid var(--gold-deep);border-radius:var(--r-lg);
+  background:linear-gradient(180deg,#f7cd8f,#eeae63);box-shadow:0 4px 0 var(--gold-deep),var(--e2);
+  color:#43310e;text-align:left;animation:hook-pop .42s var(--spring) both}
+#game[data-phase="hooked"] #sceneAction:not([hidden]),#game[data-phase="empty"] #sceneAction:not([hidden]){display:flex}
+#sceneAction:hover{filter:brightness(1.05)}
+#sceneAction:active{transform:translateX(-50%) translateY(3px);box-shadow:0 1px 0 var(--gold-deep),var(--e1)}
+#sceneAction .action-symbol-wrap{display:grid;flex:none;place-items:center;width:52px;height:52px;
+  border:1px solid rgba(255,246,222,.45);border-radius:var(--r-md);background:var(--pine);color:#ffe9bb}
+#sceneAction .action-symbol{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+#sceneAction .action-arrow{stroke:#ffd98f}
+#sceneAction .action-rod{animation:rod-lift 1.15s ease-in-out infinite;transform-origin:13px 39px}
+#sceneAction .action-line{stroke-dasharray:35 8;animation:line-pull 1.15s linear infinite}
+#sceneAction .action-arrow{animation:arrow-lift 1.15s ease-in-out infinite}
+#sceneAction .bite-timer{position:absolute;inset:7px auto auto 5px;width:60px;height:60px;z-index:1;
+  transform:rotate(-90deg);pointer-events:none}
+#sceneAction .bite-timer circle{fill:none;stroke-width:4}
+#sceneAction .bite-timer-track{stroke:rgba(255,244,214,.35)}
+#sceneAction .bite-timer-stroke{stroke:#7a5a1c;stroke-linecap:round;stroke-dasharray:270.2;stroke-dashoffset:0;transition:stroke-dashoffset .45s linear}
+#sceneAction .action-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;align-items:flex-start}
+#sceneAction strong{font:800 18px/1.2 var(--sans);letter-spacing:.02em}
+#sceneAction small{font:600 12px/1.3 var(--sans);opacity:.85}
+#sceneAction .action-chevron{flex:none;font:700 26px/1 var(--sans);opacity:.55}
+#game[data-phase="empty"] #sceneAction:not([hidden]){border-color:#a9c5b4;background:linear-gradient(180deg,#fbfdf6,#e2eee2);box-shadow:0 4px 0 #8aa998,var(--e2);color:#2b574a}
+#game[data-phase="empty"] #sceneAction .action-symbol-wrap{background:#e7f1e6;border-color:#bcd4c4;color:var(--pine-2)}
+#game[data-phase="empty"] #sceneAction:active{box-shadow:0 1px 0 #8aa998,var(--e1)}
+#sceneAction[data-action="retrieve"] .bite-timer{display:none}
+@keyframes hook-pop{from{opacity:0;transform:translateX(-50%) translateY(14px) scale(.94)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes rod-lift{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+@keyframes line-pull{to{stroke-dashoffset:-43}}
+@keyframes arrow-lift{0%,100%{transform:translateY(2px)}50%{transform:translateY(-3px)}}
+
+/* ============ 上岸提示 ============ */
+#landingCue{position:absolute;z-index:6;left:50%;top:86px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+  max-width:calc(100% - 24px);padding:9px 15px;border:1px solid var(--line);border-radius:var(--r-pill);
+  background:var(--surface);box-shadow:var(--e2);color:var(--pine);animation:pop-in .3s var(--spring) both}
+#landingCueStep{flex:none;padding:3px 9px;border-radius:var(--r-pill);background:var(--surface-soft);color:var(--sage-deep);font-size:10.5px;font-weight:800}
+#landingCueText{overflow:hidden;font-size:12.5px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+
+/* ============ 搏鱼面板（纸面） ============ */
+#fight{position:absolute;z-index:8;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  width:min(440px,calc(100% - 26px));padding:16px 18px 15px;border:1px solid var(--line);border-radius:var(--r-lg);
+  background:var(--surface);box-shadow:var(--e3);color:var(--ink);animation:fight-arrive .4s var(--spring) both}
+.fight-heading{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fight-heading>div{display:flex;min-width:0;flex-direction:column;gap:2px}
+.fight-kicker{font-size:10px;font-weight:800;letter-spacing:.2em;color:var(--gold-deep)}
+#fightMode{font:700 16px/1.2 var(--sans);color:var(--pine)}
+#fightPercent{flex:none;padding:5px 11px;border-radius:var(--r-pill);background:var(--surface-soft);color:var(--pine-2);font-size:13px;font-weight:800;white-space:nowrap}
+#fight.danger #fightPercent{background:#f7e3d8;color:#a3543f}
+#fightBeat{display:flex;align-items:center;gap:10px;min-height:42px;margin:11px 0 10px}
+#fightBeat>span:last-child{display:flex;min-width:0;flex-direction:column;gap:1px}
+#fightBeat strong{font-size:13px;font-weight:700;color:var(--pine)}
+#fightBeat small{font-size:11px;color:var(--muted)}
+.fight-beat-icon{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#e3efe7;color:var(--sage-deep);transition:background .2s,color .2s}
+.fight-beat-icon svg{width:24px;height:24px;fill:currentColor}
+.fight-beat-icon circle{fill:var(--surface)}
+#fightBeat[data-state="surge"] .fight-beat-icon,#fightBeat[data-state="gathering"] .fight-beat-icon,#fightBeat[data-state="strain"] .fight-beat-icon{background:#f6ead3;color:#96703c;animation:fight-fish-surge .72s ease-in-out infinite}
+#fightBeat[data-state="opening"] .fight-beat-icon{background:#e9f3e4;color:#4c7952;animation:fight-fish-rest 1.25s ease-in-out infinite}
+#fightBeat[data-state="lifting"] .fight-beat-icon{animation:fight-fish-lift .68s ease-out both}
+#fightRig{position:relative;overflow:hidden;height:132px;border:1px solid #cadfd8;border-radius:var(--r-md);
+  background:linear-gradient(180deg,#e9f3ed 0%,#dcefeb 39%,#b5dfda 100%)}
+#fightRig svg{display:block;width:100%;height:100%}
+.fight-rig-horizon{fill:none;stroke:#c0ded6;stroke-width:1.3;opacity:.7}
+.fight-rig-water{fill:none;stroke:#9bcfc8;stroke-width:1.1;opacity:.55}
+.fight-rig-shore{fill:#d0c9aa;stroke:#b5bb9f;stroke-width:1.3}
+#fightRigRod{fill:none;stroke:#6b6048;stroke-width:4.4;stroke-linecap:round;stroke-linejoin:round}
+#fightRigLine{fill:none;stroke:#5e8a7d;stroke-width:2.1;stroke-linecap:round;filter:drop-shadow(0 1px 1px rgba(33,86,74,.25))}
+#fightRigFish{fill:#477d70;filter:drop-shadow(0 3px 2px rgba(31,86,76,.18))}
+#fightRigFish circle{fill:#e6f2de}
+#fightRigWake{fill:none;stroke:#f7fff4;stroke-width:1.8;opacity:.52}
+#fightRigWake ellipse:nth-child(2){opacity:.45}
+#fightRigLineTip{fill:#e5d9a2;stroke:#6b6048;stroke-width:1.5}
+#fightRig[data-line="slack"] #fightRigLine{stroke:#8eb1a6;stroke-dasharray:4 4}
+#fightRig[data-line="working"] #fightRigLine{stroke:#a28a5b;stroke-width:2.5}
+#fightRig[data-line="strained"] #fightRigLine{stroke:#a1793f;stroke-width:3;animation:fight-line-tremor .2s linear infinite}
+#fightRig[data-line="strained"] #fightRigRod{stroke:#685640}
+#fightRig[data-beat="surge"] #fightRigWake,#fightRig[data-beat="gathering"] #fightRigWake,#fightRig[data-beat="strain"] #fightRigWake{animation:fight-wake .65s ease-in-out infinite}
+#fightRig[data-beat="opening"] #fightRigWake{animation:fight-wake 1.5s ease-in-out infinite}
+#fightTravel{position:absolute;top:11px;left:clamp(94px,var(--fish-x,70%),calc(100% - 124px));min-width:106px;
+  padding:4px 8px;border:1px solid #a8cbb8;border-radius:var(--r-pill);background:rgba(248,255,241,.9);color:#2b6656;
+  text-align:center;font-size:10px;font-weight:700;line-height:1.2;box-shadow:0 2px 8px rgba(58,124,102,.19)}
+#fightRig[data-movement="out"] #fightTravel{border-color:#d3bd8f;background:rgba(255,245,216,.92);color:#825e34}
+#fightRig[data-movement="steady"] #fightTravel{border-color:#c9ddd0;color:#57796b}
+.fight-rig-caption{position:absolute;left:11px;right:11px;bottom:8px;display:flex;align-items:center;justify-content:space-between;
+  color:#617e73;font-size:10px;font-weight:700}
+#fightLineState{padding:3px 9px;border:1px solid rgba(100,151,130,.3);border-radius:var(--r-pill);background:rgba(249,253,242,.82);color:#3a6b58;font-size:10px;font-weight:800}
+#fightRig[data-line="strained"] #fightLineState{border-color:#d0b37c;color:#80623b;background:#f7efd9}
+#fightLoop{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:11px}
+#fightLoop span{padding:6px 3px;border:1px solid #dde8dc;border-radius:var(--r-sm);background:#f2f6ee;color:#7a9384;
+  text-align:center;font-size:10.5px;font-weight:800;white-space:nowrap}
+#fight[data-next="release"] #fightLoop [data-fight-step="release"],#fight[data-next="lift"] #fightLoop [data-fight-step="lift"],#fight[data-next="reel"] #fightLoop [data-fight-step="reel"]{border-color:#9dbca6;background:#e4efe0;color:#2e6651}
+#fight[data-next="release"] #fightLoop [data-fight-step="release"]{border-color:#cbb783;background:#f4ecd6;color:#806238}
+#fightFeedback{min-height:18px;margin:9px 0 0;color:var(--pine-2);font-size:12px;font-weight:700}
+#fightFeedback:empty{display:none}
+#fight.danger #fightFeedback{color:#826538}
+.fight-actions{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:9px;margin-top:11px}
+#fight[data-next="lift"] #fightPump,#fight[data-next="reel"] #fightHold{outline:2px solid #b6ce9d;outline-offset:2px}
+#fight[data-next="release"] #fightHold{outline:2px solid #dec692;outline-offset:2px}
+#fight[data-next="wait"] .fight-actions{opacity:.85}
+/* 抬竿：立体拨杆 */
+#fightPump{position:relative;display:flex;align-items:center;gap:9px;min-height:72px;padding:8px 10px;
+  border:2px solid #789b82;border-radius:var(--r-md);background:linear-gradient(180deg,#dce9dc,#c3d7c7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 0 #72917a;color:#254d40;text-align:left;
+  transition:transform .09s ease,box-shadow .09s ease,background .14s ease}
+#fightPump:active,#fightPump.lifting{transform:translateY(3px);box-shadow:inset 0 2px 4px rgba(31,82,60,.16),0 1px 0 #72917a}
+#fightPump.ready{border-color:#8ba86f;background:linear-gradient(180deg,#e9f1d0,#d2e4ae);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 0 #8ca974,0 0 0 3px rgba(150,184,114,.16)}
+#fightPump.ready:active,#fightPump.ready.lifting{box-shadow:inset 0 2px 4px rgba(40,87,57,.15),0 1px 0 #8ca974}
+#fightPump .fight-pump-art{flex:none;width:38px;height:46px;display:grid;place-items:center;border:1px solid #436e5c;
+  border-radius:9px;background:linear-gradient(180deg,#4d8069,#2b594b);box-shadow:inset 0 2px 5px rgba(16,54,44,.22);color:#fff5d9}
+#fightPump .fight-pump-art svg{width:34px;height:40px;overflow:visible;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+#fightPump .pump-track{stroke:#aed0ba;stroke-width:2;opacity:.75}
+#fightPump .pump-rod{transform:translateY(var(--pump-lift-y,0px));transition:transform .07s linear;stroke:#fff5d9}
+#fightPump .pump-rod circle{fill:#e9d4a3;stroke:#fff5d9}
+#fightPump .pump-arrow{stroke:#dce9bd;opacity:.4}
+#fightPump.ready .pump-arrow{opacity:1;animation:pump-arrow-call 1.15s ease-in-out infinite}
+.fight-pump-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+#fightPumpLabel{font:800 13px/1.15 var(--sans)}
+#fightPumpHint{font:600 10px/1.25 var(--sans);color:#4e755e}
+#fightPump kbd{position:absolute;top:6px;right:7px;padding:2px 6px;border:1px solid rgba(44,88,63,.35);border-radius:5px;
+  background:rgba(255,255,255,.45);font:700 10px/1.2 var(--sans);color:#355e43}
+/* 收线：线轮按钮 */
+#fightHold{display:flex;align-items:center;gap:11px;min-height:72px;padding:8px 12px;border:1px solid #184a40;
+  border-radius:var(--r-md);background:linear-gradient(180deg,#2a5f51,#1e4a41);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 4px 0 #123a32;color:#fff;text-align:left;
+  touch-action:none;user-select:none;transition:transform .09s ease,box-shadow .09s ease,background .14s ease}
+#fightHold.held{transform:translateY(3px);background:linear-gradient(180deg,#225349,#1a4239);
+  box-shadow:inset 0 2px 5px rgba(6,30,25,.35),0 1px 0 #123a32}
+#fightHold.tap-flash{box-shadow:0 0 0 4px rgba(185,214,172,.5),0 4px 0 #123a32}
+.fight-reel-art{flex:none;width:48px;height:48px;transform:translateX(var(--torque-shift,0px));transition:transform .08s ease;filter:drop-shadow(0 2px 3px rgba(9,34,28,.35))}
+.fight-reel-art svg{display:block;width:100%;height:100%;overflow:visible}
+.reel-body{fill:#173b36;stroke:#b9d8c8;stroke-width:3}
+.reel-bezel{fill:#315f52;stroke:#6da08b;stroke-width:2}
+.reel-drum{fill:#e3d19c;stroke:#fff0c3;stroke-width:2}
+.reel-spokes{stroke:#a87948;stroke-width:2.5;stroke-linecap:round}
+.reel-hub,.reel-knob{fill:#fbf3d5;stroke:#825f3d;stroke-width:1.5}
+#fightReelRotor{transform-origin:35px 36px;transform:rotate(var(--reel-angle,0deg));transition:transform .07s linear}
+#fightReelLine{fill:none;stroke:#e9f5dc;stroke-width:2;stroke-linecap:round;transition:stroke .12s}
+#fight.danger #fightReelLine{stroke:#ffc9b3}
+#fightHold[data-spool="paying"] .reel-bezel{stroke:#d6c28e}
+#fightHold[data-spool="paying"] #fightReelLine{stroke:#e8d8a4}
+.fight-reel-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+#fightHoldLabel{font:800 13px/1.15 var(--sans)}
+#fightHoldHint{font:600 10px/1.25 var(--sans);color:#cde8d5}
+#fightHold kbd{flex:none;min-width:44px;padding:5px;border:1px solid rgba(255,255,255,.35);border-radius:6px;
+  background:rgba(255,255,255,.12);text-align:center;font:700 10px/1.2 var(--sans);color:#eaf4ea}
+@keyframes fight-arrive{from{opacity:0;transform:translate(-50%,16px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes fight-fish-surge{0%,100%{transform:translateX(-2px) rotate(-7deg)}50%{transform:translateX(3px) rotate(9deg)}}
+@keyframes fight-fish-rest{0%,100%{transform:scale(.93)}50%{transform:scale(1.09)}}
+@keyframes fight-fish-lift{from{transform:translateY(4px) rotate(-8deg)}to{transform:translateY(-4px) rotate(8deg)}}
+@keyframes fight-line-tremor{0%,100%{transform:translateY(0)}50%{transform:translateY(1.5px)}}
+@keyframes fight-wake{0%,100%{opacity:.28}50%{opacity:.8}}
+@keyframes pump-arrow-call{0%,100%{transform:translateY(2px);opacity:.66}50%{transform:translateY(-2px);opacity:1}}
+
+/* ============ 视角、现场与操作栏 ============ */
+.camera-controls{position:absolute;right:20px;top:45%;z-index:7;display:flex;flex-direction:column;gap:7px;pointer-events:auto}
+.camera-controls button{display:grid;place-items:center;min-width:40px;min-height:40px;padding:5px}
+.zoom-group{display:flex;flex-direction:column;gap:4px}
+.waterside{position:absolute;left:24px;bottom:26px;z-index:4;width:245px;max-width:calc(100% - 48px);padding:12px 15px;border-radius:var(--r-md);pointer-events:none}
+.small-label{font-size:10px;font-weight:800;letter-spacing:.13em}
+.waterside p{margin:5px 0 6px;line-height:1.5}
+.waterside button{padding:0;border:0;background:none;pointer-events:auto}
+footer{position:absolute;bottom:22px;left:50%;z-index:6;width:min(650px,calc(100% - 48px));padding:12px 15px;transform:translateX(-50%);border-radius:var(--r-lg)}
+.footer-top{display:flex;align-items:center;gap:9px;margin-bottom:7px;padding-bottom:6px}
+.step-label{flex:none;font-size:11px;font-weight:800;white-space:nowrap}
+#status{flex:1;min-width:0;font-size:13px;font-weight:700;line-height:1.35}
+#location{flex:none;font-size:11px;white-space:nowrap}
+.toolbar{display:flex;align-items:center;gap:7px}
+.bait-group-label{flex:none;font-size:11px;font-weight:800}
+#baits{display:flex;flex:1;min-width:0;gap:4px}
+.bait{display:flex;flex:1;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:48px;padding:5px 7px;white-space:nowrap}
+.bait .symbol{flex:none;display:grid;place-items:center;width:34px;height:34px;font-size:23px}
+.bait .symbol img{display:block;width:32px;height:32px;object-fit:contain}
+.bait-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start;line-height:1.25}
+.bait strong{font-size:13px}
+.bait small{overflow:hidden;max-width:100%;font-size:9px;text-overflow:ellipsis;color:var(--muted)}
+.separator{flex:none;width:1px;height:30px;background:var(--line)}
+#cast{flex:none;min-width:130px;min-height:46px;padding:8px 13px;white-space:nowrap}
+#cast span{margin-left:7px}
+.bottom-line{margin-top:7px;color:var(--muted);font-size:10px;text-align:center}
+.aiming .waterside,.fishing .waterside,.fighting .waterside{opacity:0;pointer-events:none}
+.aiming footer,.fishing footer{width:min(470px,calc(100% - 48px))}
+.aiming .bait-group-label,.aiming #baits,.aiming .separator,.fishing .bait-group-label,.fishing #baits,.fishing .separator{display:none}
+.aiming #cast,.fishing #cast{flex:1}
+.aiming #location,.fishing #location{display:none}
+
+/* ============ 结果与手记 ============ */
+dialog{max-height:90dvh;padding:24px;border:1px solid rgba(255,255,255,.75);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--e3);color:var(--ink);overflow:auto}
+dialog::backdrop{background:rgba(13,48,42,.4);backdrop-filter:blur(5px)}
+.eyebrow{color:var(--gold-deep);font-size:11px;font-weight:800;letter-spacing:.12em}
+.close{display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;background:transparent;font-size:24px}
+h2{margin:5px 0 10px;font:700 25px/1.35 var(--serif)}
+#result{width:min(440px,calc(100% - 24px));text-align:center}
+#specimen{width:320px;max-width:100%;height:190px;margin:8px auto;background:radial-gradient(ellipse at 50% 65%,rgba(87,147,135,.14),transparent 66%)}
+#specimen canvas{display:block;width:100%;height:100%;object-fit:contain}
+#catchDesc{margin:7px 0 12px;color:var(--muted);font-size:13px;line-height:1.6}
+#catchStats{display:flex;justify-content:center;gap:30px;margin:10px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:22px}
+#catchStats small{display:block;color:var(--muted);font-size:11px}
+#catchMemory{color:var(--gold-ink);font-size:12px;line-height:1.6}
+.process-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}
+.process-actions button{min-height:62px;padding:10px;text-align:left}
+.process-actions strong,.process-actions small{display:block}
+.process-actions small{margin-top:3px;color:var(--muted);font-size:11px;line-height:1.35}
+#emptyVisual{width:180px;max-width:100%;margin:8px auto}
+#emptyVisual svg{display:block;width:100%;height:120px}
+#emptyDismissHint{display:block;margin-top:12px;color:var(--muted)}
+.primary{min-height:44px;border-color:var(--pine);background:var(--pine);color:#fff;font-weight:800}
+.primary:hover{background:var(--pine-2);color:#fff}
+#tripEnd{width:min(440px,calc(100% - 24px))}
+#book[open],#tripEnd[open]{position:fixed;top:50%;left:50%;z-index:21;margin:0;transform:translate(-50%,-50%)}
+body:has(#book[open],#tripEnd[open])::before{content:"";position:fixed;inset:0;z-index:20;background:rgba(13,48,42,.38);backdrop-filter:blur(3px)}
+.trip-end-top{display:flex;justify-content:space-between;align-items:center}
+.trip-end-intro{color:var(--muted);font-size:13px}
+#tripSummary{margin:15px 0}
+#nextTrip{width:100%}
+#book{width:min(720px,calc(100% - 24px))}
+.book-top{display:flex;justify-content:space-between;gap:16px}
+#bookSubtitle{margin:0;color:var(--muted);font-size:12px}
+#book nav{display:flex;gap:5px;margin:15px 0;border-bottom:1px solid var(--line);overflow:auto}
+#book nav button{flex:none;padding:9px 12px;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);font-size:12px;font-weight:700}
+#book nav button.active{border-bottom-color:var(--pine-2);color:var(--pine)}
+#bookContent{min-width:0;padding-bottom:6px}
+#bookContent .market-summary,#bookContent .collection-head,#bookContent .water-progress{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 14px;padding:15px 17px;border:1px solid #dce7d7;border-radius:var(--r-md);background:var(--surface-soft)}
+#bookContent .market-summary>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+#bookContent .market-summary span{font-size:13px;font-weight:800;color:var(--pine)}
+#bookContent .market-summary strong{font-size:13px;color:var(--muted)}
+#bookContent .market-summary button{flex:none;min-height:38px;padding:6px 13px}
+#bookContent .market-grid,#bookContent .shop-grid,#bookContent .collection-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#bookContent .market-card,#bookContent .shop-card,#bookContent .collection-card{min-width:0;padding:13px;border:1px solid #dce4d9;border-radius:var(--r-md);background:var(--surface);box-shadow:var(--e1)}
+#bookContent .market-card{display:grid;grid-template-columns:82px minmax(0,1fr);grid-template-rows:auto auto 1fr auto;column-gap:12px;align-items:start}
+#bookContent .market-card .thumb{grid-column:1;grid-row:1/5;width:82px;height:82px;align-self:center}
+#bookContent .market-card>span{grid-column:2;font-size:10px;font-weight:800;color:var(--gold-ink)}
+#bookContent .market-card h3,#bookContent .shop-card h3,#bookContent .collection-card h3{min-width:0;margin:2px 0 3px;color:var(--pine);font-size:15px;line-height:1.35}
+#bookContent .market-card p,#bookContent .shop-card p,#bookContent .collection-card p{min-width:0;margin:0;color:var(--muted);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#bookContent .market-card button{grid-column:2;justify-self:start;min-height:36px;margin-top:8px;padding:6px 12px;font-size:12px}
+#bookContent .shop-card{display:flex;flex-direction:column;gap:4px}
+#bookContent .shop-card>span{font-size:11px;font-weight:750;color:var(--gold-ink)}
+#bookContent .shop-card button{align-self:flex-start;margin-top:auto;min-height:38px;padding:7px 12px}
+#bookContent .collection-head{justify-content:flex-start}
+#bookContent .collection-head>div{flex:none;min-width:66px}
+#bookContent .collection-head strong{display:block;color:var(--pine);font-size:22px;line-height:1.2}
+#bookContent .collection-head span,#bookContent .collection-head p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
+#bookContent .collection-card .thumb{width:100%;height:100px;margin-bottom:8px}
+#bookContent .collection-card button{min-height:36px;margin-top:9px;padding:6px 12px}
+#bookContent .water-progress{align-items:flex-start}
+#bookContent .water-progress strong{flex:none;color:var(--pine);font-size:17px}
+#bookContent .water-progress span{color:var(--muted);font-size:11px;line-height:1.5}
+#bookContent .water-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;padding:12px 14px;border:1px solid #dce4d9;border-radius:var(--r-md);background:var(--surface)}
+#bookContent .water-row>div{min-width:0}
+#bookContent .water-row span{color:var(--gold-ink);font-size:10px;font-weight:750}
+#bookContent .water-row h3{margin:3px 0;color:var(--pine);font-size:14px;line-height:1.35}
+#bookContent .water-row p{margin:3px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+#bookContent .water-row>strong{flex:none;color:var(--pine-2);font-size:12px;text-align:right}
+#bookContent .water-row.event{background:var(--gold-tint);border-color:#ebd9b5}
+#bookContent .water-row.tracked{background:#edf3e7}
+#bookContent .water-row.locked{opacity:.65}
+#bookContent .section-title{margin:20px 0 8px;color:var(--pine);font-size:14px}
+#bookContent .ecology p{display:grid;grid-template-columns:82px minmax(0,1fr) 36px;align-items:center;gap:9px;margin:7px 0;color:var(--muted);font-size:11px}
+#bookContent .ecology i{height:7px;overflow:hidden;border-radius:99px;background:#dce5de}
+#bookContent .ecology b{display:block;height:100%;border-radius:inherit;background:var(--sage-deep)}
+#bookContent .ecology em{font-style:normal;text-align:right}
+#bookContent .book-note{margin:8px 0 16px;color:var(--muted);font-size:12px;line-height:1.6}
+#bookContent .gear-section{margin:16px 0}
+#bookContent .gear-section h3{margin:0 0 7px;color:var(--pine);font-size:14px}
+#bookContent .gear-item{display:flex;width:100%;flex-direction:column;align-items:flex-start;gap:3px;margin:6px 0;padding:11px 13px;border:1px solid #dce4d9;border-radius:var(--r-md);background:var(--surface);text-align:left}
+#bookContent .gear-item strong{font-size:13px}
+#bookContent .gear-item small{color:var(--muted);font-size:11px;line-height:1.4}
+#bookContent .gear-item.equipped{border-color:var(--sage);background:#edf3e7}
+#bookContent .field-notes p{display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px;margin:8px 0;padding:11px 13px;border:1px solid #dce4d9;border-radius:var(--r-md);background:var(--surface);color:var(--muted);font-size:12px;line-height:1.5}
+#bookContent .field-notes span{color:var(--gold-ink);font-weight:800}
+#bookContent .field-notes .right span{color:var(--pine-2)}
+#bookContent .field-notes .wrong span{color:var(--bite-deep)}
+.empty{padding:30px 12px;color:var(--muted);text-align:center}
+.entry{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.entry h3{margin:0 0 4px;font-size:15px}
+.entry p{margin:0;color:var(--muted);font-size:12px}
+.thumb{flex:none;width:88px;height:66px;border-radius:var(--r-sm);background:#e5ece6 center/contain no-repeat}
+.badge{margin-left:6px;color:var(--gold-ink);font-size:11px}
+.clue{margin:15px 0;padding-left:12px;border-left:2px solid var(--sage)}
+.clue h3{margin:0 0 5px;font-size:15px}
+.clue p{margin:0;color:var(--muted);font-size:12px}
+.clue.locked{opacity:.6}
+.record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.record-grid>div{padding:15px;border-radius:var(--r-md);background:var(--surface-soft)}
+.record-grid strong{display:block;font-size:22px}
+.record-grid span,.book-note{color:var(--muted);font-size:11px}
+.toast{position:fixed;top:100px;left:50%;z-index:30;max-width:90vw;padding:9px 15px;transform:translateX(-50%);border-radius:var(--r-pill);background:var(--pine-deep);box-shadow:var(--e2);color:#fff;text-align:center;pointer-events:none}
+#renderError{position:absolute;top:40%;left:50%;z-index:20;width:min(320px,calc(100% - 24px));padding:22px;transform:translate(-50%,-50%);border-radius:var(--r-lg);background:var(--surface);text-align:center}
+
+@media(max-width:1100px){.waterside{bottom:168px}.camera-controls{right:12px}}
+@media(max-width:600px){
+  header{top:12px;left:12px;right:12px}
+  .brand{gap:7px}.brand-mark{width:38px;height:38px;font-size:26px}
+  .brand h1{font-size:18px}
+  .top-actions{display:grid;grid-template-columns:repeat(3,auto);gap:4px}
+  .coin-chip{height:34px;padding:0 7px;font-size:11px}
+  .waterside{left:12px;bottom:175px;width:180px;padding:8px 10px}
+  .waterside p{max-height:40px;overflow:hidden;font-size:11px}
+  footer,.aiming footer,.fishing footer{bottom:calc(10px + env(safe-area-inset-bottom));width:calc(100% - 20px);padding:10px}
+  .footer-top{flex-wrap:wrap;gap:3px 7px}
+  #status{flex-basis:calc(100% - 92px)}
+  #location{flex-basis:100%}
+  .toolbar{gap:3px}
+  .bait-group-label,.separator{display:none}
+  .bait{gap:2px;padding:4px 2px;min-height:45px}
+  .bait .symbol{width:27px;height:30px;font-size:18px}
+  .bait .symbol img{width:26px;height:26px}
+  .bait small{display:none}
+  #cast{min-width:103px;min-height:44px;padding:7px;font-size:12px}
+  .bottom-line{font-size:9px}
+  #result,#book,#tripEnd{padding:17px}
+  #book nav{gap:0}
+  #book nav button{padding:9px 7px}
+  #bookContent .market-grid,#bookContent .shop-grid,#bookContent .collection-grid{grid-template-columns:1fr}
+  #bookContent .market-summary{align-items:flex-start}
+  #bookContent .water-progress{flex-direction:column;gap:4px}
+  .process-actions{grid-template-columns:1fr}
+  .record-grid{grid-template-columns:1fr}
+}
+@media(max-height:640px) and (min-width:700px){#game{min-height:460px}.waterside{bottom:115px}footer{bottom:10px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

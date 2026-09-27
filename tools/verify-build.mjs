@@ -1,6 +1,8 @@
 import {access,readFile,readdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
+import {REAL_AUDIO} from '../src/data/audio-assets.mjs';
+import {BAITS,FISH} from '../src/data/catalog.mjs';
 
 const output=fileURLToPath(new URL('../build/',import.meta.url));
 const html=await readFile(join(output,'index.html'),'utf8');
@@ -16,8 +18,18 @@ for(const path of [
  'assets/sky-toon-04.png',
  'assets/models/beach_terrain.glb',
  'assets/models/specimens',
- 'assets/audio/source/ocean-wave-01.flac'
+ 'assets/audio/source/ocean-wave-01.flac',
+ 'assets/fonts/noto-sans-sc-ui.woff2',
+ 'assets/fonts/noto-serif-sc-ui.woff2',
+ 'assets/journal-fish-watercolor.webp'
 ])await check(path);
+
+for(const url of Object.values(REAL_AUDIO))await check(url.slice(2));
+for(const fish of FISH.filter(item=>!item.object))await check(`assets/models/specimens/${fish.id}.glb`);
+for(const bait of BAITS){
+ await check(`assets/models/fishing-details/bait_${bait.id}.glb`);
+ await check(`assets/models/fishing-details/bait_${bait.id}.png`);
+}
 
 for(const match of html.matchAll(/(?:src|href)="(\.\/bundles\/[^\"]+)"/g))await check(match[1]);
 const bundles=await readdir(join(output,'bundles'));

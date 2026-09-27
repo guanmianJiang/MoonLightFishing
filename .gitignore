@@ -6,8 +6,6 @@ qa/
 upload/
 node_modules/
 build/
-dist/dist/
-dist/_backup/
 _shots/
 .chrome-qa/
 .video-review/

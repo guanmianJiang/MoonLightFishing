@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as T from '../dist/three.module.js';
-import {FishingLine} from '../dist/fishing-motion.js';
+import * as T from '../src/three.module.js';
+import {FishingLine} from '../src/fishing-motion.js';
 
 test('paid-out line sags while a loaded taut line follows its endpoints',()=>{
  const a=new T.Vector3(0,2,0),b=new T.Vector3(6,.06,0),line=new FishingLine();

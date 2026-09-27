@@ -1,0 +1,320 @@
+/* Moonwater simulator UI: legible instruments, warm actions, room for the water. */
+:root {
+  --sim-ink: #173f3c;
+  --sim-ink-soft: #355f58;
+  --sim-sea: #1d5852;
+  --sim-sea-deep: #153e3b;
+  --sim-sea-glass: #d9eee6;
+  --sim-paper: #fff9e9;
+  --sim-amber: #eeb37d;
+  --sim-amber-light: #ffe2b9;
+  --sim-line: #d7e5d6;
+  --sim-shadow: 0 12px 28px rgba(16, 56, 51, .2), 0 2px 5px rgba(16, 56, 51, .09);
+}
+
+body { color: var(--sim-ink); }
+#game:before { height: 124px; background: linear-gradient(180deg, rgba(239, 249, 231, .4), transparent); }
+
+/* A restrained dashboard floats above the scene. */
+header { top: calc(18px + env(safe-area-inset-top)); }
+.brand, .top-actions { min-height: 54px; box-sizing: border-box; }
+.brand {
+  gap: 11px; padding: 8px 16px 8px 11px; border: 1px solid rgba(255, 250, 229, .45);
+  border-radius: 18px; background: rgba(251, 250, 232, .92); box-shadow: var(--sim-shadow);
+}
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 11px; background: var(--sim-sea);
+  color: var(--sim-amber-light); font: 700 26px/34px Georgia, serif;
+  box-shadow: inset 0 1px rgba(255,255,255,.25);
+}
+.brand h1 { color: var(--sim-ink); font-size: clamp(19px, 1.5vw, 25px); letter-spacing: .1em; text-shadow: none; }
+.brand-subtitle { margin-top: 4px; color: #67847b; text-shadow: none; }
+.brand .weather-chip { color: #96704a; font-weight: 800; }
+.top-actions {
+  gap: 10px; padding: 7px 10px 7px 15px; border: 1px solid rgba(255, 250, 229, .38);
+  border-radius: 18px; background: rgba(22, 67, 63, .94); box-shadow: var(--sim-shadow);
+}
+.hud-resources { gap: 12px; }
+.hud-resources .coin-chip, .hud-resources #tripState,
+.hud-resources .trip-chip summary, .hud-tools #journal, .hud-tools #sound,
+.hud-tools #renderSettingsButton { color: #f4f5df; text-shadow: none; }
+.hud-resources .coin-chip { color: var(--sim-amber-light); font-weight: 800; }
+.hud-resources #tripState { font-weight: 750; }
+.hud-resources .trip-chip summary, .hud-tools #journal { padding: 0 7px; border-radius: 9px; }
+.hud-resources .trip-chip summary:hover, .hud-tools button:hover { background: rgba(255,255,255,.12) !important; }
+.hud-tools #sound:before { color: var(--sim-amber-light); }
+.hud-resources .trip-detail-body {
+  padding: 20px; border: 1px solid #d4e7db; border-radius: 17px;
+  background: var(--sim-paper); box-shadow: var(--sim-shadow);
+}
+
+/* Location tags read as instruments attached to the water. */
+#spots .spot, #spots .spot.locked {
+  gap: 8px; max-width: 190px; padding: 7px 11px; border: 1px solid rgba(231, 249, 236, .42);
+  border-radius: 14px; background: rgba(19, 67, 63, .88); box-shadow: 0 6px 18px rgba(12, 57, 57, .2);
+  color: #f8f8e9; text-shadow: none; transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+}
+#spots .spot.active {
+  border-color: #ffe4b5; background: #ffedca; color: var(--sim-ink);
+  box-shadow: 0 0 0 4px rgba(255, 236, 195, .24), 0 7px 18px rgba(16, 56, 51, .22);
+}
+#spots .spot small, #spots .spot.locked small { color: #cde3d8; }
+#spots .spot.active small { color: #8b6c4a; }
+#spots .spot:hover { transform: translateY(-3px); background: #24665e; }
+#spots .spot.active:hover { background: #fff0cf; color: var(--sim-ink); }
+#spots .spot.locked { opacity: .7; }
+#spots .spot:active { transform: translateY(1px) scale(.98); }
+
+/* The current outing is visible while preparing, then gets out of the way. */
+#tripRoute {
+  position: absolute; z-index: 6; left: calc(25px + env(safe-area-inset-left));
+  bottom: calc(25px + env(safe-area-inset-bottom)); width: 236px;
+  visibility: hidden; opacity: 0; pointer-events: none; transform: translateY(12px);
+  transition: opacity .24s ease, transform .24s ease, visibility 0s linear .24s;
+}
+#game[data-phase="idle"]:not(.aiming) #tripRoute,
+#game.overview #tripRoute { visibility: visible; opacity: 1; pointer-events: auto; transform: translateY(0); transition-delay: 0s; }
+.route-card {
+  padding: 15px 16px 12px; border: 1px solid rgba(222, 239, 223, .5);
+  border-radius: 18px; background: rgba(24, 70, 64, .94); box-shadow: var(--sim-shadow);
+  color: #f8f6e6;
+}
+.route-card__top, .route-card__progress { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.route-card__top { color: #c4e3d3; font-size: 11px; font-weight: 750; letter-spacing: .07em; }
+.route-card__top strong { color: var(--sim-amber-light); font-size: 11px; letter-spacing: 0; }
+.route-card__goal { margin: 10px 0 9px; font-size: 17px; font-weight: 800; line-height: 1.28; }
+.route-card__progress { color: #d7e9dd; font-size: 11px; font-variant-numeric: tabular-nums; }
+.route-card__casts { display: inline-flex; gap: 4px; }
+.route-card__casts i { display: block; width: 15px; height: 5px; border-radius: 5px; background: var(--sim-amber); }
+.route-card__casts i.spent { background: rgba(227, 242, 225, .27); }
+.route-card button {
+  width: 100%; margin-top: 11px; padding: 8px 2px 1px; border: 0; border-top: 1px solid rgba(227, 242, 225, .23);
+  background: none; color: #e4efdd; font-size: 11px; font-weight: 750; text-align: left;
+}
+.route-card button span { float: right; color: var(--sim-amber-light); font-size: 15px; }
+.route-card button:hover { color: var(--sim-amber-light); }
+
+/* The main operation feels like a physical dashboard control. */
+footer, .aiming footer, .fishing footer { width: min(510px, calc(100% - 50px)); }
+.footer-top { margin-bottom: 9px; padding: 0; }
+#status, .fishing #status, .aiming #status,
+#location {
+  width: fit-content; padding: 5px 10px; border: 1px solid rgba(255, 253, 231, .38);
+  border-radius: 10px; background: rgba(255, 249, 229, .86);
+  box-shadow: 0 3px 9px rgba(20, 63, 57, .1); text-shadow: none;
+}
+#status, .fishing #status, .aiming #status { color: #174b45; font-size: 12px; }
+#location { color: #295f56; font-size: 11px; font-weight: 800; }
+.toolbar {
+  min-height: 76px; padding: 6px 6px 6px 13px; border: 1px solid rgba(220, 243, 224, .4);
+  border-radius: 23px; background: rgba(23, 67, 62, .96); box-shadow: var(--sim-shadow);
+  backdrop-filter: none;
+}
+#baits { gap: 4px; }
+#baits .bait {
+  min-height: 59px; padding: 5px 4px; border-radius: 13px; color: #d2e8dc;
+  transition: background .18s ease, transform .16s ease, color .18s ease;
+}
+#baits .bait:hover { background: rgba(255,255,255,.1); color: #fff8df; transform: translateY(-2px); }
+#baits .bait.selected { background: #f8ecd0; color: var(--sim-ink); }
+#baits .bait.selected:after { right: 32%; bottom: 3px; left: 32%; height: 2px; background: #cd8d56; }
+#baits .bait:active { transform: translateY(1px) scale(.97); }
+#cast, .aiming #cast, .fishing #cast {
+  min-height: 62px; border-radius: 17px; background: linear-gradient(180deg, #ffd49f, #eba76f);
+  color: #493c2d; text-shadow: 0 1px rgba(255,255,255,.35);
+  box-shadow: inset 0 1px rgba(255,255,255,.75), 0 3px 0 #a66a42, 0 5px 11px rgba(0,0,0,.2);
+  transition: transform .14s ease, background .14s ease, box-shadow .14s ease;
+}
+#cast:hover { background: linear-gradient(180deg, #ffe0af, #f1b37c); }
+#cast:active { transform: translateY(3px); box-shadow: inset 0 2px 5px #b7724b88; }
+#cast:disabled { background: #a6b4a7; color: #4c6a5e; box-shadow: none; }
+.bottom-line { text-shadow: 0 1px 5px #fff9e9; }
+
+.camera-controls .view-toggle, #viewToggle, .camera-controls .zoom-group button {
+  border: 1px solid #d9e8d9; background: #fff9e9; box-shadow: 0 5px 13px rgba(14, 58, 54, .18);
+}
+#viewToggle:hover, .camera-controls .zoom-group button:hover { background: #ffe9c5; }
+
+/* Bite and fight states have clear hierarchy without covering the horizon. */
+#biteReadout:not([hidden]), #landingCue:not([hidden]) {
+  border: 1px solid rgba(225, 242, 223, .8); background: rgba(255, 249, 232, .96); box-shadow: var(--sim-shadow);
+  backdrop-filter: none;
+}
+#game #tactics:not([hidden]), #fight:not([hidden]) {
+  border: 1px solid rgba(219, 240, 226, .55); background: rgba(24, 70, 64, .97);
+  box-shadow: var(--sim-shadow); color: #f3f4df;
+}
+#fight .fight-heading strong, #fight #fightMode, #fight #fightPercent,
+#fight #fightBeatTitle, #fight #fightBeatHint { color: #f3f4df; }
+#fight #fightPercent { background: rgba(255,255,255,.12); }
+#fight #fightRig { background: #e1efe4; }
+#fight #fightFeedback { color: var(--sim-amber-light); }
+#fight .fight-actions .game-action { border-radius: 15px; }
+
+/* Journal pages: a warm field book set into the simulator. */
+dialog::backdrop { background: rgba(10, 39, 36, .5); backdrop-filter: blur(3px); }
+#book, #result, #tripEnd {
+  border: 1px solid #e6d8b6; border-radius: 22px; background: #fffbef;
+  box-shadow: 0 28px 70px rgba(8, 37, 34, .38), 0 3px 9px rgba(8, 37, 34, .17);
+}
+#book { padding: 26px 28px 28px; }
+#book:before {
+  right: 4px; bottom: 0; width: 280px; height: 187px; opacity: .18;
+  background-image: url('/assets/journal-fish-watercolor.webp');
+}
+#book .book-top { position: relative; z-index: 1; padding-bottom: 11px; border-bottom: 1px solid var(--sim-line); }
+#book .book-top h2 { color: var(--sim-ink); font-size: clamp(24px, 3vw, 30px); }
+#book .eyebrow, #result .eyebrow, #tripEnd .eyebrow { color: #a47a52; letter-spacing: .13em; }
+#book nav { position: relative; z-index: 1; gap: 4px; margin-top: 14px; padding: 5px; border: 0; border-radius: 13px; background: #e8f0e5; }
+#book nav button { min-height: 39px; padding: 8px 12px; border: 0; border-radius: 9px; color: #4f7064; }
+#book nav button.active { border: 0; background: var(--sim-sea); box-shadow: 0 2px 5px rgba(22, 70, 63, .18); color: #fff9e9; }
+#book nav button:hover:not(.active) { background: #f8f8e9; }
+#bookContent { position: relative; z-index: 1; min-height: 110px; }
+#bookContent :is(.market-card,.shop-card,.collection-card,.water-row,.gear-item) { transition: background .16s ease, transform .16s ease; }
+#bookContent :is(.market-card,.shop-card,.collection-card,.water-row,.gear-item):hover { background: rgba(225, 239, 225, .48); }
+#bookContent :is(.market-summary,.market-card,.shop-card) button,
+#tripEnd .primary, #result .process-actions .process-recommended {
+  background: #f1ba86; color: var(--sim-ink); border-radius: 11px;
+}
+#bookContent button:active, #tripEnd button:active, #result button:active { transform: translateY(1px) scale(.99); }
+#book .close, #tripEnd .close { background: var(--sim-sea); color: #fff9e9; }
+#result { overflow: hidden; }
+#result[open]:not(.no-catch) {
+  display: grid; grid-template-columns: minmax(210px, 260px) minmax(0, 1fr);
+  column-gap: 23px; width: min(720px, calc(100% - 28px)); max-height: 90dvh;
+  padding: 24px 27px 23px; overflow: auto; text-align: left;
+}
+#result:not(.no-catch) #resultLabel { grid-column: 1 / -1; justify-self: start; margin-bottom: 13px; }
+#result:not(.no-catch) #specimen {
+  grid-column: 1; grid-row: 2 / 6; width: 100%; height: 210px; margin: 0;
+  border: 1px solid #dae9db; border-radius: 17px;
+  background: radial-gradient(ellipse at 50% 70%, #d8ecdc 0%, #eff5e9 63%, #fff9ea 100%);
+}
+#result:not(.no-catch) #specimen canvas { width: 100%; height: 100%; object-fit: contain; transform: scale(1.08); }
+#result:not(.no-catch) #catchName { grid-column: 2; grid-row: 2; align-self: end; margin: 0 0 5px; font-size: 30px; text-align: left; }
+#result:not(.no-catch) #catchDesc { grid-column: 2; grid-row: 3; margin: 0 0 12px; font-size: 13px; text-align: left; }
+#result:not(.no-catch) #catchStats {
+  grid-column: 2; grid-row: 4; align-self: center; margin: 0 0 10px;
+  border-top: 1px solid var(--sim-line); border-bottom: 1px solid var(--sim-line);
+}
+#result:not(.no-catch) #catchMemory { grid-column: 2; grid-row: 5; margin: 0; font-size: 11px; text-align: left; }
+#result:not(.no-catch) #resultChoiceIntro { grid-column: 1 / -1; margin-top: 19px; padding-top: 15px; }
+#result:not(.no-catch) #processActions {
+  grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 11px;
+}
+#result:not(.no-catch) #processActions button { min-height: 73px; padding: 13px 12px; border: 1px solid #d6e4d5; }
+#result:not(.no-catch) #processActions .process-recommended {
+  grid-column: 1 / -1; min-height: 72px; padding: 14px 17px;
+  border-color: #d59e63; background: linear-gradient(180deg, #ffdbad, #efb37e);
+}
+#result:not(.no-catch) #processActions .process-recommended .process-mark { top: 12px; }
+#result:not(.no-catch) #processActions button:focus-visible { outline: 3px solid #e3a369; outline-offset: 2px; }
+#result:before {
+  content: ''; position: absolute; right: -60px; bottom: -77px; width: 270px; height: 180px;
+  background: url('/assets/journal-fish-watercolor.webp') center/contain no-repeat;
+  opacity: .12; pointer-events: none;
+}
+#result > * { position: relative; z-index: 1; }
+#result[open] > *, #book[open] > *, #tripEnd[open] > * { animation: sim-enter .26s ease-out both; }
+@keyframes sim-enter { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 780px) {
+  #tripRoute { left: 10px; bottom: calc(128px + env(safe-area-inset-bottom)); width: 180px; }
+  .route-card { padding: 11px 12px 9px; border-radius: 14px; }
+  .route-card__goal { margin: 6px 0; font-size: 14px; }
+  .route-card button { margin-top: 7px; padding-top: 6px; }
+  header { top: calc(10px + env(safe-area-inset-top)); }
+  .brand, .top-actions { min-height: 45px; border-radius: 14px; }
+  .brand { gap: 6px; padding: 5px 9px; }
+  .brand-mark { width: 28px; height: 28px; font-size: 21px; line-height: 28px; }
+  .top-actions { gap: 3px; padding: 4px 6px; }
+  .toolbar { min-height: 68px; border-radius: 19px; }
+  #baits .bait { min-height: 55px; }
+  #cast, .aiming #cast, .fishing #cast { min-height: 56px; border-radius: 14px; }
+  #book { padding: 19px 17px 23px; }
+  #book nav { gap: 0; padding: 4px; }
+  #book nav button { padding: 7px 10px; }
+  #result[open]:not(.no-catch) { display: block; width: min(500px, calc(100% - 24px)); padding: 19px 21px; }
+  #result:not(.no-catch) #specimen { width: min(330px, 100%); height: 145px; margin: 0 auto 8px; }
+  #result:not(.no-catch) #catchName, #result:not(.no-catch) #catchDesc,
+  #result:not(.no-catch) #catchMemory { text-align: center; }
+  #result:not(.no-catch) #processActions { display: flex; flex-direction: column; gap: 6px; }
+}
+@media (max-width: 600px) {
+  .brand { padding: 5px 7px; }
+  .brand h1 { font-size: 16px; }
+  .brand-subtitle { font-size: 9px; }
+  .top-actions { padding: 4px; }
+  .hud-resources #tripState { font-size: 10px; }
+  .hud-tools #journal { max-width: 42px; }
+  #spots .spot, #spots .spot.locked { max-width: 130px; padding: 5px 7px; border-radius: 10px; }
+  #spots .spot strong { font-size: 11px; }
+  #spots .spot small { font-size: 9px; }
+  #book:before { width: 180px; height: 130px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #tripRoute { transition: none; }
+  #spots .spot, #baits .bait, #cast, #bookContent :is(.market-card,.shop-card,.collection-card,.water-row,.gear-item) { transition: none; }
+  #result[open] > *, #book[open] > *, #tripEnd[open] > * { animation: none; }
+}
+#game:has(#renderError:not([hidden])) #tripRoute { display: none; }
+
+/* A wide monitor previews the same portrait playfield as a phone. */
+@media (min-width: 781px) {
+  body {
+    background: radial-gradient(ellipse at 50% 14%, #2b6d67 0%, #143d3c 56%, #0d302f 100%);
+  }
+  #game {
+    width: min(480px, 100vw); margin-inline: auto;
+    box-shadow: 0 0 0 1px rgba(234, 244, 224, .28), 0 28px 80px rgba(0, 20, 20, .42);
+  }
+  #tripRoute { left: 10px; bottom: 128px; width: 180px; }
+  .route-card { padding: 11px 12px 9px; border-radius: 14px; }
+  .route-card__goal { margin: 6px 0; font-size: 14px; }
+  .route-card button { margin-top: 7px; padding-top: 6px; }
+  header { top: 12px; left: 11px; right: 11px; gap: 7px; }
+  .brand, .top-actions { min-height: 45px; border-radius: 14px; }
+  .brand { flex: none; gap: 6px; padding: 5px 8px; }
+  .brand-mark { width: 28px; height: 28px; font-size: 21px; line-height: 28px; }
+  .brand h1 { font-size: 17px; }
+  .brand-subtitle { font-size: 9px; }
+  .top-actions { display: flex; flex: none; gap: 3px; padding: 4px 6px; }
+  .hud-resources .coin-chip, .hud-resources .trip-chip { display: none; }
+  .hud-resources .trip-meta { height: 34px; min-height: 34px; padding-right: 3px; border: 0 !important; }
+  .hud-resources #tripState { font-size: 10px; }
+  .hud-tools { gap: 1px; }
+  .hud-tools #sound, .hud-tools #renderSettingsButton { width: 36px; min-width: 36px; height: 34px; min-height: 34px; }
+  .hud-tools #journal { max-width: 43px; height: 34px; min-height: 34px; overflow: hidden; }
+  #spots .spot, #spots .spot.locked { max-width: 130px; padding: 5px 7px; border-radius: 10px; }
+  #spots .spot strong { font-size: 11px; }
+  #spots .spot small { font-size: 9px; }
+  .camera-controls, #game:is(.fishing,.fighting):not(.overview) .camera-controls { right: 8px; width: 48px; }
+  .camera-controls .view-toggle, #viewToggle { width: 48px; min-width: 48px; height: 53px; min-height: 53px; }
+  .camera-controls .zoom-group button { width: 38px; min-width: 38px; height: 38px; min-height: 38px; }
+  footer, .aiming footer, .fishing footer {
+    right: 10px; bottom: 10px; width: calc(100% - 20px);
+  }
+  .toolbar { min-height: 68px; border-radius: 19px; }
+  #baits .bait { min-height: 55px; }
+  #cast, .aiming #cast, .fishing #cast { width: 105px; min-height: 56px; border-radius: 14px; font-size: 12px; }
+  .aiming footer { width: calc(100% - 20px); }
+  .aiming #cast { width: 100%; }
+  #game.no-cast-action.fishing footer { right: 10px; width: min(300px, calc(100% - 20px)); }
+  #biteReadout:not([hidden]), #landingCue:not([hidden]) { top: 75px; left: 12px; width: min(280px, calc(100% - 24px)); }
+  #game #tactics:not([hidden]) { right: 10px; bottom: 10px; width: min(335px, calc(100% - 20px)); }
+  #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),
+  #game #landFish.game-action:not([hidden]) { right: 10px; bottom: 10px; width: min(235px, calc(100% - 20px)); }
+  #game.fighting #fight:not([hidden]) { inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; overflow: visible; border: 0; background: none; box-shadow: none; pointer-events: none; }
+  #fight .fight-heading, #fight #fightRig, #fight #fightFeedback, #fight .fight-actions {
+    right: 10px; left: auto; width: min(330px, calc(100% - 20px)); max-width: none; margin: 0; pointer-events: auto;
+  }
+  #fight .fight-heading { top: 74px; }
+  #fight #fightRig { top: 135px; height: 55px; }
+  #fight #fightFeedback { top: 195px; text-align: right; }
+  #fight .fight-actions { bottom: 10px; grid-template-columns: 90px minmax(0,1fr); }
+  #result[open]:not(.no-catch) { display: block; width: min(480px, calc(100% - 24px)); padding: 19px 21px; }
+  #result:not(.no-catch) #specimen { width: min(330px, 100%); height: 145px; margin: 0 auto 8px; }
+  #result:not(.no-catch) #catchName, #result:not(.no-catch) #catchDesc,
+  #result:not(.no-catch) #catchMemory { text-align: center; }
+  #result:not(.no-catch) #processActions { display: flex; flex-direction: column; gap: 6px; }
+}

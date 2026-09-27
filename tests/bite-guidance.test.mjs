@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {biteGuidance,biteReadRemaining,BITE_READ_MS} from '../dist/bite-guidance.mjs';
-import {signalFor} from '../dist/engine.mjs';
+import {biteGuidance,biteReadRemaining,BITE_READ_MS} from '../src/bite-guidance.mjs';
+import {signalFor} from '../src/engine.mjs';
 
 test('each fish signal has a learnable response',()=>{
  for(const [fish,action] of [['perch','tease'],['catfish','shorten'],['oldgold','wait'],['minnow','tease'],['carp','wait']]){

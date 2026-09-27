@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {solveTwoBoneIK} from '../dist/two-bone-ik.mjs';
+import {solveTwoBoneIK} from '../src/two-bone-ik.mjs';
 
 const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
 

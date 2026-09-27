@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>月隐湾 · 材质检查</title>
+<style>
+ body{margin:0;background:#85b9c0;font:13px system-ui;color:#183f3d}#world{position:fixed;inset:0}
+ nav{position:fixed;top:16px;left:16px;display:flex;gap:8px;align-items:center;padding:10px 14px;background:#fff9e9ed;border-radius:12px}
+ button,select{font:inherit;border:1px solid #b8c7bb;border-radius:6px;background:#fffcf2;color:inherit;padding:6px 10px;cursor:pointer}
+ footer{position:fixed;bottom:14px;left:16px;padding:8px 12px;background:#fff9e9e8;border-radius:8px}
+</style>
+<div id="world"></div>
+<nav aria-label="材质检查控制">
+ <strong>材质检查</strong>
+ <select id="weather" aria-label="天气"><option value="moon">晴昼</option><option value="mist">晨雾</option><option value="rain">雨歇</option></select>
+ <button id="reset">默认视角</button><button id="near">拉近</button><button id="far">拉远</button>
+ <button id="close">低机位</button>
+ <select id="normal" aria-label="水面法线"><option value="07">配置默认</option><option value="03">03 · JPG</option><option value="06">06 · JPG</option><option value="original">原组合</option></select>
+ <label>浪相位 <input id="phase" aria-label="浪相位" type="range" min="0" max="5.6" step="0.05" value="0"></label>
+ <label><input id="freeze" type="checkbox">固定水相位</label><output id="normalStatus" aria-live="polite"></output>
+</nav>
+<footer>拖动旋转 · 滚轮缩放 · 点击水面测试涟漪 · 独立预览，不读写游戏存档</footer>
+<script type="module">
+ import {createWorld} from './scene.js';
+ const state={spot:'bridge',bait:'grain',pending:null,aiming:false,overview:false,revealing:false};
+ const world=createWorld(document.querySelector('#world'),()=>state,id=>{state.spot=id;});
+ world.setWeather('moon');
+ world.cancelIntro();
+ document.querySelector('#phase').oninput=e=>{document.querySelector('#freeze').checked=true;world.setPreviewTime(Number(e.target.value));};
+ document.querySelector('#weather').onchange=e=>world.setWeather(e.target.value);
+ document.querySelector('#reset').onclick=()=>{state.aiming=false;world.reset();};
+ document.querySelector('#near').onclick=()=>world.zoom(.15);
+ document.querySelector('#far').onclick=()=>world.zoom(-.15);
+ document.querySelector('#close').onclick=()=>{state.aiming=!state.aiming;};
+ document.querySelector('#freeze').onchange=e=>world.setPreviewTime(e.target.checked?12:null);
+ document.querySelector('#normal').onchange=async e=>{
+  const status=document.querySelector('#normalStatus');status.textContent='加载中…';
+  try{await world.setWaterNormal(e.target.value);status.textContent='已应用';}
+  catch(error){status.textContent='加载失败';console.error(error);}
+ };
+</script>
+</html>
