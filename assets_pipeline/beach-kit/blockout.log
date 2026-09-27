@@ -1,0 +1,11 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_beach_kit.py:9: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
+00:01.390  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\blockout_front.png'
+00:01.719  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\blockout_side.png'
+00:02.062  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\blockout_top.png'
+00:02.390  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\blockout_threequarter.png'
+00:02.719  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\blockout_rear.png'
+VALIDATED {"lane": "Art-directed", "units": "metres", "assets": [{"name": "beach_deckchair", "triangles": 504, "pivot": "ground centre"}, {"name": "beach_parasol", "triangles": 2524, "pivot": "ground centre"}], "texture_policy": "palette PBR; no baked texture or production UV claim"}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit

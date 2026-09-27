@@ -1,0 +1,240 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_angler_gull.py:11: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(n);m.diffuse_color=(*c,1);m.use_nodes=True;p=m.node_tree.nodes['Principled BSDF'];p.inputs['Base Color'].default_value=(*c,1);p.inputs['Roughness'].default_value=rough;return m
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+17:34:18 | INFO: Starting glTF 2.0 export
+17:34:18 | INFO: Extracting primitive: Tailored_jacket
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.001
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.002
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.003
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.004
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.005
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.006
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.007
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.008
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Brow
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.009
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.001
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.002
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.010
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Shoulder_strap
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.003
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cone
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.011
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cone.001
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cone.002
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.012
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.004
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Boot_lace
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Boot_lace.001
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Boot_lace.002
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.013
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.014
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.015
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.016
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.017
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.018
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Brow.001
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.019
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.005
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.006
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.007
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.020
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Shoulder_strap.001
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.008
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cone.003
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.021
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cone.004
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cone.005
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.022
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.009
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Boot_lace.003
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Boot_lace.004
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Boot_lace.005
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.023
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Smile
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.010
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Pocket_stitch
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Shoulder_seam
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Pocket_stitch.001
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Shoulder_seam.001
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Sphere.024
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Scarf_tip
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.011
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.012
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.013
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.014
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.015
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.016
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Extracting primitive: Cube.017
+17:34:18 | INFO: Primitives created: 1
+17:34:18 | INFO: Finished glTF 2.0 export in 0.07348465919494629 s
+
+17:34:19 | INFO: Starting glTF 2.0 export
+17:34:19 | INFO: Extracting primitive: Sphere.025
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Sphere.026
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Sphere.027
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Sphere.028
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Beak
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Sphere.029
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Sphere.030
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Inner_wing
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Secondary_feather
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Secondary_feather.001
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Secondary_feather.002
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Secondary_feather.003
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Outer_wing
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.001
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.002
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.003
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.004
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Sphere.031
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Sphere.032
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Inner_wing.001
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Secondary_feather.004
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Secondary_feather.005
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Secondary_feather.006
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Secondary_feather.007
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Outer_wing.001
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.005
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.006
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.007
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.008
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Primary_feather.009
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Tail_feather
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Tail_feather.001
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Tail_feather.002
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Tail_feather.003
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Tail_feather.004
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Tucked_foot
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Extracting primitive: Tucked_foot.001
+17:34:19 | INFO: Primitives created: 1
+17:34:19 | INFO: Finished glTF 2.0 export in 0.02894735336303711 s
+
+17:34:19 | INFO: Data are loaded, start creating Blender stuff
+17:34:19 | INFO: Blender create Mesh node Sphere
+17:34:19 | INFO: Blender create Mesh node Cone
+17:34:19 | INFO: Blender create Mesh node Cone.001
+17:34:19 | INFO: Blender create Mesh node Cube.011
+17:34:19 | INFO: glTF import finished in 0.01s
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_angler_gull.py:141: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  scene.world=bpy.data.worlds.new('Review');scene.world.use_nodes=True;scene.world.node_tree.nodes['Background'].inputs[0].default_value=(.26,.31,.32,1)
+00:03.203  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_angler_body_front.png'
+00:04.016  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_angler_body_side.png'
+00:04.844  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_angler_body_top.png'
+00:05.719  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_angler_body_threequarter.png'
+00:06.516  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_angler_body_rear.png'
+00:07.219  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_seagull_front.png'
+00:08.157  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_seagull_side.png'
+00:08.953  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_seagull_top.png'
+00:09.641  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_seagull_threequarter.png'
+00:10.328  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\angler-gull\final_seagull_rear.png'
+Info: Saved as "angler_gull.blend"
+VALIDATED {"lane": "Art-directed", "units": "metres", "character": "replacement static seated body; runtime arms retained", "assets": [{"name": "angler_body", "triangles": 7014}, {"name": "seagull", "triangles": 1758}]}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit

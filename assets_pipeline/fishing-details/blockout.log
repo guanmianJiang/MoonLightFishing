@@ -1,0 +1,13 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_fishing_details.py:11: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(n);m.diffuse_color=(*c,1);m.use_nodes=True;p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*c,1);p.inputs['Roughness'].default_value=.65;p.inputs['Metallic'].default_value=metal;p.inputs['Emission Color'].default_value=(*c,1);p.inputs['Emission Strength'].default_value=glow;return m
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_fishing_details.py:102: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  scene.world=bpy.data.worlds.new('Studio');scene.world.use_nodes=True;scene.world.node_tree.nodes['Background'].inputs[0].default_value=(.23,.28,.29,1)
+00:02.031  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\blockout_threequarter.png'
+00:02.953  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\blockout_front.png'
+00:03.890  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\blockout_side.png'
+00:04.828  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\blockout_top.png'
+00:05.765  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\blockout_rear.png'
+VALIDATED {"lane": "Art-directed", "units": "metres", "materials": "palette PBR, no baked textures", "assets": [{"name": "tackle_box", "triangles": 120}, {"name": "field_stool", "triangles": 96}, {"name": "bait_bucket", "triangles": 728}, {"name": "angler_hat", "triangles": 332}, {"name": "bait_grain", "triangles": 636}, {"name": "bait_worm", "triangles": 2076}, {"name": "bait_glow", "triangles": 756}]}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit

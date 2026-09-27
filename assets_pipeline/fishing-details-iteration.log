@@ -1,0 +1,149 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_fishing_details.py:11: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(n);m.diffuse_color=(*c,1);m.use_nodes=True;p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*c,1);p.inputs['Roughness'].default_value=.65;p.inputs['Metallic'].default_value=metal;p.inputs['Emission Color'].default_value=(*c,1);p.inputs['Emission Strength'].default_value=glow;return m
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+18:17:20 | INFO: Starting glTF 2.0 export
+18:17:20 | INFO: Extracting primitive: Cube
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.002
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.003
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Carry_handle
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.004
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.005
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.006
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Finished glTF 2.0 export in 0.012001991271972656 s
+
+18:17:20 | INFO: Starting glTF 2.0 export
+18:17:20 | INFO: Extracting primitive: Splayed_leg
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Splayed_leg.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Splayed_leg.002
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Splayed_leg.003
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.007
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.008
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.009
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.010
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Finished glTF 2.0 export in 0.009092569351196289 s
+
+18:17:20 | INFO: Starting glTF 2.0 export
+18:17:20 | INFO: Extracting primitive: Hollow_bucket
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Torus
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Swing_handle
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Wood_grip
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Finished glTF 2.0 export in 0.006995439529418945 s
+
+18:17:20 | INFO: Starting glTF 2.0 export
+18:17:20 | INFO: Extracting primitive: Sphere
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cone
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cone.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Cube.011
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Finished glTF 2.0 export in 0.006999969482421875 s
+
+18:17:20 | INFO: Starting glTF 2.0 export
+18:17:20 | INFO: Extracting primitive: Hook
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Kernel_crease
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.002
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Kernel_crease.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.003
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Kernel_crease.002
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Grain_stem
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.004
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Finished glTF 2.0 export in 0.009617090225219727 s
+
+18:17:20 | INFO: Starting glTF 2.0 export
+18:17:20 | INFO: Extracting primitive: Hook.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Curved_worm
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.005
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.006
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.007
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.008
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.009
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.010
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.011
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.012
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Finished glTF 2.0 export in 0.012000560760498047 s
+
+18:17:20 | INFO: Starting glTF 2.0 export
+18:17:20 | INFO: Extracting primitive: Hook.002
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.013
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.014
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Torus.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Torus.002
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Torus.003
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.015
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Wing_vein
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Antenna
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Sphere.016
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Wing_vein.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Extracting primitive: Antenna.001
+18:17:20 | INFO: Primitives created: 1
+18:17:20 | INFO: Finished glTF 2.0 export in 0.014595985412597656 s
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_fishing_details.py:107: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  scene.world=bpy.data.worlds.new('Studio');scene.world.use_nodes=True;scene.world.node_tree.nodes['Background'].inputs[0].default_value=(.23,.28,.29,1)
+00:02.750  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\final_threequarter.png'
+00:03.891  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\final_front.png'
+00:05.016  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\final_side.png'
+00:06.141  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\final_top.png'
+00:07.266  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\fishing-details\final_rear.png'
+00:07.407  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\fishing-details\bait_grain.png'
+00:07.516  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\fishing-details\bait_worm.png'
+00:07.641  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\fishing-details\bait_glow.png'
+
+Info: Saved as "fishing_details.blend"
+VALIDATED {"lane": "Art-directed", "units": "metres", "materials": "palette PBR, no baked textures", "assets": [{"name": "tackle_box", "triangles": 792}, {"name": "field_stool", "triangles": 480}, {"name": "bait_bucket", "triangles": 728}, {"name": "angler_hat", "triangles": 428}, {"name": "bait_grain", "triangles": 828}, {"name": "bait_worm", "triangles": 1584}, {"name": "bait_glow", "triangles": 984}]}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit

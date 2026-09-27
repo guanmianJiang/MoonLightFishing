@@ -1,0 +1,27 @@
+{
+  "lane": "Art-directed",
+  "units": "metres",
+  "assets": [
+    {
+      "name": "reef_tall",
+      "triangles": 86,
+      "pivot": "ground centre"
+    },
+    {
+      "name": "reef_shelf",
+      "triangles": 86,
+      "pivot": "ground centre"
+    },
+    {
+      "name": "reef_small",
+      "triangles": 86,
+      "pivot": "ground centre"
+    },
+    {
+      "name": "beach_campfire",
+      "triangles": 1406,
+      "pivot": "ground centre"
+    }
+  ],
+  "texture_policy": "palette PBR; no baked texture or production UV claim"
+}

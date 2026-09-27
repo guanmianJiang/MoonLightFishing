@@ -1,0 +1,189 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_beach_kit.py:9: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+18:31:40 | INFO: Starting glTF 2.0 export
+18:31:40 | INFO: Extracting primitive: Cube
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cube.001
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cube.002
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cube.003
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cube.004
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cube.005
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.001
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cube.006
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cube.007
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cube.008
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_00
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_01
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_02
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_03
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_04
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_05
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_06
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_07
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Sling_stripe_08
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Finished glTF 2.0 export in 0.024567365646362305 s
+
+18:31:40 | INFO: Starting glTF 2.0 export
+18:31:40 | INFO: Extracting primitive: Cylinder.002
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_00
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.003
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.004
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.005
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.006
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.007
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_01
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.008
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.009
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.010
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.011
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.012
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_02
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.013
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.014
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.015
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.016
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.017
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_03
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.018
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.019
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.020
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.021
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.022
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_04
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.023
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.024
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.025
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.026
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.027
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_05
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.028
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.029
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.030
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.031
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.032
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_06
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.033
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.034
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.035
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.036
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.037
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_07
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.038
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.039
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.040
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.041
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.042
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_08
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.043
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.044
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.045
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.046
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.047
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Canopy_gore_09
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.048
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.049
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.050
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.051
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.052
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Extracting primitive: Cylinder.053
+18:31:40 | INFO: Primitives created: 1
+18:31:40 | INFO: Finished glTF 2.0 export in 0.06112027168273926 s
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_beach_kit.py:87: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  scene.world=bpy.data.worlds.new('Beach_review_world');scene.world.color=(.35,.35,.35);scene.world.use_nodes=True;scene.world.node_tree.nodes.get('Background').inputs['Color'].default_value=(.55,.65,.75,1);scene.world.node_tree.nodes.get('Background').inputs['Strength'].default_value=.55
+00:02.156  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\final_front.png'
+00:02.468  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\final_side.png'
+00:02.875  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\final_top.png'
+00:03.203  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\final_threequarter.png'
+00:03.515  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\final_rear.png'
+00:03.843  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\final_clay.png'
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_beach_kit.py:9: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
+00:04.156  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\beach-kit\final_silhouette.png'
+
+Info: Saved as "beach_kit.blend"
+VALIDATED {"lane": "Art-directed", "units": "metres", "assets": [{"name": "beach_deckchair", "triangles": 1456, "pivot": "ground centre"}, {"name": "beach_parasol", "triangles": 4768, "pivot": "ground centre"}], "texture_policy": "palette PBR; no baked texture or production UV claim"}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit

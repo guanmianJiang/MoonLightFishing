@@ -1,0 +1,15 @@
+{
+  "lane": "Art-directed",
+  "units": "metres",
+  "character": "static seated body; separate Blender limb skins and keyed runtime motion",
+  "assets": [
+    {
+      "name": "angler_body",
+      "triangles": 7014
+    },
+    {
+      "name": "seagull",
+      "triangles": 1758
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "lane": "Art-directed",
+  "units": "metres",
+  "assets": [
+    {
+      "name": "beach_deckchair",
+      "triangles": 1456,
+      "pivot": "ground centre"
+    },
+    {
+      "name": "beach_parasol",
+      "triangles": 4768,
+      "pivot": "ground centre"
+    }
+  ],
+  "texture_policy": "palette PBR; no baked texture or production UV claim"
+}

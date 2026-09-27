@@ -1,0 +1,11 @@
+{
+  "asset": "GF_RowBoat_335_A",
+  "source": "D:/Raiders/ViewOcclusions/Assets/Arts/Meshes/WoodenBoat/Mesh_WoodenBoat.fbx",
+  "lane": "art-directed",
+  "units": "meters",
+  "target_length": 3.35,
+  "web_lod_ratio": 0.34,
+  "web_export": "../../dist/assets/models/gf_rowboat_335_a.glb",
+  "materials": ["M_RowBoat_PBR"],
+  "notes": "Authored silhouette and PBR textures retained; mesh decimated and textures downscaled for web delivery."
+}

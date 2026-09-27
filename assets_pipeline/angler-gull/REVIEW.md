@@ -1,0 +1,8 @@
+# Review
+
+- Replaced the capsule torso, sphere head, thin cylinder legs and box accessories with authored tapered jacket, facial features/hair, shaped vest, rounded backpack, seated trousers/cuffs/boots. Existing hand and rod animation remains attached to runtime arms. Blender review adds presentation-only arms and the existing hat after exporting the body, so these are not duplicated in game.
+- Gull: 2,718 triangles; named wing and wrist joints deform the correct side in a real GLTFLoader import test. Rounded body, tapered bill, layered primary/secondary/tail feathers. Offshore corridor widened from 44 to 96 metres, duration from 12–16 to 30–40 seconds, launch Z from -4–3 to 12–27, with recession toward open water.
+- Passenger ferry B was at +28 X / +39 Z and outside the usual shallow-water shoulder composition. Both routes now sit in front of that view. A: -37 X / 23 Z, ±4 m. B: -24 X / 18 Z, ±2 m. Their centers are inside the portrait and desktop camera safe region for 101 samples over the whole route, in aiming and waiting poses. This does not guarantee visibility after freely rotating the camera or from every unlocked fishing spot.
+- Inspected neutral character three-quarter and gull top silhouettes, then final character front/rear three-quarter and gull three-quarter renders. Preserved editable source and five fixed camera views per model.
+- 62 tests pass, including engine asset import, finite geometry, hierarchy articulation, route envelope and camera projections. Local page returns HTTP 200. No new live-browser visual inspection in this iteration; mobile device performance unmeasured.
+- Art-directed palette materials. No production UV, texture bake or full skeletal character rig claim.

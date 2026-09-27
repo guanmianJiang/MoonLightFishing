@@ -1,0 +1,36 @@
+{
+  "lane": "Art-directed",
+  "units": "normalized",
+  "assets": [
+    {
+      "name": "carp",
+      "triangles": 1036
+    },
+    {
+      "name": "minnow",
+      "triangles": 1060
+    },
+    {
+      "name": "perch",
+      "triangles": 1132
+    },
+    {
+      "name": "catfish",
+      "triangles": 1036
+    },
+    {
+      "name": "oldgold",
+      "triangles": 1028
+    },
+    {
+      "name": "moon",
+      "triangles": 1044
+    },
+    {
+      "name": "shrimp",
+      "triangles": 704
+    }
+  ],
+  "orientation": "+X nose forward",
+  "pivot": "body centre"
+}

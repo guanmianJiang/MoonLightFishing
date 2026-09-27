@@ -1,0 +1,14 @@
+.codex/
+.sites-runtime/
+generated_images/
+*.tar.gz
+qa/
+upload/
+node_modules/
+build/
+dist/dist/
+dist/_backup/
+_shots/
+.chrome-qa/
+.video-review/
+.sites-publish/

@@ -1,0 +1,13 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_marine_life.py:9: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_marine_life.py:80: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  scene.world=bpy.data.worlds.new('Beach_review_world');scene.world.color=(.35,.35,.35);scene.world.use_nodes=True;scene.world.node_tree.nodes.get('Background').inputs['Color'].default_value=(.55,.65,.75,1);scene.world.node_tree.nodes.get('Background').inputs['Strength'].default_value=.55
+00:01.422  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\marine-life\blockout_front.png'
+00:01.735  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\marine-life\blockout_side.png'
+00:02.047  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\marine-life\blockout_top.png'
+00:02.344  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\marine-life\blockout_threequarter.png'
+00:02.625  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\marine-life\blockout_rear.png'
+VALIDATED {"lane": "Art-directed", "units": "metres", "assets": [{"name": "reef_shark", "triangles": 216, "pivot": "ground centre"}, {"name": "shoal_fish", "triangles": 216, "pivot": "ground centre"}], "texture_policy": "palette PBR; no baked texture or production UV claim"}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit

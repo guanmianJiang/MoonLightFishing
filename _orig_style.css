@@ -1,0 +1,178 @@
+﻿:root{
+  color-scheme:light;
+  --ink:#153f3b;
+  --ink-2:#2f5e57;
+  --muted:#6f867f;
+  --paper:#f7f3e7;
+  --paper-solid:#fbf8ef;
+  --glass:rgba(247,243,231,.78);
+  --deep:rgba(17,57,54,.92);
+  --line:rgba(31,74,68,.17);
+  --sun:#d79760;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:#8fc5ca;color:var(--ink);font:15px/1.55 Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:10px 16px;transition:background .18s ease,border-color .18s ease,transform .18s ease,opacity .18s ease}
+button:hover{background:#fff;transform:translateY(-1px)}
+button:focus-visible{outline:2px solid #f4e3b6;outline-offset:3px}
+button:disabled{cursor:default;transform:none}
+#game{position:relative;height:100svh;min-height:560px;overflow:hidden;isolation:isolate}
+#world{position:absolute;inset:0;z-index:-1}
+#world canvas{display:block;width:100%;height:100%}
+#world:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(11,51,57,.08),transparent 22%,transparent 74%,rgba(7,43,40,.17)),radial-gradient(ellipse at 49% 44%,transparent 52%,rgba(6,42,40,.14) 112%)}
+
+header{position:absolute;top:28px;left:34px;right:34px;display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none}
+.brand{display:flex;align-items:center;gap:13px;filter:drop-shadow(0 2px 12px rgba(244,249,239,.52))}
+.brand-mark{width:45px;height:45px;display:grid;place-items:center;border:1px solid rgba(24,77,69,.22);border-radius:50%;background:rgba(244,240,222,.72);font:33px/1 Georgia,serif;color:#29635d;backdrop-filter:blur(9px)}
+h1{margin:0;font:600 24px/1.15 "Songti SC","STSong",serif;letter-spacing:.24em}
+.brand div>span{display:block;margin-top:4px;color:#406d65;font-size:12px;letter-spacing:.32em}
+.top-actions{display:flex;gap:8px;pointer-events:auto}
+.top-actions button{min-height:42px;padding:9px 16px;border-color:rgba(255,255,255,.36);background:rgba(247,244,232,.72);box-shadow:0 8px 28px rgba(18,66,60,.08);backdrop-filter:blur(14px)}
+.top-actions span{margin-left:6px;padding:2px 7px;border-radius:99px;background:rgba(35,91,80,.10);font-size:12px}
+.conditions{position:absolute;top:91px;left:36px;display:flex;gap:13px;color:#315e57;font-size:12px;letter-spacing:.04em;text-shadow:0 1px 8px rgba(241,248,236,.72)}
+.conditions span+span{padding-left:13px;border-left:1px solid rgba(30,80,72,.22)}
+
+#spots{position:absolute;inset:0;pointer-events:none}
+.spot{position:absolute;transform:translate(-50%,-100%);padding:7px 12px;white-space:nowrap;pointer-events:auto;border:1px solid rgba(255,255,255,.45);background:rgba(246,244,229,.72);box-shadow:0 7px 24px rgba(9,57,54,.10);color:#355f58;font-size:12px;line-height:1.3;backdrop-filter:blur(10px)}
+.spot:hover{transform:translate(-50%,-100%);background:rgba(255,253,243,.92)}
+.spot:before{content:"";display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:#799891;vertical-align:1px;box-shadow:0 0 0 3px rgba(121,152,145,.13)}
+.spot small{display:none}
+.spot.active{border-color:rgba(244,230,181,.72);background:rgba(18,66,61,.88);color:#fff9e9;box-shadow:0 8px 26px rgba(8,51,48,.20)}
+.spot.active:before{background:#f3d79b;box-shadow:0 0 0 3px rgba(243,215,155,.17)}
+.spot.waiting{opacity:0;pointer-events:none}
+.aiming .spot:not(.active){opacity:.22}
+.aiming .conditions,.fishing .conditions{opacity:.62}
+#story{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);pointer-events:none;color:#f8f4df;font:500 17px/1.6 "Songti SC","STSong",serif;letter-spacing:.16em;text-align:center;text-shadow:0 2px 14px rgba(6,48,45,.48);white-space:nowrap}
+
+.camera-controls{position:absolute;right:28px;top:44%;display:flex;flex-direction:column;gap:7px}
+.camera-controls button{width:38px;height:38px;padding:0;border-color:rgba(255,255,255,.34);background:rgba(247,244,232,.68);font-size:19px;box-shadow:0 6px 20px rgba(12,59,55,.08);backdrop-filter:blur(10px)}
+.camera-controls .view-toggle{width:auto;min-width:58px;padding:0 13px;border-color:rgba(242,218,157,.62);background:rgba(20,67,62,.90);color:#fff6dc;font-size:12px;font-weight:700;letter-spacing:.08em}
+.waterside{position:absolute;left:34px;bottom:32px;width:275px;padding:14px 16px;border-left:2px solid rgba(246,227,174,.82);background:linear-gradient(90deg,rgba(18,61,57,.46),transparent);color:#f8f3df;text-shadow:0 1px 8px rgba(10,48,46,.45);pointer-events:none}
+.small-label{font-size:11px;letter-spacing:.2em;opacity:.72}
+.waterside p{margin:5px 0 7px;line-height:1.75}
+.waterside button{padding:0;border:0;border-bottom:1px solid rgba(255,248,218,.38);border-radius:0;background:none;color:#fff4d7;font-size:12px;pointer-events:auto}
+.waterside button:hover{background:none}
+
+footer{position:absolute;bottom:24px;left:50%;width:560px;max-width:calc(100% - 40px);transform:translateX(-50%)}
+.footer-top{display:flex;justify-content:space-between;align-items:end;padding:0 12px 9px;color:#f8f4df;font-size:14px;text-shadow:0 2px 10px rgba(9,53,49,.60)}
+#location{font-size:12px;opacity:.82}
+.toolbar{display:flex;align-items:center;gap:8px;padding:7px;border:1px solid rgba(255,255,255,.18);border-radius:18px;background:var(--deep);box-shadow:0 14px 45px rgba(6,43,40,.25);backdrop-filter:blur(18px)}
+#baits{display:flex;flex:1;gap:3px}
+.bait{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 8px;border-color:transparent;background:transparent;color:rgba(245,243,226,.74);white-space:nowrap}
+.bait:hover{background:rgba(255,255,255,.07);color:#fff9e9}
+.bait .symbol{color:#d7b979;font-size:20px;line-height:1}
+.bait strong{font-size:14px;font-weight:500}
+.bait small{display:none}
+.bait.selected{border-color:rgba(244,222,163,.28);background:rgba(246,232,190,.15);color:#fff9e9}
+.separator{height:30px;border-left:1px solid rgba(255,255,255,.16)}
+#cast{min-width:139px;padding:12px 19px;border-color:#e7c481;background:#e7c481;color:#173f3b;font-size:14px;font-weight:700;white-space:nowrap;box-shadow:0 7px 20px rgba(7,37,35,.18)}
+#cast:hover{background:#f2d99d}
+#cast span{margin-left:12px}
+#cast.ready{border-color:#df795a;background:#df795a;color:#fff;box-shadow:0 0 0 5px rgba(223,121,90,.20),0 8px 28px rgba(73,31,21,.24)}
+#cast:disabled{border-color:rgba(231,196,129,.36);background:rgba(231,196,129,.36);color:rgba(255,255,255,.70);opacity:1}
+.bottom-line{display:flex;justify-content:center;gap:16px;margin-top:8px;color:rgba(244,246,229,.74);font-size:11px;text-shadow:0 2px 9px rgba(8,51,48,.65)}
+#saveState{opacity:.68}
+
+.fishing .waterside,.aiming .waterside{opacity:0;pointer-events:none}
+.fishing .waterside button,.aiming .waterside button{pointer-events:none}
+.fishing #baits,.fishing .separator,.aiming #baits,.aiming .separator{display:none}
+.fishing footer,.aiming footer{width:370px}
+.fishing .toolbar,.aiming .toolbar{justify-content:center;padding:6px;background:rgba(14,55,52,.86)}
+.fishing #cast,.aiming #cast{width:100%}
+.aiming #cast{border-color:#e4b77f;background:#e4b77f;color:#173f3b}
+.fishing .footer-top,.aiming .footer-top{justify-content:center;flex-wrap:wrap;gap:6px}
+.fishing #location,.aiming #location{display:none}
+.fishing .bottom-line,.aiming .bottom-line{padding:4px 9px;border-radius:9px;background:rgba(10,50,47,.38);color:rgba(255,250,230,.72)}
+.fishing .camera-controls,.aiming .camera-controls{opacity:1}
+.fishing .camera-controls button:not(.view-toggle),.aiming .camera-controls button:not(.view-toggle){opacity:.58}
+.overview .spot.waiting{opacity:.38}
+.waterside,footer{transition:opacity .45s ease,width .45s ease}
+
+.eyebrow{color:#8d7650;font-size:12px;letter-spacing:.18em}
+dialog{max-height:92svh;padding:30px;border:1px solid rgba(255,255,255,.75);border-radius:20px;background:var(--paper-solid);box-shadow:0 28px 100px rgba(6,43,40,.33);color:var(--ink);overflow:auto}
+dialog::backdrop{background:rgba(8,43,41,.48);backdrop-filter:blur(7px)}
+.close{width:34px;height:34px;padding:0;border:0;background:transparent;font-size:25px;line-height:1}
+#result{width:410px;max-width:calc(100% - 28px);text-align:center}
+#result>.close{position:absolute;top:8px;right:10px}
+#specimen{width:320px;max-width:100%;height:210px;margin:7px auto 0;background:radial-gradient(ellipse at 50% 65%,rgba(87,147,135,.14),transparent 66%)}
+#specimen canvas{width:100%;height:100%;object-fit:contain}
+h2{margin:4px 0 12px;font:600 25px/1.4 "Songti SC","STSong",serif;letter-spacing:.08em}
+#catchDesc{margin:8px 0 14px;color:#697e77;font-size:14px;line-height:1.8}
+#catchStats{display:flex;justify-content:center;gap:35px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:#52796d;font-size:24px}
+#catchStats small{display:block;color:#84948d;font-size:11px}
+#catchMemory{color:#8c7653;font-size:13px;line-height:1.8}
+.primary{width:100%;margin-top:7px;border:0;background:#285f57;color:#fff;font-weight:600}
+.primary:hover{background:#1f504a}
+#book{width:660px;max-width:calc(100% - 24px);padding:28px}
+.book-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.book-top h2{margin-top:7px}
+nav{display:flex;gap:8px;margin:8px 0 18px;border-bottom:1px solid var(--line)}
+nav button{padding:11px;border:0;border-radius:0;background:none;color:#71857e;font-size:14px}
+nav button.active{border-bottom:2px solid #396f64;color:#245b52}
+.empty{padding:35px 12px;color:#7c9089;text-align:center}
+.entry{display:flex;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid var(--line)}
+.thumb{flex-shrink:0;width:100px;height:74px;border-radius:10px;background:#e5ece6 center/contain no-repeat}
+.entry h3{margin:0 0 4px;font-size:16px;font-weight:600}
+.entry p{margin:0;color:#758a83;font-size:12px}
+.badge{margin-left:8px;color:#a27a3d;font-size:11px}
+.clue{margin:20px 0;padding:7px 0 7px 16px;border-left:2px solid #89a99b}
+.clue h3{margin:0 0 8px;color:#426e62;font-size:16px}
+.clue p{margin:5px 0;color:#6c817a;font-size:14px}
+.clue.locked{opacity:.62}
+.record-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.record-grid>div{padding:22px;border-radius:12px;background:#e8eee7}
+.record-grid strong{display:block;color:#416e62;font-size:27px;font-weight:500}
+.record-grid span{color:#788b84;font-size:12px}
+.book-note{margin-top:18px;color:#748982;font-size:12px}
+.toast{position:fixed;z-index:5;top:108px;left:50%;max-width:90vw;transform:translateX(-50%);padding:10px 18px;border:1px solid rgba(255,255,255,.35);border-radius:99px;background:rgba(19,61,57,.92);box-shadow:0 10px 34px rgba(8,40,38,.2);color:#fff8e7;font-size:14px;text-align:center;pointer-events:none}
+#renderError{position:absolute;z-index:20;top:40%;left:50%;width:300px;transform:translate(-50%,-50%);padding:25px;border-radius:14px;background:var(--paper);text-align:center}
+#renderError[hidden]{display:none}
+
+@media(max-width:1100px){
+  .waterside{bottom:145px;max-width:260px}
+  .camera-controls{right:18px}
+  footer{bottom:18px}
+}
+@media(max-width:600px){
+  header{top:18px;left:17px;right:17px}
+  .brand{gap:8px}
+  .brand-mark{width:39px;height:39px;font-size:28px}
+  h1{font-size:20px}
+  .brand div>span{font-size:10px}
+  .top-actions{gap:5px}
+  .top-actions button{min-height:36px;padding:7px 10px;font-size:12px}
+  .conditions{top:73px;left:20px;gap:10px;font-size:11px}
+  .conditions span+span{padding-left:10px}
+  .camera-controls{top:35%;right:12px}
+  .camera-controls button{width:34px;height:34px}
+  .camera-controls .view-toggle{width:auto;min-width:52px;padding:0 10px}
+  .waterside{bottom:148px;left:18px;max-width:242px;padding:10px 12px;font-size:12px}
+  .waterside p{max-height:45px;overflow:hidden}
+  footer{bottom:max(15px,env(safe-area-inset-bottom));max-width:calc(100% - 22px)}
+  .toolbar{gap:4px;padding:5px}
+  .bait{gap:4px;padding:10px 4px}
+  .bait strong{font-size:12px}
+  .bait .symbol{font-size:17px}
+  #cast{min-width:104px;padding:11px 10px;font-size:13px}
+  #cast span{margin-left:5px}
+  .bottom-line{gap:9px;margin-top:6px;font-size:10px;flex-wrap:wrap}
+  .footer-top{padding:0 6px 7px;font-size:12px}
+  #location{font-size:11px}
+  #story{font-size:15px;letter-spacing:.08em}
+  .spot{padding:6px 9px;font-size:11px}
+  #result{padding:26px 22px 20px}
+  #specimen{height:180px}
+  #book{padding:22px 18px}
+  .entry{gap:10px}
+  .thumb{width:80px;height:65px}
+  nav button{padding:10px 8px}
+  h2{font-size:23px}
+}
+@media(max-height:640px) and (min-width:700px){
+  #game{min-height:460px}
+  .waterside{bottom:20px;max-width:220px;font-size:12px}
+  .conditions{top:80px}
+  footer{bottom:10px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

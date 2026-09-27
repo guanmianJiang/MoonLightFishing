@@ -1,0 +1,22 @@
+{
+  "lane": "Art-directed",
+  "units": "metres",
+  "assets": [
+    {
+      "name": "reef_shark",
+      "triangles": 216,
+      "pivot": "body centre"
+    },
+    {
+      "name": "shoal_fish",
+      "triangles": 216,
+      "pivot": "body centre"
+    },
+    {
+      "name": "silver_fish",
+      "triangles": 216,
+      "pivot": "body centre"
+    }
+  ],
+  "texture_policy": "palette PBR; no baked texture or production UV claim"
+}

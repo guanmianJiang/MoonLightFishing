@@ -1,0 +1,293 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_specimens.py:12: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+21:14:18 | INFO: Starting glTF 2.0 export
+21:14:18 | INFO: Extracting primitive: Anal_fin
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: carp_Body
+21:14:18 | INFO: Primitives created: 2
+21:14:18 | INFO: Extracting primitive: TailFin
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: TailFinLower
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Dorsal
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Finished glTF 2.0 export in 0.016122817993164062 s
+
+21:14:18 | INFO: Starting glTF 2.0 export
+21:14:18 | INFO: Extracting primitive: Anal_fin.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Dorsal.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.006
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.007
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.004
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.004
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.006
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.007
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Cube
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Cube.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: minnow_Body
+21:14:18 | INFO: Primitives created: 2
+21:14:18 | INFO: Extracting primitive: TailFin.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: TailFinLower.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Finished glTF 2.0 export in 0.018002033233642578 s
+
+21:14:18 | INFO: Starting glTF 2.0 export
+21:14:18 | INFO: Extracting primitive: Anal_fin.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Dorsal.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.010
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.011
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.008
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.009
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.008
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.010
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.009
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.011
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.004
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Perch_bar
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Perch_bar.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Perch_bar.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Perch_bar.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Perch_bar.004
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Perch_bar.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Perch_bar.006
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Perch_bar.007
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: perch_Body
+21:14:18 | INFO: Primitives created: 2
+21:14:18 | INFO: Extracting primitive: TailFin.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: TailFinLower.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Finished glTF 2.0 export in 0.019887447357177734 s
+
+21:14:18 | INFO: Starting glTF 2.0 export
+21:14:18 | INFO: Extracting primitive: Anal_fin.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: catfish_Body
+21:14:18 | INFO: Primitives created: 2
+21:14:18 | INFO: Extracting primitive: TailFin.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: TailFinLower.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Dorsal.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.014
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.015
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.012
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.013
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.012
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.014
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.013
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.015
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.006
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.007
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Whisker
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Whisker.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Whisker.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Whisker.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Finished glTF 2.0 export in 0.026332855224609375 s
+
+21:14:18 | INFO: Starting glTF 2.0 export
+21:14:18 | INFO: Extracting primitive: Anal_fin.004
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Dorsal.004
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.018
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.019
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.016
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.017
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.016
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.018
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.017
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.019
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: oldgold_Body
+21:14:18 | INFO: Primitives created: 2
+21:14:18 | INFO: Extracting primitive: TailFin.004
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.008
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.009
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Finished glTF 2.0 export in 0.012999773025512695 s
+
+21:14:18 | INFO: Starting glTF 2.0 export
+21:14:18 | INFO: Extracting primitive: Anal_fin.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Dorsal.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.022
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.023
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.020
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.021
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.020
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.022
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.021
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Sphere.023
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: moon_Body
+21:14:18 | INFO: Primitives created: 2
+21:14:18 | INFO: Extracting primitive: TailFin.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: TailFinLower.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.010
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Pectoral.011
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Ventral_crescent
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Finished glTF 2.0 export in 0.01575326919555664 s
+
+21:14:18 | INFO: Starting glTF 2.0 export
+21:14:18 | INFO: Extracting primitive: Antenna
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Antenna.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.031
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.032
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.003
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.004
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.005
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.006
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.007
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.008
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Leg.009
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.024
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.025
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.026
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.027
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.028
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.029
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Icosphere.030
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Tail_fan
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Tail_fan.001
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Extracting primitive: Tail_fan.002
+21:14:18 | INFO: Primitives created: 1
+21:14:18 | INFO: Finished glTF 2.0 export in 0.018000125885009766 s
+00:07.890  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\specimens\specimens_contact.png'
+00:08.250  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\specimens\carp.png'
+00:08.593  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\specimens\minnow.png'
+00:08.953  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\specimens\perch.png'
+00:09.328  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\specimens\catfish.png'
+00:09.687  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\specimens\oldgold.png'
+00:10.062  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\specimens\moon.png'
+00:10.422  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\dist\assets\models\specimens\shrimp.png'
+
+Info: Saved as "specimens.blend"
+VALIDATED {"lane": "Art-directed", "units": "normalized", "assets": [{"name": "carp", "triangles": 1036}, {"name": "minnow", "triangles": 1060}, {"name": "perch", "triangles": 1132}, {"name": "catfish", "triangles": 1036}, {"name": "oldgold", "triangles": 1028}, {"name": "moon", "triangles": 1044}, {"name": "shrimp", "triangles": 704}], "orientation": "+X nose forward", "pivot": "body centre"}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit

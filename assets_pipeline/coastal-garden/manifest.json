@@ -1,0 +1,23 @@
+{
+  "lane": "Art-directed",
+  "units": "metres",
+  "assets": [
+    {
+      "name": "dune_grass",
+      "triangles": 1872
+    },
+    {
+      "name": "beach_bloom",
+      "triangles": 2332
+    },
+    {
+      "name": "driftwood",
+      "triangles": 252
+    },
+    {
+      "name": "shell_pair",
+      "triangles": 592
+    }
+  ],
+  "material_policy": "joined material batches, palette-based PBR"
+}

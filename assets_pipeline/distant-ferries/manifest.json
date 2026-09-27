@@ -1,0 +1,19 @@
+{
+  "lane": "Art-directed",
+  "units": "metres",
+  "assets": [
+    {
+      "name": "passenger_ferry_a",
+      "role": "distant cruise ship",
+      "scale": 1
+    },
+    {
+      "name": "passenger_ferry_b",
+      "role": "distant excursion ship",
+      "scale": 0.82
+    }
+  ],
+  "pivot": "body centre",
+  "axis": "+X bow forward",
+  "texture_policy": "embedded palette PBR"
+}

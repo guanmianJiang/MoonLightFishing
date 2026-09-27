@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>《等一尾·月隐湾》UI 优化方案</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f7f3e7'/%3E%3Cpath d='M16 6v20M8 26q8-5 16 0' stroke='%23153f3b' fill='none' stroke-width='2'/%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#153f3b; --ink-2:#2f5e57; --muted:#6f867f;
+  --paper:#f7f3e7; --paper-solid:#fbf8ef; --soft:#e8eee7;
+  --line:rgba(31,74,68,.17);
+  --accent:#d79760; --bite:#df795a; --gold:#e7c481;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#ece5d3;color:var(--ink);
+  font:15px/1.7 "Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 28px 80px}
+h1{font:600 30px/1.3 "Noto Serif SC","Songti SC",serif;letter-spacing:.04em;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 36px;font-size:14px}
+h2{font:600 21px/1.3 "Noto Serif SC","Songti SC",serif;margin:44px 0 14px;
+  padding-left:12px;border-left:3px solid var(--accent)}
+h3{font-size:15px;margin:0 0 8px;color:var(--ink-2)}
+p{margin:8px 0}
+.lead{font-size:15px;color:var(--ink-2)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+.card{background:var(--paper-solid);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.1em;
+  padding:3px 9px;border-radius:99px;margin-bottom:10px}
+.tag.arch{background:#e8f0ea;color:#3e7a67}
+.tag.style{background:#f3ecda;color:#9a7a3d}
+.tag.inter{background:#f6e2d6;color:#b85a3e}
+.card ul{margin:6px 0 0;padding-left:18px;font-size:13.5px;color:#3a5a53}
+.card li{margin:5px 0}
+.card li b{color:var(--ink)}
+code{background:#eef2ec;padding:1px 6px;border-radius:5px;font-size:12.5px;
+  font-family:ui-monospace,Consolas,monospace}
+
+/* token 表 */
+table{width:100%;border-collapse:collapse;background:var(--paper-solid);
+  border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13.5px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#eef2ec;font-weight:600;color:var(--ink-2);font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.sw{display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:-4px;
+  margin-right:7px;border:1px solid rgba(0,0,0,.08)}
+
+/* 线框 */
+.mock{position:relative;height:340px;background:linear-gradient(180deg,#bfe0e2 0%,#8fc5ca 60%,#6fb0b6 100%);
+  border-radius:14px;overflow:hidden;border:1px solid rgba(20,60,55,.2);font-size:10.5px}
+.mock .lbl{position:absolute;background:rgba(251,248,239,.92);border:1px solid rgba(31,74,68,.25);
+  color:var(--ink);border-radius:7px;padding:3px 7px;line-height:1.25}
+.mock .lbl.ghost{background:rgba(20,66,61,.85);color:#fff6dc;border-color:transparent}
+.mock .lbl.accent{background:#e7c481;color:#173f3b;border-color:transparent;font-weight:700}
+.mock .lbl.dim{background:rgba(255,255,255,.45);color:#285b53;border-color:transparent}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 0;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;
+  margin-right:5px;vertical-align:-1px}
+.legend .k1::before{background:#e7c481}
+.legend .k2::before{background:rgba(20,66,61,.85)}
+.legend .k3::before{background:rgba(255,255,255,.5)}
+.legend .k4::before{background:#fbf8ef;border:1px solid #999}
+.ba-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ba-cols h4{margin:0 0 8px;font-size:13px;color:var(--ink-2);font-weight:600}
+
+/* 优先级 */
+.prio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.prio .card{border-top:4px solid}
+.p0{border-top-color:#b85a3e!important}
+.p1{border-top-color:#d79760!important}
+.p2{border-top-color:#74a08e!important}
+.prio .lvl{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted)}
+.prio ol{margin:8px 0 0;padding-left:18px;font-size:13.5px}
+.prio li{margin:6px 0}
+.foot{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:12.5px}
+@media(max-width:820px){
+  .grid3,.prio,.ba-cols{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>《等一尾 · 月隐湾》UI 优化方案</h1>
+  <p class="sub">基于 dist/index.html、style.css、app.js 的现状诊断 · 不改动 3D 场景与玩法逻辑，只收敛 HUD / 对话框 / 信息架构</p>
+
+  <p class="lead">一句话结论：<b>不是元素丑，是"每个元素都在抢主"。</b>准备态屏幕上同时常驻约 18 个信息块，玻璃拟态铺了 7 层，强调色散成 5 个，圆角 8 种——结果水面（本该是主角）被一圈等权重的浮层围住，玩家不知道先看哪。优化方向是<b>做减法 + 立 token</b>：把分散的"本轮状态"收进一个面板，把玻璃只留给真正需要浮在场景上的层，把颜色/圆角/字号收成三档。</p>
+
+  <h2>一、根因诊断</h2>
+  <div class="grid3">
+    <div class="card">
+      <span class="tag arch">信息架构</span>
+      <h3>同类信息散在五个角落</h3>
+      <ul>
+        <li>"轮次/剩余竿数/调查进度"在<b>右上</b>三 chip。</li>
+        <li>"天气/追踪/连续判断/本轮目标/水域事件"在<b>左上第二行</b>四 span。</li>
+        <li>"钓点/水深/状态文案/步骤"在<b>底部 footer</b> 四行。</li>
+        <li>"现场观察"在<b>左下</b>卡片。</li>
+        <li>玩家视线要在 5 个区域间跳，且 chip 内容密度不一：有的装 1 个指标，有的塞 3 个（<code>水域事件：…·已触发 N 次·…</code>）。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag style">视觉体系</span>
+      <h3>没有 token，每个组件独立配色</h3>
+      <ul>
+        <li><b>圆角 8 种</b>：999 / 22 / 20 / 18 / 13 / 12 / 11 / 10 / 9。</li>
+        <li><b>强调色 5 个</b>：<code>#e7c481</code>、<code>#df795a</code>、<code>#f3d79b</code>、<code>#e9a68e</code>、<code>#c7eee5</code>；<code>--sun:#d79760</code> 定义了却几乎没用。</li>
+        <li><b>阴影透明度</b>从 .06 到 .33 随手写，没有 elevation 分层。</li>
+        <li>玻璃拟态用在 header、spot、camera、bait-detail、toolbar、toast 共 6+ 处，<b>浮层等于没有浮层</b>。</li>
+        <li>衬线体用在 story、h2、sceneAction、stepLabel、tactic strong 上，和无衬线按钮混排，节奏乱。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag inter">交互节奏</span>
+      <h3>同一动作有三处入口</h3>
+      <ul>
+        <li>读漂阶段：底部"提竿"、屏幕中央 <code>#sceneAction</code> 大圆、底部上方 <code>#tactics</code> 三按钮——<b>三个 CTA 同时出现</b>，视线来回跳。</li>
+        <li>footer 在 fishing/aiming 时 width <code>560→370</code>，同时硬切隐藏 baits / separator / bait-detail / waterside，<b>布局跳变</b>。</li>
+        <li>移动端 conditions 四 span 挤一行 truncate，"水域事件"直接被省略号吃掉。</li>
+        <li>toast 两套（<code>toast</code> / <code>selectionNotice</code>），样式几乎相同。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>二、设计 token 收敛方案</h2>
+  <p class="lead">把 style.css 里散落的数值收成 <code>:root</code> 变量，组件只引用变量，不再写死。</p>
+  <table>
+    <colgroup><col style="width:18%"><col style="width:42%"><col style="width:40%"></colgroup>
+    <thead><tr><th>维度</th><th>收敛后</th><th>替代现状</th></tr></thead>
+    <tbody>
+      <tr><td><b>圆角</b></td><td><code>--r-sm:10</code> · <code>--r-md:14</code> · <code>--r-lg:20</code> · <code>--r-pill:999</code></td><td>现在 8 档 → 4 档；camera(22)、toolbar(18)、tactic(13)、gear(10) 全部归并</td></tr>
+      <tr><td><b>字号</b></td><td>11 / 12 / 13 / 14 / 16 / 20 / 24 七档</td><td>现在 9–27px 共 13 档；9px、10px 小字全部提到 11px</td></tr>
+      <tr><td><b>字重</b></td><td>400 正文 / 600 强调 / 700 主按钮</td><td>现在 650 这种非标准字重全部归 600/700</td></tr>
+      <tr><td><b>颜色</b></td><td><span class="sw" style="background:#153f3b"></span>ink 主 · <span class="sw" style="background:#6f867f"></span>muted · <span class="sw" style="background:#f7f3e7"></span>paper · <span class="sw" style="background:#d79760"></span>accent 金 · <span class="sw" style="background:#df795a"></span>bite 咬钩红</td><td>5 个强调色合并为 1 金 1 红；饵色只在 .symbol 小图标上保留</td></tr>
+      <tr><td><b>阴影</b></td><td><code>--e1:0 2px 10px</code> resting · <code>--e2:0 10px 30px</code> raised · <code>--e3:0 24px 70px</code> overlay</td><td>现在随手写的 0.06–0.33 透明度全部归这三档</td></tr>
+      <tr><td><b>玻璃</b></td><td>只保留 2 处：底部 toolbar、dialog backdrop</td><td>header chip / spot / camera / bait-detail 改<b>实色 + 细边</b>，不再 blur</td></tr>
+      <tr><td><b>衬线</b></td><td>只用于：dialog 大标题、#story 叙事字、结果页鱼名</td><td>按钮 strong、stepLabel、tactic strong 改回无衬线</td></tr>
+    </tbody>
+  </table>
+
+  <h2>三、布局重构：准备态 before / after</h2>
+  <div class="legend">
+    <span class="k1">主 CTA（抛竿/收线）</span>
+    <span class="k2">常驻状态面板</span>
+    <span class="k3">场景浮层（玻璃）</span>
+    <span class="k4">信息文字</span>
+  </div>
+  <div class="ba-cols" style="margin-top:10px">
+    <div>
+      <h4>现状 · 约 18 个块同屏</h4>
+      <div class="mock">
+        <div class="lbl" style="top:14px;left:16px">品牌</div>
+        <div class="lbl" style="top:14px;right:16px">轮次 / 进度 / 声 / 册</div>
+        <div class="lbl dim" style="top:52px;left:18px">天气·追踪·目标·事件（4 项挤一行）</div>
+        <div class="lbl" style="top:120px;left:38px">钓点标签</div>
+        <div class="lbl ghost" style="top:160px;right:60px">＋ / − / ⌖</div>
+        <div class="lbl" style="bottom:150px;left:18px">现场记录卡</div>
+        <div class="lbl dim" style="bottom:118px;left:50%;transform:translateX(-50%)">饵详情（小胶囊）</div>
+        <div class="lbl ghost" style="bottom:86px;left:50%;transform:translateX(-50%);width:60%;text-align:center">饵槽 + 分隔 + 抛竿按钮</div>
+        <div class="lbl dim" style="bottom:52px;left:50%;transform:translateX(-50%)">提示语 / 自动保存</div>
+      </div>
+    </div>
+    <div>
+      <h4>优化后 · 8 个块，主次分明</h4>
+      <div class="mock">
+        <div class="lbl" style="top:14px;left:16px">品牌（仅 logo + 名字）</div>
+        <div class="lbl ghost" style="top:14px;right:16px">本轮面板：竿数 · 进度 · [详情▾]</div>
+        <div class="lbl" style="top:52px;left:18px">天气（单 chip，其余收进面板）</div>
+        <div class="lbl" style="top:120px;left:38px">钓点标签（实色）</div>
+        <div class="lbl ghost" style="top:160px;right:60px">＋ / − / ⌖</div>
+        <div class="lbl dim" style="bottom:120px;left:18px">现场观察（单行文字，无卡片）</div>
+        <div class="lbl ghost" style="bottom:86px;left:50%;transform:translateX(-50%);width:56%;text-align:center">饵槽 ······ [抛一竿]</div>
+        <div class="lbl dim" style="bottom:56px;left:50%;transform:translateX(-50%)">一句操作提示</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>四、优先级清单</h2>
+  <div class="prio">
+    <div class="card p0">
+      <div class="lvl">P0 · 立刻见效（半天）</div>
+      <ol>
+        <li>把 <code>:root</code> 扩成 token 表（圆角/字号/阴影/色），全文件查找替换硬编码值。</li>
+        <li>右上 4 chip + conditions 4 span 合并为一个<b>"本轮"胶囊</b>：<code>第2轮·剩3竿 · 进度 12</code>，点击展开目标/事件/追踪。</li>
+        <li>header chip、spot、camera、bait-detail 去掉 backdrop-blur，改实色 + <code>--e1</code>。</li>
+        <li>读漂阶段去掉中央 <code>#sceneAction</code>，提竿只保留底部主按钮 + 点浮漂两种操作。</li>
+      </ol>
+    </div>
+    <div class="card p1">
+      <div class="lvl">P1 · 一周内（让节奏顺）</div>
+      <ol>
+        <li>footer 从 4 行压成 2 行：上行 status + 地点，下行 toolbar；fishing 态不缩 width，改 opacity 过渡。</li>
+        <li>左下"现场记录"从卡片改成单行文字（去掉左边框和渐变底），只在有新线索时短暂浮现。</li>
+        <li>dialog 内卡片背景统一为 <code>--soft:#e8eee7</code>，book 四个 tab 不再各自配色。</li>
+        <li>合并两套 toast；移动端 conditions 改为纵向两行，不再 truncate。</li>
+      </ol>
+    </div>
+    <div class="card p2">
+      <div class="lvl">P2 · 后续打磨</div>
+      <ol>
+        <li>结果弹窗：specimen 图区和 stats 之间加留白分层，process 三按钮改为"保留/放流/记录"两主一次。</li>
+        <li>book 的 collection / water / gear / clues 列表项抽成统一的 entry 组件，去掉重复样式。</li>
+        <li>加一个 <code>prefers-reduced-motion</code> 之外的"UI 简洁模式"：等待态自动隐藏 camera 和 hint。</li>
+      </ol>
+    </div>
+  </div>
+
+  <p class="foot">本方案只动 <code>dist/index.html</code> / <code>dist/style.css</code> / <code>app.js</code> 里的 UI 渲染层，不碰 scene.js / water.js / fishing-motion.js 的 3D 与玩法。确认方向后我可以直接落地 P0。</p>
+</div>
+</body>
+</html>

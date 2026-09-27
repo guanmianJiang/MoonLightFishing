@@ -1,0 +1,35 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_coastal_garden.py:10: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(n);m.diffuse_color=(*c,1);m.use_nodes=True;p=m.node_tree.nodes['Principled BSDF'];p.inputs['Base Color'].default_value=(*c,1);p.inputs['Roughness'].default_value=.86;return m
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+21:40:26 | INFO: Starting glTF 2.0 export
+21:40:26 | INFO: Extracting primitive: Grass_blade.008
+21:40:26 | INFO: Primitives created: 3
+21:40:26 | INFO: Finished glTF 2.0 export in 0.009063482284545898 s
+
+21:40:26 | INFO: Starting glTF 2.0 export
+21:40:26 | INFO: Extracting primitive: Sea_purslane.004
+21:40:26 | INFO: Primitives created: 5
+21:40:26 | INFO: Finished glTF 2.0 export in 0.0095062255859375 s
+
+21:40:26 | INFO: Starting glTF 2.0 export
+21:40:26 | INFO: Extracting primitive: Weathered_branch
+21:40:26 | INFO: Primitives created: 2
+21:40:26 | INFO: Finished glTF 2.0 export in 0.003999471664428711 s
+
+21:40:26 | INFO: Starting glTF 2.0 export
+21:40:26 | INFO: Extracting primitive: Scallop_shell.001
+21:40:26 | INFO: Primitives created: 2
+21:40:26 | INFO: Finished glTF 2.0 export in 0.004002094268798828 s
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_coastal_garden.py:81: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  scene.world=bpy.data.worlds.new('Review');scene.world.use_nodes=True;scene.world.node_tree.nodes['Background'].inputs[0].default_value=(.24,.29,.30,1)
+00:02.797  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\coastal-garden\final_threequarter.png'
+00:03.828  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\coastal-garden\final_front.png'
+00:04.828  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\coastal-garden\final_side.png'
+00:05.860  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\coastal-garden\final_top.png'
+00:06.860  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\coastal-garden\final_rear.png'
+
+Info: Saved as "coastal_garden.blend"
+VALIDATED {"lane": "Art-directed", "units": "metres", "assets": [{"name": "dune_grass", "triangles": 1872}, {"name": "beach_bloom", "triangles": 2332}, {"name": "driftwood", "triangles": 252}, {"name": "shell_pair", "triangles": 592}], "material_policy": "joined material batches, palette-based PBR"}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit

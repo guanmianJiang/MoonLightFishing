@@ -1,0 +1,83 @@
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_shore_props.py:9: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.0\5.0\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+18:39:09 | INFO: Starting glTF 2.0 export
+18:39:09 | INFO: Extracting primitive: reef_tall
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Finished glTF 2.0 export in 0.007504940032958984 s
+
+18:39:09 | INFO: Starting glTF 2.0 export
+18:39:09 | INFO: Extracting primitive: reef_shelf
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Finished glTF 2.0 export in 0.0075800418853759766 s
+
+18:39:09 | INFO: Starting glTF 2.0 export
+18:39:09 | INFO: Extracting primitive: reef_small
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Finished glTF 2.0 export in 0.007103443145751953 s
+
+18:39:09 | INFO: Starting glTF 2.0 export
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.001
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.002
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.003
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.004
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.005
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.006
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.007
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.008
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.009
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Fire_ring_stone.010
+18:39:09 | INFO: Primitives created: 4
+18:39:09 | INFO: Extracting primitive: Cylinder
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Cylinder.001
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Cylinder.002
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Cylinder.003
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Cylinder.004
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Cylinder.005
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Flame_00
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Flame_01
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Flame_02
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Flame_03
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Flame_04
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Extracting primitive: Flame_05
+18:39:09 | INFO: Primitives created: 1
+18:39:09 | INFO: Finished glTF 2.0 export in 0.033329010009765625 s
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_shore_props.py:98: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  scene.world=bpy.data.worlds.new('Beach_review_world');scene.world.color=(.35,.35,.35);scene.world.use_nodes=True;scene.world.node_tree.nodes.get('Background').inputs['Color'].default_value=(.55,.65,.75,1);scene.world.node_tree.nodes.get('Background').inputs['Strength'].default_value=.55
+00:01.813  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\shore-props\final_front.png'
+00:02.125  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\shore-props\final_side.png'
+00:02.453  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\shore-props\final_top.png'
+00:02.781  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\shore-props\final_threequarter.png'
+00:03.094  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\shore-props\final_rear.png'
+00:03.375  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\shore-props\final_clay.png'
+E:\Trunks\moonwater-fishing-source-20260920\tools\generate_shore_props.py:9: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
+00:03.672  render           | Saved: 'E:\Trunks\moonwater-fishing-source-20260920\assets_pipeline\shore-props\final_silhouette.png'
+
+Info: Saved as "shore_props.blend"
+VALIDATED {"lane": "Art-directed", "units": "metres", "assets": [{"name": "reef_tall", "triangles": 86, "pivot": "ground centre"}, {"name": "reef_shelf", "triangles": 86, "pivot": "ground centre"}, {"name": "reef_small", "triangles": 86, "pivot": "ground centre"}, {"name": "beach_campfire", "triangles": 1406, "pivot": "ground centre"}], "texture_policy": "palette PBR; no baked texture or production UV claim"}
+Blender 5.0.0 (hash a37564c4df7a built 2025-11-18 11:06:54)
+
+Blender quit
