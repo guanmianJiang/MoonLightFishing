@@ -120,6 +120,7 @@ footer,.aiming footer,.fishing footer{position:absolute;right:calc(25px + env(sa
 #fight .fight-actions .game-action{min-height:67px}
 #fight #fightFeedback{min-height:0}
 #fightHold,#fight.danger #fightHold.game-action{--action-top:#d9eee5;--action-bottom:#bfe2d5;--action-ink:#315d55;--action-muted:#4f7b6c;--action-icon-ink:#457b70;border:0;background:linear-gradient(150deg,var(--action-top),var(--action-bottom));box-shadow:var(--calm-shadow);color:var(--action-ink)}
+#fightHold.game-action{touch-action:none;user-select:none;-webkit-user-select:none}
 #fightHold.held,#fight.danger #fightHold.game-action.held{background:#a8d5c6;box-shadow:inset 0 2px 5px #4c8d7960}
 #fightHold .fight-lift-cue{border-color:rgba(65,119,101,.25);color:#3c7666}
 #fightHold.lift-ready .fight-lift-cue,#fightHold.lifting .fight-lift-cue{background:rgba(111,169,137,.16)}
