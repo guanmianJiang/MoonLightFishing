@@ -105,9 +105,9 @@ footer,.aiming footer,.fishing footer{position:absolute;right:calc(25px + env(sa
 #tactics #tacticDo:hover{background:#ed9c7a}
 #tactics #tacticDo:active{transform:scale(.96);box-shadow:none}
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:calc(20px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));left:auto;width:min(245px,calc(100% - 40px));min-height:72px;padding:9px 12px;gap:8px;transform:none}
-.game-action:is(#sceneAction,#landFish,#fightPump,#fightHold){--action-top:#fff7e5;--action-bottom:#fbeccb;--action-edge:transparent;--action-ink:#315d55;--action-muted:#66887b;--action-icon:transparent;--action-icon-border:transparent;--action-icon-ink:#477c70;border:0;border-radius:17px;background:linear-gradient(150deg,var(--action-top),var(--action-bottom));box-shadow:var(--calm-shadow);color:var(--action-ink);text-shadow:none}
-.game-action:is(#sceneAction,#landFish,#fightPump,#fightHold) .game-action__art{width:42px;height:42px;border:0;border-radius:12px;background:none;box-shadow:none;color:var(--action-icon-ink)}
-.game-action#sceneAction[data-action="lift"],.game-action#landFish,.game-action#fightPump.ready{--action-top:#f9d6af;--action-bottom:#f2b992;--action-ink:#3d5b50;--action-muted:#665f4f}
+.game-action:is(#sceneAction,#landFish,#fightHold){--action-top:#fff7e5;--action-bottom:#fbeccb;--action-edge:transparent;--action-ink:#315d55;--action-muted:#66887b;--action-icon:transparent;--action-icon-border:transparent;--action-icon-ink:#477c70;border:0;border-radius:17px;background:linear-gradient(150deg,var(--action-top),var(--action-bottom));box-shadow:var(--calm-shadow);color:var(--action-ink);text-shadow:none}
+.game-action:is(#sceneAction,#landFish,#fightHold) .game-action__art{width:42px;height:42px;border:0;border-radius:12px;background:none;box-shadow:none;color:var(--action-icon-ink)}
+.game-action#sceneAction[data-action="lift"],.game-action#landFish{--action-top:#f9d6af;--action-bottom:#f2b992;--action-ink:#3d5b50;--action-muted:#665f4f}
 .game-action#sceneAction[data-action="retrieve"]{--action-top:#e6f2e8;--action-bottom:#d3e9df;--action-ink:#315d55;--action-muted:#66887b}
 #sceneAction .action-countdown{border:0;background:rgba(255,255,255,.52)}
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]):active,#game #landFish.game-action:not([hidden]):active{transform:scale(.97);box-shadow:var(--calm-shadow)}
@@ -121,7 +121,8 @@ footer,.aiming footer,.fishing footer{position:absolute;right:calc(25px + env(sa
 #fight #fightFeedback{min-height:0}
 #fightHold,#fight.danger #fightHold.game-action{--action-top:#d9eee5;--action-bottom:#bfe2d5;--action-ink:#315d55;--action-muted:#4f7b6c;--action-icon-ink:#457b70;border:0;background:linear-gradient(150deg,var(--action-top),var(--action-bottom));box-shadow:var(--calm-shadow);color:var(--action-ink)}
 #fightHold.held,#fight.danger #fightHold.game-action.held{background:#a8d5c6;box-shadow:inset 0 2px 5px #4c8d7960}
-#fightPump,#fightPump.ready{border:0;box-shadow:var(--calm-shadow)}
+#fightHold .fight-lift-cue{border-color:rgba(65,119,101,.25);color:#3c7666}
+#fightHold.lift-ready .fight-lift-cue,#fightHold.lifting .fight-lift-cue{background:rgba(111,169,137,.16)}
 
 /* Journal and result pages use open paper with flat sections. */
 dialog::backdrop{background:rgba(35,75,69,.26);backdrop-filter:blur(4px)}

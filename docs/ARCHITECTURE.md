@@ -27,7 +27,7 @@
 - 抛竿结果在创建时确定，结算只处理一次；刷新后不得重新抽鱼或重复奖励。
 - 直接加载的资源路径以 `./assets/` 为页面相对前缀。CSS 使用 `/assets/`，Vite 会按相对发布基址重写到 `build/bundles/` 对应的 `../assets/`。
 - `npm test` 运行 Node 单元与结构测试；`npm run build` 构建并检查关键模型、贴图、字体和所有声明的音频。渲染质量、输入手感和真机性能仍需浏览器/设备验收。
-- 本仓库没有 Unity 工程。用户指定的 Unity Test Framework 与当前技术栈不一致；现存 Node 测试不可当作 Unity 测试。
+- 技术栈已确认为 Three.js + SolidJS + Vite，单元测试使用 Node `node:test`；本仓库不使用 Unity，也不存在 Unity Test Framework 工程。
 
 ## 产品与技术待决事项
 

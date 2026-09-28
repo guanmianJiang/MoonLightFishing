@@ -3,14 +3,17 @@ from mathutils import Vector
 
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT=os.path.join(ROOT,'assets_pipeline','specimens')
-WEB=os.path.join(ROOT,'dist','assets','models','specimens')
+WEB=os.path.join(ROOT,'public','assets','models','specimens')
 os.makedirs(OUT,exist_ok=True);os.makedirs(WEB,exist_ok=True)
 BLOCK='--blockout' in sys.argv
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
 def mat(name,color,rough=.58,metal=0):
  m=bpy.data.materials.new(name);m.diffuse_color=(*color,1);m.use_nodes=True
- p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*color,1);p.inputs['Roughness'].default_value=rough;p.inputs['Metallic'].default_value=metal
+ p=next((n for n in m.node_tree.nodes if n.type=='BSDF_PRINCIPLED'),None) or m.node_tree.nodes.new('ShaderNodeBsdfPrincipled')
+ output=next((n for n in m.node_tree.nodes if n.type=='OUTPUT_MATERIAL'),None) or m.node_tree.nodes.new('ShaderNodeOutputMaterial')
+ m.node_tree.links.new(p.outputs['BSDF'],output.inputs['Surface'])
+ p.inputs['Base Color'].default_value=(*color,1);p.inputs['Roughness'].default_value=rough;p.inputs['Metallic'].default_value=metal
  return m
 
 silver=mat('Scale_silver',(.36,.55,.55),.34,.08); pale=mat('Belly_pearl',(.72,.78,.68),.45)
@@ -52,6 +55,7 @@ def eyes(length,width,height):
 def fish(spec):
  name,L,H,W,base,bell,finmat=spec;start=set(bpy.context.scene.objects);root=bpy.data.objects.new(name,None);bpy.context.collection.objects.link(root)
  b=body(name+'_Body',L,H,W,base,bell);b.parent=root
+ mouth=bpy.data.objects.new(name+'_MouthAnchor',None);bpy.context.collection.objects.link(mouth);mouth.parent=root;mouth.location=(L*.52,0,-H*.055)
  tail=bpy.data.objects.new(name+'_Tail',None);bpy.context.collection.objects.link(tail);tail.parent=root;tail.location.x=-L*.47
  fork=1.05 if name=='minnow' else .85 if name=='moon' else .95
  fin('TailFin',[(0,0,0),(-L*.32,0,H*fork),(-L*.22,0,0)],finmat,tail);fin('TailFinLower',[(0,0,0),(-L*.22,0,0),(-L*.32,0,-H*fork)],finmat,tail)
@@ -107,6 +111,7 @@ for spec in specs:
 
 # Segmented shrimp with separate fan, legs, eyes, and antennae.
 start=set(bpy.context.scene.objects);root=bpy.data.objects.new('shrimp',None);bpy.context.collection.objects.link(root)
+mouth=bpy.data.objects.new('shrimp_MouthAnchor',None);bpy.context.collection.objects.link(mouth);mouth.parent=root;mouth.location=(.65,0,-.035)
 for i in range(7):
  bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2,radius=1,location=(.48-i*.16,0,.05+math.sin(i*.23)*.08));o=bpy.context.object;o.name='Shell_segment';o.scale=(.18,.19-i*.008,.16-i*.008);o.data.materials.append(coral if i%2 else shell);o.parent=root
 tail=bpy.data.objects.new('shrimp_Tail',None);bpy.context.collection.objects.link(tail);tail.parent=root;tail.location=(-.63,0,.08)
@@ -119,8 +124,9 @@ for side in [-1,1]:
  o=bpy.data.objects.new('Antenna',curve);bpy.context.collection.objects.link(o);o.parent=root
 assets['shrimp']=list(set(bpy.context.scene.objects)-start)
 
-manifest={'lane':'Art-directed','units':'normalized','assets':[],'orientation':'+X nose forward','pivot':'body centre'}
+manifest={'lane':'Art-directed','units':'normalized','assets':[],'orientation':'+X nose forward','pivot':'body centre','mouthAnchor':'MouthAnchor'}
 for name,objects in assets.items():
+ mouth_anchor=next(o for o in objects if o.name==name+'_MouthAnchor');mouth_anchor.name='MouthAnchor'
  bpy.ops.object.select_all(action='DESELECT')
  for o in objects:o.select_set(True)
  roots=[o for o in objects if o.parent is None];bpy.context.view_layer.objects.active=roots[0]
@@ -130,6 +136,7 @@ for name,objects in assets.items():
    import bmesh
    bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free()
  if not BLOCK:bpy.ops.export_scene.gltf(filepath=os.path.join(WEB,name+'.glb'),export_format='GLB',use_selection=True,export_apply=True)
+ mouth_anchor.name=name+'_MouthAnchor'
  triangles=0
  for o in objects:
   if o.type=='MESH':
@@ -157,5 +164,5 @@ if not BLOCK:
   root=next(o for o in objects if o.parent is None);root.location=(0,0,0)
   cam.location=(.15,-6,1.5);cam.rotation_euler=(Vector((-.10,0,0))-cam.location).to_track_quat('-Z','Y').to_euler()
   scene.render.filepath=os.path.join(WEB,name+'.png');bpy.ops.render.render(write_still=True)
-with open(os.path.join(OUT,'manifest.json'),'w') as f:json.dump(manifest,f,indent=2)
+with open(os.path.join(OUT,'manifest.json'),'w',newline='\n') as f:json.dump(manifest,f,indent=2);f.write('\n')
 print('VALIDATED',json.dumps(manifest))

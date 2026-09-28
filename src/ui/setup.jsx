@@ -1,11 +1,12 @@
 import {For, Show, createSignal} from 'solid-js';
 import {render} from 'solid-js/web';
 import {SPOTS, BAITS, spotUnlocked} from '../engine.mjs';
+import {explorationProgress} from '../progression-guide.mjs';
 
 const habitat = {
-  reed: '浅层小鱼',
-  bridge: '大型鱼与沉水物',
-  deep: '深水与异常目标',
+  reed: '入门 · 浅层小鱼',
+  bridge: '进阶 · 大型鱼与沉水物',
+  deep: '挑战 · 深水与异常目标',
 };
 
 function Spot({spot, selection, onSelect}) {
@@ -15,7 +16,7 @@ function Spot({spot, selection, onSelect}) {
     ? `当前垂钓 · ${habitat[spot.id]}`
     : unlocked()
       ? `已开放 · ${habitat[spot.id]}`
-      : `进度 ${selection().knowledge}/${spot.unlock} 解锁`;
+      : `探索 ${selection().exploration}/${spot.unlock} 解锁`;
   const style = {'--spot-x': `${spot.x}%`, top: `${spot.y}%`};
   const content = () => <>
     <span class="spot-order" aria-hidden="true">≈</span>
@@ -24,7 +25,7 @@ function Spot({spot, selection, onSelect}) {
   return <Show when={active()} fallback={
     <button type="button" classList={{spot: true, waiting: selection().pending, locked: !unlocked()}}
       style={style} data-spot={spot.id} disabled={selection().pending}
-      aria-label={`选择钓点：${spot.name}，${unlocked() ? '已开放' : `需要调查进度 ${spot.unlock}`}`}
+      aria-label={`选择钓点：${spot.name}，${unlocked() ? '已开放' : `需要探索进度 ${spot.unlock}`}`}
       onClick={() => onSelect(spot.id)}>{content()}</button>
   }>
     <span class="spot active" style={style} data-spot={spot.id}
@@ -46,7 +47,7 @@ function Bait({bait, selection, onSelect}) {
 }
 
 export function mountSetupUI(spotsRoot, baitsRoot, onSpot, onBait) {
-  const [selection, setSelection] = createSignal({spot: '', bait: '', pending: false, knowledge: 0});
+  const [selection, setSelection] = createSignal({spot: '', bait: '', pending: false, knowledge: 0, exploration: 0});
   const disposeSpots = render(() => <For each={SPOTS}>{spot =>
     <Spot spot={spot} selection={selection} onSelect={onSpot} />
   }</For>, spotsRoot);
@@ -55,7 +56,7 @@ export function mountSetupUI(spotsRoot, baitsRoot, onSpot, onBait) {
   }</For>, baitsRoot);
   return {
     update(state) {
-      const next = {spot: state.spot, bait: state.bait, pending: !!state.pending, knowledge: state.knowledge};
+      const next = {spot: state.spot, bait: state.bait, pending: !!state.pending, knowledge: state.knowledge, exploration: explorationProgress(state), log: state.log};
       const previous = selection();
       if (Object.keys(next).some(key => next[key] !== previous[key])) setSelection(next);
     },

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from '../src/three.module.js';
-import {cameraTransitionBlend,fightCameraFov,fightCameraPose,reelCameraPose,lureFocusEnvelope,lureCameraPose,landedFishCameraPose} from '../src/fishing-camera.mjs';
+import {cameraTransitionBlend,castCameraBeat,fightCameraReaction,landingCameraWeight,fightCameraFov,fightCameraPose,orbitFightCameraPose,reelCameraPose,lureFocusEnvelope,lureCameraPose,landedFishCameraPose} from '../src/fishing-camera.mjs';
 
 const spots=[[-1.5,3.4],[2,8],[5,12]];
 const angler=new T.Vector3(-1.2,.5,.35);
@@ -13,10 +13,40 @@ function projected(shot,point,aspect,fov){
  return point.clone().project(camera);
 }
 
-test('reeling view faces the action at eye level and retains angler and fish',()=>{
+test('cast camera braces, follows the release and settles without a cut',()=>{
+ assert.deepEqual(castCameraBeat(-1),{brace:0,follow:0});
+ assert.deepEqual(castCameraBeat(NaN),{brace:0,follow:0});
+ assert.deepEqual(castCameraBeat(0),{brace:0,follow:0});
+ assert.ok(castCameraBeat(.32).brace>.95);
+ assert.ok(castCameraBeat(.90).follow>.95);
+ assert.deepEqual(castCameraBeat(2.3),{brace:0,follow:0});
+ let prior=castCameraBeat(0);
+ for(let age=.01;age<=2.3;age+=.01){
+  const next=castCameraBeat(age);
+  for(const key of ['brace','follow']){
+   assert.ok(next[key]>=0&&next[key]<=1,{age,key,next});
+   assert.ok(Math.abs(next[key]-prior[key])<.07,{age,key,next,prior});
+  }
+  prior=next;
+ }
+});
+
+test('surge opens the fight frame and landing waits before following the lifted fish',()=>{
+ assert.deepEqual(fightCameraReaction(null),{pull:0,open:0});
+ assert.deepEqual(fightCameraReaction({surge:NaN,surgeWarning:NaN}),{pull:0,open:0});
+ assert.deepEqual(fightCameraReaction({surge:2,surgeWarning:-1}),{pull:1,open:.75});
+ assert.ok(fightCameraReaction({surge:.6,surgeWarning:0}).pull>.5);
+ assert.equal(landingCameraWeight(.1,true),0);
+ assert.ok(landingCameraWeight(.7,true)>0&&landingCameraWeight(.7,true)<1);
+ assert.equal(landingCameraWeight(1.2,true),1);
+ assert.equal(landingCameraWeight(.1,false),1);
+ assert.equal(landingCameraWeight(NaN,true),0);
+});
+
+test('reeling view moves from the right shoulder toward the line and retains angler and fish',()=>{
  for(const aspect of [1135/883,16/9,9/16])for(const [x,z] of spots){
   const span=Math.hypot(x-angler.x,z-angler.z);
-  for(const progress of [Math.min(1,1.8/span),1]){
+  for(const progress of [Math.min(1,1.8/span),.35,.65,1]){
   const fish=new T.Vector3(angler.x+(x-angler.x)*progress,-.3,angler.z+(z-angler.z)*progress);
   const forward=new T.Vector3(x-angler.x,0,z-angler.z).normalize();
   const right=new T.Vector3(forward.z,0,-forward.x);
@@ -24,24 +54,59 @@ test('reeling view faces the action at eye level and retains angler and fish',()
   const fov=fightCameraFov(fish.distanceTo(angler),aspect<.8);
   const along=shot.position.clone().sub(angler).dot(forward);
   if(aspect>=.8)assert.ok(along>0&&along<fish.distanceTo(angler),{along,aspect,x,z,progress});
-  else assert.ok(along<0,{along,aspect,x,z,progress});
-  assert.ok(shot.position.y>=1.5&&shot.position.y<=2.4,{height:shot.position.y});
+  else{
+   const lateral=shot.position.clone().sub(angler).dot(right);
+   assert.ok(lateral>2.99&&lateral<=4.81,{lateral,aspect,x,z,progress});
+   assert.ok(along>-3.21&&along<fish.distanceTo(angler),{along,aspect,x,z,progress});
+  }
+  assert.ok(shot.position.y>=1.5&&shot.position.y<=2.46,{height:shot.position.y});
   const person=projected(shot,angler.clone().add(new T.Vector3(0,.7,0)),aspect,fov);
   const fishOnScreen=projected(shot,fish,aspect,fov);
   if(aspect>=.8&&fish.distanceTo(angler)<1.81)assert.ok(fishOnScreen.x>-.15,{aspect,x,z,fishOnScreen});
   for(const point of [person,fishOnScreen]){
-   assert.ok(Math.abs(point.x)<.8&&Math.abs(point.y)<.7,{aspect,x,z,progress,point});
+   assert.ok(Math.abs(point.x)<(aspect<.8?.85:.8)&&Math.abs(point.y)<.7,{aspect,x,z,progress,point});
    assert.ok(point.z>-1&&point.z<1,{aspect,x,z,progress,point});
   }
+  if(aspect<.8)assert.ok(person.x-fishOnScreen.x>.35,{aspect,x,z,progress,person,fishOnScreen});
   }
  }
+});
+
+test('portrait fight camera tracks the fish toward the dock without a pose jump',()=>{
+ const forward=new T.Vector3(5-angler.x,0,12-angler.z).normalize();
+ const right=new T.Vector3(forward.z,0,-forward.x);
+ let previous=null;
+ for(let span=13;span>=.7;span-=.1){
+  const fish=angler.clone().addScaledVector(forward,span);fish.y=-.3;
+  const shot=fightCameraPose(angler,fish,forward,right,true);
+  if(previous){
+   assert.ok(shot.position.distanceTo(previous.position)<.32,{span});
+   assert.ok(shot.aim.distanceTo(previous.aim)<.12,{span});
+  }
+  previous=shot;
+ }
+});
+
+test('manual fight orbit keeps the live action pivot and camera distance',()=>{
+ const forward=new T.Vector3(0,0,1),right=new T.Vector3(1,0,0);
+ const shot=fightCameraPose(angler,new T.Vector3(-1.2,-.3,8),forward,right,true);
+ const defaultShot=orbitFightCameraPose(shot);
+ assert.ok(defaultShot.position.distanceTo(shot.position)<1e-10);
+ const moved=orbitFightCameraPose(shot,.35,.14);
+ assert.ok(moved.position.distanceTo(shot.position)>.5);
+ assert.ok(moved.aim.distanceTo(shot.aim)<1e-10);
+ assert.ok(Math.abs(moved.position.distanceTo(moved.aim)-shot.position.distanceTo(shot.aim))<1e-10);
+ const extreme=orbitFightCameraPose(shot,100,100),limit=orbitFightCameraPose(shot,.58,.28);
+ assert.ok(extreme.position.distanceTo(limit.position)<1e-10);
+ assert.ok(orbitFightCameraPose(shot,NaN,NaN).position.distanceTo(shot.position)<1e-10);
+ assert.ok(orbitFightCameraPose(shot,0,-100).position.y>shot.aim.y);
 });
 
 test('fight lens opens for distant fish and camera transitions ignore frame batching',()=>{
  for(const portrait of [false,true]){
   const near=fightCameraFov(1.8,portrait),far=fightCameraFov(13,portrait);
   assert.ok(far>near+6,{near,far});
-  assert.ok(near>=39&&far<=55,{near,far});
+  assert.ok(near>=(portrait?60:39)&&far<=(portrait?80:46),{near,far});
  }
  let fine=0,coarse=0;
  for(let i=0;i<60;i++)fine=cameraTransitionBlend(fine,true,1/60);

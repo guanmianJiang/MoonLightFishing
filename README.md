@@ -4,7 +4,9 @@
 
 ## 运行与验证
 
-需要 Node.js 与 npm。在本仓库根目录执行：
+需要 Node.js 与 npm。Windows 上双击仓库根目录的 `月隐湾启动器.exe`，会打开原生桌面启动器；游戏服务就绪后自动打开默认浏览器。首次使用时自动安装缺失依赖。窗口中可查看状态和日志，使用主按钮启动或停止游戏；再次启动成功也会自动打开浏览器。关闭游戏标签页不会停止服务；请在启动器中点“停止游戏”或关闭启动器窗口。不要直接双击 `src/index.html`；浏览器的 `file://` 模式无法加载游戏模块。
+
+开发时也可在本仓库根目录执行：
 
 ```sh
 npm ci
@@ -14,7 +16,7 @@ npm run build
 npm run preview
 ```
 
-`npm run dev` 启动开发服务器；`npm test` 运行 Node 单元与结构测试；`npm run build` 生成并校验 `build/`；`npm run preview` 预览发布构建。静态托管时以 `build/` 为站点根目录。当前仓库没有 Unity 工程或 Unity Test Framework 测试程序集；这项与项目开发规范的差异记录在 [架构文档](docs/ARCHITECTURE.md)。
+`npm run dev` 启动开发服务器；`npm test` 运行 Node 单元与结构测试；`npm run build` 生成并校验 `build/`；`npm run preview` 预览发布构建。静态托管时以 `build/` 为站点根目录。技术栈已确认为 Three.js + SolidJS + Vite，单元测试使用 Node `node:test`；本项目不使用 Unity。
 
 ## 目录
 

@@ -2,6 +2,7 @@
   "lane": "Art-directed",
   "units": "metres",
   "materials": "palette PBR, no baked textures",
+  "baitHookAnchor": "HookAnchor",
   "assets": [
     {
       "name": "tackle_box",

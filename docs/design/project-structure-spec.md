@@ -31,7 +31,9 @@
 ## 接口、输入与输出
 
 - `npm run dev`：从 `src/index.html` 启动本地开发。
-- `npm test`：运行 Node 业务测试及必要的结构检查；当前仓库没有 Unity 工程，Unity Test Framework 要求仍属待解决的技术栈差异。
+- Windows 用户可双击仓库根目录的 `启动游戏.cmd`；入口在仓库根目录启动 Vite，等服务就绪后用默认浏览器打开实际端口，并在命令窗口关闭时结束服务。未安装依赖时先安装；缺少 Node/npm 或服务启动失败时在窗口中给出可读错误。
+- 直接以 `file://` 打开 `src/index.html` 时，页面应明确提示需要本地服务及 `启动游戏.cmd`，不能留下看似可操作的空场景；通过 HTTP(S) 打开时提示保持隐藏。
+- `npm test`：运行 Node 业务测试及必要的结构检查。技术栈已确认使用 Node `node:test`，不使用 Unity。
 - `npm run build`：生成 `build/`，包括程序包和 `public/assets/` 运行资源；校验入口、关键资源和包文件。
 - 存档输入仍来自 `moonwater-v1`；输出数据结构需保持迁移与幂等结算规则。
 

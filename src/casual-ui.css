@@ -148,21 +148,14 @@ footer,.fishing footer,.aiming footer{border:1px solid rgba(255,255,255,.9);back
 .fight-reel-copy small{color:#557c66}
 #fightHold kbd{border-color:#acc6ae;background:#edf6ea;color:#3f6e55}
 
-/* The two fight actions have distinct shapes and pressure states. The beat panel carries the detailed hint. */
-.fight-actions{grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr)}
-#fightPump{border-color:#688975;background:linear-gradient(180deg,#e6f0e4,#cadfce);box-shadow:inset 0 1px 0 #ffffffd9,0 4px 0 #6d9279;color:#204a3d}
-#fightPump.ready{border-color:#a7783a;background:linear-gradient(180deg,#ffe8b8,#edc783);box-shadow:inset 0 1px 0 #ffffffbf,0 4px 0 #a7783a,0 0 0 3px #e4b46140;color:#503822}
-#fightPump:active,#fightPump.lifting{transform:translateY(3px);box-shadow:inset 0 2px 5px #26463438,0 1px 0 #6d9279}
-#fightPump.ready:active,#fightPump.ready.lifting{box-shadow:inset 0 2px 5px #79542d40,0 1px 0 #a7783a}
-#fightPump .fight-pump-copy small,#fightPump kbd{display:none}
-#fightPump .fight-pump-copy strong{font-size:14px;white-space:nowrap}
-#fightPump.ready .fight-pump-art{border-color:#78572f;background:linear-gradient(180deg,#986e3b,#78532f)}
+/* A single touch surface carries the reel and lift gesture. */
+.fight-actions{grid-template-columns:minmax(0,1fr)}
 #fightHold,#fight.danger #fightHold,#fight.danger #fightHold.held{border-color:#1d4d41;background:linear-gradient(180deg,#306858,#204f43);box-shadow:inset 0 1px 0 #ffffff29,0 4px 0 #163d34;color:#fffdf5}
 #fightHold.held{transform:translateY(3px);background:linear-gradient(180deg,#204e42,#173f35);box-shadow:inset 0 2px 5px #0d2e2a80,0 1px 0 #163d34}
 #fight.danger #fightHold.held{transform:translateY(3px);background:linear-gradient(180deg,#204e42,#173f35);box-shadow:inset 0 2px 5px #0d2e2a80,0 1px 0 #163d34}
 #fightHold .fight-reel-copy small{color:#cde8d5}
 #fightHold kbd{border-color:#ffffff73;background:#ffffff24;color:#fffdf5}
-@media(max-width:600px){.fight-actions{grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr)}#fightPump .fight-pump-copy strong{font-size:13px}}
+@media(max-width:600px){.fight-actions{grid-template-columns:minmax(0,1fr)}}
 #fightLineState,#fightRig[data-line="strained"] #fightLineState{padding:0;border:0;border-radius:0;background:none;box-shadow:none;font-weight:800}
 #book{background:#fffaf0}
 #book .book-top{border-bottom:1px solid #e4e7d6;background:#f4f0df;color:#315e52}
@@ -315,9 +308,9 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
   .tactic-list strong,.tactic-next strong{font-size:var(--mobile-body);line-height:1.3}
   #tacticDo{min-height:42px;font-size:var(--mobile-body)}
   .gesture-help{font-size:var(--mobile-label);line-height:1.35}
-  #fightBeat strong,.fight-pump-copy strong,.fight-reel-copy strong{font-size:14px;line-height:1.3}
+  #fightBeat strong,.fight-reel-copy strong{font-size:14px;line-height:1.3}
   #fightMode{font-size:16px;line-height:1.25}
-  #fightBeat small,#fightFeedback,.fight-pump-copy small,.fight-reel-copy small{font-size:var(--mobile-detail);line-height:1.35}
+  #fightBeat small,#fightFeedback,.fight-reel-copy small{font-size:var(--mobile-detail);line-height:1.35}
   #fightTravel,.fight-rig-caption,#fightLineState,#fightLoop span{font-size:var(--mobile-label)}
 
   #book .book-top h2,#tripEnd h2{font-size:22px;line-height:1.25}
@@ -391,8 +384,8 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
   #status,.fishing #status,.aiming #status,#game.no-cast-action #status{font-size:14px;line-height:1.4}
   .step-label,.fishing .step-label,#location{font-size:12px}
   .tactic-list strong,.tactic-next strong{font-size:14px}
-  #fightBeat strong,.fight-pump-copy strong,.fight-reel-copy strong{font-size:15px}
-  #fightBeat small,#fightFeedback,.fight-pump-copy small,.fight-reel-copy small{font-size:13px}
+  #fightBeat strong,.fight-reel-copy strong{font-size:15px}
+  #fightBeat small,#fightFeedback,.fight-reel-copy small{font-size:13px}
 }
 @media(max-width:360px){
   #biteReadout{grid-template-columns:40px minmax(0,1fr);gap:9px;padding:11px 12px}
@@ -490,23 +483,21 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
 }
 
 /* One control family for hook, pump, reel and landing actions. */
-.game-action:is(#fightPump,#fightHold,#sceneAction,#landFish){--action-top:#fff4d8;--action-bottom:#f2d69e;--action-edge:#ad8046;--action-ink:#3e4938;--action-muted:#746248;--action-icon:#315e50;--action-icon-border:#244e43;--action-icon-ink:#fff6df;position:relative;display:flex;align-items:center;gap:10px;box-sizing:border-box;min-height:76px;padding:10px 13px 10px 10px;border:1px solid var(--action-edge);border-radius:16px;background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink);text-align:left;text-shadow:none;cursor:pointer;touch-action:manipulation;transition:transform .1s ease,box-shadow .1s ease,filter .15s ease}
+.game-action:is(#fightHold,#sceneAction,#landFish){--action-top:#fff4d8;--action-bottom:#f2d69e;--action-edge:#ad8046;--action-ink:#3e4938;--action-muted:#746248;--action-icon:#315e50;--action-icon-border:#244e43;--action-icon-ink:#fff6df;position:relative;display:flex;align-items:center;gap:10px;box-sizing:border-box;min-height:76px;padding:10px 13px 10px 10px;border:1px solid var(--action-edge);border-radius:16px;background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink);text-align:left;text-shadow:none;cursor:pointer;touch-action:manipulation;transition:transform .1s ease,box-shadow .1s ease,filter .15s ease}
 .game-action[hidden]{display:none!important}
 .game-action:hover{filter:brightness(1.045)}
 .game-action:focus-visible{outline:3px solid #fff9df;outline-offset:3px}
-.game-action:is(#fightPump,#fightHold,#sceneAction,#landFish):active,.game-action#fightPump.lifting,.game-action#fightHold.held{transform:translateY(3px);box-shadow:inset 0 2px 5px #1d473034,0 1px 0 var(--action-edge),0 5px 13px #123e3433}
-.game-action:is(#fightPump,#fightHold,#sceneAction,#landFish) .game-action__art{flex:none;display:grid;place-items:center;width:48px;height:48px;box-sizing:border-box;border:1px solid var(--action-icon-border);border-radius:12px;background:var(--action-icon);box-shadow:inset 0 1px 0 #ffffff30;color:var(--action-icon-ink);filter:none}
+.game-action:is(#fightHold,#sceneAction,#landFish):active,.game-action#fightHold.held{transform:translateY(3px);box-shadow:inset 0 2px 5px #1d473034,0 1px 0 var(--action-edge),0 5px 13px #123e3433}
+.game-action:is(#fightHold,#sceneAction,#landFish) .game-action__art{flex:none;display:grid;place-items:center;width:48px;height:48px;box-sizing:border-box;border:1px solid var(--action-icon-border);border-radius:12px;background:var(--action-icon);box-shadow:inset 0 1px 0 #ffffff30;color:var(--action-icon-ink);filter:none}
 .game-action .game-action__copy{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:3px}
-.game-action .game-action__copy strong,.game-action#sceneAction strong,.game-action#fightPump .game-action__copy strong,.game-action#fightHold .game-action__copy strong{color:inherit;font:800 15px/1.2 var(--sans);letter-spacing:0;white-space:normal}
-.game-action .game-action__copy small,.game-action#sceneAction small,.game-action#fightPump .game-action__copy small,.game-action#fightHold .game-action__copy small{display:block;margin:0;color:var(--action-muted);font:650 11px/1.25 var(--sans);letter-spacing:0;opacity:1;white-space:normal}
+.game-action .game-action__copy strong,.game-action#sceneAction strong,.game-action#fightHold .game-action__copy strong{color:inherit;font:800 15px/1.2 var(--sans);letter-spacing:0;white-space:normal}
+.game-action .game-action__copy small,.game-action#sceneAction small,.game-action#fightHold .game-action__copy small{display:block;margin:0;color:var(--action-muted);font:650 11px/1.25 var(--sans);letter-spacing:0;opacity:1;white-space:normal}
 .game-action kbd,.game-action .action-chevron,.game-action .shore-action-chevron{display:none}
-.game-action#fightPump{--action-top:#f2f6eb;--action-bottom:#dae8d8;--action-edge:#819e86;--action-ink:#254d3d;--action-muted:#5c7864;--action-icon:#315e50;--action-icon-border:#244e43;--action-icon-ink:#fff6df}
-.game-action#fightPump.ready,.game-action#sceneAction[data-action="lift"],.game-action#landFish{--action-top:#fff4d8;--action-bottom:#f2d69e;--action-edge:#ad8046;--action-ink:#473b2d;--action-muted:#745f42;--action-icon:#8d643c;--action-icon-border:#79522e;--action-icon-ink:#fff6df}
+.game-action#sceneAction[data-action="lift"],.game-action#landFish{--action-top:#fff4d8;--action-bottom:#f2d69e;--action-edge:#ad8046;--action-ink:#473b2d;--action-muted:#745f42;--action-icon:#8d643c;--action-icon-border:#79522e;--action-icon-ink:#fff6df}
 .game-action#fightHold,#fight.danger #fightHold.game-action{--action-top:#376b58;--action-bottom:#245345;--action-edge:#183f35;--action-ink:#fff9e9;--action-muted:#d3e7d4;--action-icon:#254f43;--action-icon-border:#9ebdaf;--action-icon-ink:#fff9e9}
 #fight.danger #fightHold.game-action{border-color:var(--action-edge);background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink)}
 .game-action#fightHold.held,#fight.danger #fightHold.game-action.held{background:linear-gradient(180deg,#285746,#1c463b)}
 .game-action#sceneAction[data-action="retrieve"]{--action-top:#f2f6eb;--action-bottom:#dae8d8;--action-edge:#819e86;--action-ink:#254d3d;--action-muted:#5c7864;--action-icon:#315e50;--action-icon-border:#244e43;--action-icon-ink:#fff6df}
-.game-action#fightPump .fight-pump-art svg{width:34px;height:39px}
 .game-action#fightHold .fight-reel-art{transform:translateX(var(--torque-shift,0px))}
 .game-action#fightHold .fight-reel-art svg{width:43px;height:43px}
 .game-action#sceneAction .action-symbol{width:32px;height:32px}
@@ -518,18 +509,18 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:24px;bottom:24px;left:auto;width:min(250px,calc(100% - 48px));height:auto;min-height:76px;padding:10px 13px 10px 10px;gap:10px;border:1px solid var(--action-edge);border-radius:16px;background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink);transform:none}
 #game[data-phase="hooked"] #sceneAction.game-action:not([hidden]):hover{background:linear-gradient(180deg,var(--action-top),var(--action-bottom));filter:brightness(1.045)}
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]):active,#game #landFish.game-action:not([hidden]):active{transform:translateY(3px);box-shadow:inset 0 2px 5px #1d473034,0 1px 0 var(--action-edge),0 5px 13px #123e3433}
-#fight .fight-actions{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);width:min(460px,calc(100vw - 48px))}
+#fight .fight-actions{grid-template-columns:minmax(0,1fr);width:min(460px,calc(100vw - 48px))}
 #fight .fight-actions .game-action{min-width:0;min-height:76px}
 #game:is([data-phase="hooked"],[data-phase="empty"]) footer{display:none!important}
-#fight[data-next="lift"] #fightPump,#fight[data-next="reel"] #fightHold{outline:2px solid #f8e2a8;outline-offset:2px}
+#fight[data-next="lift"] #fightHold,#fight[data-next="reel"] #fightHold{outline:2px solid #f8e2a8;outline-offset:2px}
 #fight[data-next="release"] #fightHold{outline:2px solid #e2d2a7;outline-offset:2px}
 #fightHold.tap-flash{filter:brightness(1.13)}
 @media(max-width:600px){
-  #fight .fight-actions{width:calc(100vw - 24px);grid-template-columns:minmax(0,1fr) minmax(0,1.06fr)}
+  #fight .fight-actions{width:calc(100vw - 24px);grid-template-columns:minmax(0,1fr)}
   #fight .fight-actions .game-action{min-height:72px;padding:8px;gap:7px}
-  .game-action:is(#fightPump,#fightHold,#sceneAction,#landFish) .game-action__art{width:43px;height:43px;border-radius:11px}
-  .game-action .game-action__copy strong,.game-action#sceneAction strong,.game-action#fightPump .game-action__copy strong,.game-action#fightHold .game-action__copy strong{font-size:13px}
-  .game-action .game-action__copy small,.game-action#sceneAction small,.game-action#fightPump .game-action__copy small,.game-action#fightHold .game-action__copy small{font-size:10px}
+  .game-action:is(#fightHold,#sceneAction,#landFish) .game-action__art{width:43px;height:43px;border-radius:11px}
+  .game-action .game-action__copy strong,.game-action#sceneAction strong,.game-action#fightHold .game-action__copy strong{font-size:13px}
+  .game-action .game-action__copy small,.game-action#sceneAction small,.game-action#fightHold .game-action__copy small{font-size:10px}
   .game-action#sceneAction .bite-timer{inset:3px auto auto 3px;width:55px;height:55px}
   #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:12px;bottom:calc(12px + env(safe-area-inset-bottom));width:min(250px,calc(100% - 24px));height:72px;min-height:72px}
 }

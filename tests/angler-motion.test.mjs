@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {GLTFLoader} from '../src/vendor/loaders/GLTFLoader.js';
 import {Box3,Vector3} from '../src/three.module.js';
 import {sampleAnglerMotion,sampleCastMotion,castEffort,reelAnimationTime,isLargeCatch,shouldStandForCatch} from '../src/angler-motion.js';
-import {castFlight,CAST_RELEASE_TIME} from '../src/cast-flight.mjs';
+import {castFlight,castLineProfile,CAST_RELEASE_TIME} from '../src/cast-flight.mjs';
 
 test('Blender cast releases after the backswing and returns to rest continuously',()=>{
  const backswing=sampleAnglerMotion('cast',.63),release=sampleAnglerMotion('cast',CAST_RELEASE_TIME),rest=sampleAnglerMotion('cast',1.85);
@@ -63,6 +63,13 @@ test('cast flight has momentum, gravity and distance-scaled timing',()=>{
   assert.ok(Math.abs(end.position.x-target.x)<1e-9&&Math.abs(end.position.y-target.y)<1e-9);
   assert.ok(CAST_RELEASE_TIME+launch.duration<=1.85);
  }
+});
+
+test('line pays out during flight and settles at splashdown with distance-scaled slack',()=>{
+ const short=castLineProfile(.5,3),long=castLineProfile(.5,13),land=castLineProfile(1,13);
+ assert.ok(long.extra>short.extra&&long.slack>short.slack);
+ assert.ok(land.extra<long.extra&&land.slack<long.slack);
+ assert.deepEqual(castLineProfile(Infinity,Infinity),castLineProfile(0,2.5));
 });
 
 test('Blender reel lifts the grip before settling',()=>{

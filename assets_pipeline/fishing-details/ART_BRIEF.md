@@ -7,6 +7,7 @@ Scene: functional enamel tackle box, open bait bucket, splayed wood field stool.
 Angler: replace rigid disc hat with shaped brim/crown and woven-color band; add fitted canvas vest panels, pockets, collar and satchel to existing articulated character. Preserve hand/rod pose and joints. No new skinning or sculpting claim.
 
 Baits: attachment at origin, negative Y after glTF conversion. Grain has clustered golden kernels and creases; worm has curved segmented rose silhouette; glow insect has dark thorax, pale wings and green luminous abdomen. Review at enlarged scale, use physical scale in game.
+Each exported bait GLB includes one non-rendering `HookAnchor` at the hook tip. Keep its attachment eye at the asset origin and its mesh in physical metres; the game applies a uniform 0.72 scale to all three baits and positions the named hook tip on the float's hook point. Review-board enlargement and inventory icons do not change the exported geometry scale.
 
 Fish: keep existing species and dimensions; stronger fork tails and dorsal/anal fins, gill plates and layered eyes. Preserve oldgold broken tail. Palette-based materials, no production UV or texture-baking claim.
 

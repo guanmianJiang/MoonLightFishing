@@ -91,6 +91,20 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
 }
 .route-card button span { color: #a66e50; }
 .route-card button:hover { color: #9d644b; }
+.route-card__detail { margin: 0 0 7px; color: #55756a; font-size: 11px; line-height: 1.4; }
+.route-card__difficulty { margin-top: 7px; color: #8b715d; font-size: 10px; line-height: 1.25; }
+.route-card .route-card__primary { min-height: 44px; margin-top: 5px; padding: 8px 2px; border-top: 1px solid var(--ui-line); color: #27665b; font-size: 12px; }
+.route-card .route-card__journal { min-height: 44px; margin-top: 0; padding: 6px 2px; border-top: 0; color: #658178; font-size: 10px; line-height: 1.25; }
+.route-card button:disabled { opacity: .48; pointer-events: none; }
+@media (max-width: 780px) { #tripRoute { width: min(190px, calc(100% - 100px)); } }
+@media (max-width: 780px) and (max-height: 650px) {
+  #tripRoute { left: 8px; bottom: calc(88px + env(safe-area-inset-bottom)); width: 160px; }
+  .route-card { padding: 8px 9px; }
+  .route-card__goal { margin: 4px 0; font-size: 12px; }
+  .route-card__detail { display: -webkit-box; overflow: hidden; margin-bottom: 4px; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 10px; }
+  .route-card__difficulty, .route-card__journal { display: none; }
+  .route-card .route-card__primary { margin-top: 3px; }
+}
 
 /* The lower controls read as one light touch surface. */
 .footer-top { gap: 6px; margin-bottom: 7px; }
@@ -147,6 +161,12 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
 #bookContent { color: #42665e; font-size: 13px; }
 #book .close, #tripEnd .close { border-radius: 9px; background: #e3eee6; color: #366a60; }
 #result:not(.no-catch) #specimen { border-color: #e1e9db; border-radius: 11px; }
+#result[data-expanded="false"] #otherCatchActions { display: none; }
+#result #otherCatchActions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+#result #moreCatchActions { grid-column: 1 / -1; width: 100%; min-height: 44px; margin-top: 8px; border: 1px solid #d4e1d4; border-radius: 11px; background: #f4f8ef; color: #396b60; font-size: 12px; font-weight: 750; }
+#result #moreCatchActions:active { background: #e9f2e7; }
+#result #moreCatchActions:focus-visible { outline: 3px solid #e3a369; outline-offset: 2px; }
+@media (max-width: 600px) { #result #otherCatchActions { grid-template-columns: 1fr; gap: 6px; } }
 #result:not(.no-catch) #processActions .process-recommended,
 #result.no-catch #emptyContinue, #tripEnd .primary {
   border: 0; border-radius: 10px; background: #397166; box-shadow: none; color: #fffaf0;
@@ -167,4 +187,32 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   #baits .bait { transition: none; }
+}
+
+#cancelAim[hidden] { display: none !important; }
+#game.aiming .toolbar { display: flex; }
+#game.aiming #cancelAim { flex: none; min-width: 68px; min-height: 54px; padding: 8px 12px; border: 1px solid #aecbc0; border-radius: 14px; background: #f5f8ef; color: #37695f; font-weight: 700; }
+#game.aiming #cast { flex: 1; width: auto; }
+#game.aiming #cast:not(:disabled) { background: #34695f; color: #fff9e8; }
+#game.aiming .footer-top { margin-bottom: 9px; }
+#game.aiming #status { color: #fff9e8; font-size: 13px; font-weight: 750; text-shadow: 0 1px 4px #204f49, 0 2px 10px #204f49; }
+#game.aiming .camera-controls { display: flex; top: 28%; }
+#game.aiming .camera-controls .zoom-group { display: none; }
+.camera-controls button { min-width: 44px; min-height: 44px; }
+#cameraReset { display: none; }
+#game.fighting #cameraReset { display: grid; }
+
+@media (max-width: 600px) and (orientation: portrait) {
+  /* Keep the 3D rod, line and fish in view above the thumb controls. */
+  #fight { bottom: calc(12px + env(safe-area-inset-bottom)); padding: 10px 12px; }
+  #game.fighting #fight #fightRig { display: none; }
+  #fightBeat { min-height: 36px; margin: 5px 0 7px; }
+  #fightFeedback { margin-top: 5px; }
+  #fightHold { min-height: 72px; }
+  #game.fighting #fight .fight-kicker { display: block; color: #9a6c37; letter-spacing: .06em; }
+  #game.fighting #fight #fightMode { color: #28584d; }
+  #game.fighting #fight #fightPercent { color: #315e53; background: #e6eee3; }
+  #game.fighting .camera-controls, #game.fighting:not(.overview) .camera-controls { display: flex; flex-direction: row; align-items: end; top: auto; bottom: calc(126px + env(safe-area-inset-bottom)); right: max(12px, env(safe-area-inset-right)); left: auto; width: auto; height: auto; transform: none; gap: 4px; }
+  #game.fighting .camera-controls .zoom-group { display: flex; flex-direction: row; gap: 4px; }
+  #game.fighting .camera-controls button { min-width: 44px; min-height: 44px; background: rgba(248,248,236,.86); }
 }

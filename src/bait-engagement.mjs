@@ -1,15 +1,32 @@
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+const smooth=value=>{const u=clamp(value,0,1);return u*u*(3-2*u)};
 
-// Probe the bait while it is being read, then commit the mouth to the hook.
-export function baitEngagement(phase,readingAge=0){
- if(phase==='reading')return .36+.38*Math.pow(Math.max(0,Math.sin(readingAge*5.2)),2);
- if(phase==='responding')return .72;
- if(phase==='nibble')return .88;
- if(phase==='hooked')return 1;
- return 0;
+// One continuous swim path; phase changes only affect the fish's response to the hook.
+export function fishApproachOffset(biteAge,time,signal){
+ const age=Number.isFinite(biteAge)?biteAge:-5.5,t=Number.isFinite(time)?time:0;
+ const near=smooth((age+5.5)/1.2),commit=smooth((age+2.2)/2.2);
+ const orbit=smooth((age+4.3)/.6)*(1-smooth((age+2.7)/.5));
+ const radius=signal==='broad'?1.05:signal==='dart'?.58:.28;
+ return {x:(2.6-2.1*near)*(1-commit)+Math.cos(t*(signal==='dart'?2.4:.7))*radius*orbit,
+  z:(1.45-1.1*near)*(1-commit)+Math.sin(t*(signal==='dart'?2.4:.7))*radius*orbit};
 }
 
-export function baitFishOpacity(phase,focus=0){
- const engagement=baitEngagement(phase);
- return clamp(.14+engagement*.45+focus*.13,.14,.82);
+export function fishMouthApproach(hook,biteAge,time,signal,phase,readingAge=0){
+ const swim=fishApproachOffset(biteAge,time,signal),engagement=baitEngagement(phase,readingAge,biteAge);
+ const scale=1-.16*engagement,x=swim.x*scale,z=swim.z*scale;
+ const horizontal=Math.hypot(x,z),rise=smooth(1-horizontal/3.05);
+ const hx=Number.isFinite(hook?.x)?hook.x:0,hy=Number.isFinite(hook?.y)?hook.y:-.25,hz=Number.isFinite(hook?.z)?hook.z:0;
+ return {x:hx+x,y:-.72+(hy+.72)*rise,z:hz+z};
+}
+
+// Probe the bait while it is being read, then commit the mouth to the hook.
+export function baitEngagement(phase,readingAge=0,biteAge=-Infinity){
+ if(phase==='reading'){
+  const probe=.36+.38*Math.pow(Math.max(0,Math.sin(readingAge*5.2)),2);
+  return probe+(.88-probe)*smooth((biteAge+2.7)/.5);
+ }
+ if(phase==='responding')return .72+.28*smooth((biteAge+1.1)/1.1);
+ if(phase==='nibble')return .88+.12*clamp((biteAge+.5)/.5,0,1);
+ if(phase==='hooked')return 1;
+ return 0;
 }

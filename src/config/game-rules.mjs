@@ -10,8 +10,8 @@ export const GAME_RULES=Object.freeze({
  trackedLimit:3,
  collectionLimit:6,
  basketLimit:30,
- biteWindowsMs:Object.freeze([9500,8000,6500]),
- castWaitBaseMs:12000,
- castWaitRandomMs:6000,
+ biteWindowsMs:Object.freeze([9500,9500,9500]),
+ castWaitBaseMs:9000,
+ castWaitRandomMs:4000,
  decisionLeadMs:4300
 });

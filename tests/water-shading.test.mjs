@@ -36,8 +36,9 @@ test('physical underwater fish write receiver depth for refraction and absorptio
   const json=JSON.parse(glb.subarray(20,20+glb.readUInt32LE(12)).toString());
   assert.ok(json.materials.every(material=>!material.alphaMode||material.alphaMode==='OPAQUE'),`${name} should have opaque materials`);
  }
- // Nonphysical fish hints and overlays deliberately stay out of the depth buffer.
- assert.ok(scene.includes("color:'#214f4d',transparent:true,opacity:.11,depthWrite:false"));
+ // The biting fish now uses the same opaque, depth-writing body through approach and fight.
+ assert.ok(scene.includes('setFishImmersion(approachFish,'));
+ assert.ok(!scene.includes("color:'#214f4d',transparent:true,opacity:.11,depthWrite:false"));
 });
 
 function scalarGLSL(source,name,args,bindings={}){

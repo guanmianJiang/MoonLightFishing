@@ -21,6 +21,7 @@ test('the diagram follows real fish distance, line slack and rod load',()=>{
 
 test('a well-timed rod lift tires the fish and softens its next run',()=>{
  const ordinary=createFight({weight:2}),lifted=createFight({weight:2});
+ ordinary.fishState=lifted.fishState='recover';ordinary.stateDuration=lifted.stateDuration=.1;
  assert.equal(pumpRod(lifted,false).ok,true);
  let warned=false,softened=false;
  for(let i=0;i<180;i++){

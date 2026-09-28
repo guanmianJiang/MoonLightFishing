@@ -3,14 +3,17 @@ export {SPOTS,BAITS,FISH,GEAR,PROCESS_ACTIONS,TRIP_GOALS,TRIP_RULES,CLUES,TACTIC
 import {GAME_RULES} from './config/game-rules.mjs';
 import {newEconomy,migrateEconomy,addToBasket,saleValue} from './reference-loop.mjs';
 import {castZone,castPreset} from './cast-target.mjs';
+import {BITE_READ_MS} from './bite-guidance.mjs';
+import {normalizeWaterTrail,trailFromMiss,matchingWaterTrail,WATER_TRAIL_RETURN_CHANCE,WATER_TRAIL_WAIT_REDUCTION_MS,WATER_TRAIL_BITE_BONUS_MS} from './water-trail.mjs';
+import {explorationProgress} from './progression-guide.mjs';
 export function goalForTrip(number){const goal=TRIP_GOALS[(number-1)%TRIP_GOALS.length];return {...goal,progress:0,complete:false}}
 export function ruleForTrip(number){return {...TRIP_RULES[(number-1)%TRIP_RULES.length],triggers:0}}
 export function biteWindowForTrip(number){return GAME_RULES.biteWindowsMs[Math.min(Math.max(1,number||1),GAME_RULES.biteWindowsMs.length)-1]}
 export function weatherAt(t){return WEATHERS[Math.floor(t/GAME_RULES.weatherPeriodMs)%WEATHERS.length]}
-export function newSave(){return {version:GAME_RULES.saveVersion,casts:0,log:[],clues:[],observations:[],collection:[],tracked:[],skill:{streak:0,best:0,awards:0},knowledge:0,economy:newEconomy(),ecosystem:{carp:1,minnow:1,shrimp:1,perch:1,catfish:1},gear:{rod:'willow',reel:'wood',line:'linen',float:'cork'},trip:{number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[],goal:goalForTrip(1),rule:ruleForTrip(1)},pending:null,spot:'reed',bait:'grain',created:Date.now()}}
-export function migrateSave(s){if(!s||![1,2].includes(s.version))return newSave();if(s.version===1){s.version=2;s.collection=[];s.tracked=[];s.skill={streak:0,best:0,awards:0};s.knowledge=0;s.ecosystem={carp:1,minnow:1,shrimp:1,perch:1,catfish:1};s.gear={rod:'willow',reel:'wood',line:'linen',float:'cork'};s.trip={number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[],goal:goalForTrip(1),rule:ruleForTrip(1)}}s.economy=migrateEconomy(s.economy);s.observations=Array.isArray(s.observations)?s.observations:[];s.collection=Array.isArray(s.collection)?s.collection:[];s.tracked=Array.isArray(s.tracked)?s.tracked.slice(0,GAME_RULES.trackedLimit):[];s.skill=s.skill&&Number.isFinite(s.skill.streak)?s.skill:{streak:0,best:0,awards:0};s.trip=s.trip&&Number.isFinite(s.trip.castsLeft)?s.trip:{number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[]};s.trip.changes=Array.isArray(s.trip.changes)?s.trip.changes:[];if(!s.trip.goal)s.trip.goal=goalForTrip(s.trip.number||1);if(!s.trip.rule)s.trip.rule=ruleForTrip(s.trip.number||1);if(!Number.isFinite(s.trip.rule.triggers))s.trip.rule.triggers=0;if(s.pending&&!Number.isFinite(s.pending.biteWindowMs))s.pending.biteWindowMs=biteWindowForTrip(s.trip.number);const selected=SPOTS.find(p=>p.id===s.spot);if(!selected||s.knowledge<selected.unlock)s.spot='reed';return s}
+export function newSave(){return {version:GAME_RULES.saveVersion,casts:0,log:[],clues:[],observations:[],collection:[],tracked:[],fightRecords:{},skill:{streak:0,best:0,awards:0},knowledge:0,economy:newEconomy(),ecosystem:{carp:1,minnow:1,shrimp:1,perch:1,catfish:1},gear:{rod:'willow',reel:'wood',line:'linen',float:'cork'},trip:{number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[],goal:goalForTrip(1),rule:ruleForTrip(1)},pending:null,waterTrail:null,spot:'reed',bait:'grain',created:Date.now()}}
+export function migrateSave(s){if(!s||![1,2].includes(s.version))return newSave();if(s.version===1){s.version=2;s.collection=[];s.tracked=[];s.skill={streak:0,best:0,awards:0};s.knowledge=0;s.ecosystem={carp:1,minnow:1,shrimp:1,perch:1,catfish:1};s.gear={rod:'willow',reel:'wood',line:'linen',float:'cork'};s.trip={number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[],goal:goalForTrip(1),rule:ruleForTrip(1)}}s.economy=migrateEconomy(s.economy);s.observations=Array.isArray(s.observations)?s.observations:[];s.waterTrail=normalizeWaterTrail(s.waterTrail);s.collection=Array.isArray(s.collection)?s.collection:[];s.tracked=Array.isArray(s.tracked)?s.tracked.slice(0,GAME_RULES.trackedLimit):[];s.skill=s.skill&&Number.isFinite(s.skill.streak)?s.skill:{streak:0,best:0,awards:0};s.trip=s.trip&&Number.isFinite(s.trip.castsLeft)?s.trip:{number:1,castsLeft:GAME_RULES.castsPerTrip,changes:[]};s.trip.changes=Array.isArray(s.trip.changes)?s.trip.changes:[];if(!s.trip.goal)s.trip.goal=goalForTrip(s.trip.number||1);if(!s.trip.rule)s.trip.rule=ruleForTrip(s.trip.number||1);if(!Number.isFinite(s.trip.rule.triggers))s.trip.rule.triggers=0;if(s.pending&&!Number.isFinite(s.pending.biteWindowMs))s.pending.biteWindowMs=biteWindowForTrip(s.trip.number);const selected=SPOTS.find(p=>p.id===s.spot);if(!selected||!spotUnlocked(s,s.spot))s.spot='reed';return s}
 export function validSave(s){const valid=!!s&&s.version===GAME_RULES.saveVersion&&Number.isInteger(s.casts)&&s.casts>=0&&Array.isArray(s.log)&&s.log.every(c=>FISH.some(f=>f.id===c.id)&&Number.isFinite(c.weight)&&Number.isFinite(c.length)&&Number.isFinite(c.time))&&Array.isArray(s.clues)&&SPOTS.some(p=>p.id===s.spot)&&BAITS.some(b=>b.id===s.bait)&&s.gear&&s.trip&&(!s.pending||(Number.isFinite(s.pending.readyAt)&&Number.isFinite(s.pending.start)&&SPOTS.some(p=>p.id===s.pending.spot)&&BAITS.some(b=>b.id===s.pending.bait)&&['cast','result'].includes(s.pending.phase)&&(!s.pending.catch||FISH.some(f=>f.id===s.pending.catch.id))));return valid}
-export function spotUnlocked(s,id){const spot=SPOTS.find(p=>p.id===id);return !!spot&&s.knowledge>=spot.unlock}
+export function spotUnlocked(s,id){const spot=SPOTS.find(p=>p.id===id);return !!spot&&explorationProgress(s)>=spot.unlock}
 export function equipGear(s,slot,id){const item=GEAR[slot]?.find(g=>g.id===id);if(!item||s.knowledge<item.unlock)return false;s.gear[slot]=id;return true}
 function weighted(items,rng){let n=rng()*items.reduce((s,i)=>s+i[1],0);for(const [id,w]of items){n-=w;if(n<=0)return id}return items.at(-1)[0]}
 export function makeCast(s,t=Date.now(),rng=Math.random,castPoint=null){
@@ -26,22 +29,54 @@ export function makeCast(s,t=Date.now(),rng=Math.random,castPoint=null){
  if(s.gear?.line==='copper'){if(weights.bottle)weights.bottle*=1.8;if(weights.bell)weights.bell*=1.8}
  if(s.gear?.float==='mirror'&&s.spot==='deep'&&s.clues.includes('moon1'))weights.moon=(weights.moon||0)+22;
  const floatLevel=s.economy?.upgrades?.float||0;if(floatLevel){for(const id of ['perch','catfish','oldgold','moon'])if(weights[id])weights[id]*=1+floatLevel*(id==='oldgold'||id==='moon'?.12:.08)}
- if(targetZone==='near'){for(const id of ['carp','minnow','shrimp'])if(weights[id])weights[id]*=1.18;for(const id of ['perch','catfish'])if(weights[id])weights[id]*=.88}
- if(targetZone==='far'){for(const id of ['perch','catfish'])if(weights[id])weights[id]*=1.18;for(const id of ['carp','minnow','shrimp'])if(weights[id])weights[id]*=.88}
+ if(targetZone==='near'){for(const id of ['carp','minnow','shrimp'])if(weights[id])weights[id]*=1.35;for(const id of ['perch','catfish'])if(weights[id])weights[id]*=.72}
+ if(targetZone==='far'){for(const id of ['perch','catfish'])if(weights[id])weights[id]*=1.35;for(const id of ['carp','minnow','shrimp'])if(weights[id])weights[id]*=.75}
+ const trail=matchingWaterTrail(s,weights);s.waterTrail=null;
  const eligible=(s.tracked||[]).filter(x=>x.spot===s.spot&&weights[x.id]),trackChance=Math.min(.55,eligible.reduce((sum,x)=>sum+.18+(x.releases||1)*.09,0)),returning=eligible.length&&rng()<trackChance?eligible[Math.floor(rng()*eligible.length)]:null;
- const miss=false,fishId=returning?.id||weighted(Object.entries(weights),rng),fish=FISH.find(f=>f.id===fishId),sizeBoost=(s.gear?.rod==='tide'?1.16:1)*(1+(s.economy?.upgrades?.rod||0)*.1)*(targetZone==='near'?.94:targetZone==='far'?1.10:1);const weight=returning?+Math.min(fish.max*1.35,Math.max(returning.weight*1.08,returning.weight*(1.08+rng()*.12))).toFixed(3):+Math.min(fish.max,fish.min+(fish.max-fish.min)*Math.pow(rng(),2)*sizeBoost).toFixed(3);const length=+(fish.length*Math.cbrt(weight/((fish.min+fish.max)/2))).toFixed(1);
+ const trailRoll=!!trail&&!returning&&rng()<WATER_TRAIL_RETURN_CHANCE,fishId=returning?.id||(trailRoll?trail.fishId:weighted(Object.entries(weights),rng)),trailReturned=!!trail&&fishId===trail.fishId,fish=FISH.find(f=>f.id===fishId),sizeBoost=(s.gear?.rod==='tide'?1.16:1)*(1+(s.economy?.upgrades?.rod||0)*.1)*(targetZone==='near'?.94:targetZone==='far'?1.10:1);const weight=returning?+Math.min(fish.max*1.35,Math.max(returning.weight*1.08,returning.weight*(1.08+rng()*.12))).toFixed(3):+Math.min(fish.max,fish.min+(fish.max-fish.min)*Math.pow(rng(),2)*sizeBoost).toFixed(3);const length=+(fish.length*Math.cbrt(weight/((fish.min+fish.max)/2))).toFixed(1);
  const mutationRoll=rng(),mutation=returning&&(returning.releases||1)>=3?'潮痕个体':fish.special?'特殊个体':fish.object?'沉水物':mutationRoll<.035?'雨水附着':mutationRoll<.09?'浅金体色':null,variation=returning?`追踪个体 · 已放流 ${returning.releases||1} 次`:fish.special?'已确认的特殊个体':fish.object?'沉水物':mutation==='雨水附着'?'离水后仍持续滴水':mutation==='浅金体色'?'少见的浅金色':rng()<.12?'尾鳍有旧伤':'普通体色';
- const readyAt=t+GAME_RULES.castWaitBaseMs+rng()*GAME_RULES.castWaitRandomMs+(targetZone==='near'?-700:targetZone==='far'?700:0),signal=signalFor(fish.id),biteWindowMs=biteWindowForTrip(s.trip?.number);
- return {start:t,readyAt,decisionAt:readyAt-GAME_RULES.decisionLeadMs,biteWindowMs,spot:s.spot,bait:s.bait,castPoint:targetPoint,castZone:targetZone,weather,phase:'cast',catch:{id:fish.id,weight,length,variation,mutation,time:t,spot:s.spot,bait:s.bait,weather:weather.name,...(returning?{tagId:returning.tagId,returnCount:returning.releases||1}: {})},signal,tactic:null,tacticSuccess:null,reaction:null,clue:s.spot==='bridge'?(s.clues.includes('gold1')?'gold2':'gold1'):s.spot==='deep'?(s.clues.includes('moon1')?'moon2':'moon1'):(!s.clues.includes('reed')?'reed':null)}
+ const readyAt=t+GAME_RULES.castWaitBaseMs+rng()*GAME_RULES.castWaitRandomMs+(targetZone==='near'?-700:targetZone==='far'?700:0)-(trail?WATER_TRAIL_WAIT_REDUCTION_MS:0),signal=signalFor(fish.id),biteWindowMs=biteWindowForTrip(s.trip?.number)+(targetZone==='near'?2000:0)+(trailReturned?WATER_TRAIL_BITE_BONUS_MS:0);
+ return {start:t,readyAt,decisionAt:readyAt-GAME_RULES.decisionLeadMs,biteWindowMs,biteMode:'natural',spot:s.spot,bait:s.bait,castPoint:targetPoint,castZone:targetZone,weather,phase:'cast',followedTrail:!!trail,trailReturned,catch:{id:fish.id,weight,length,variation,mutation,time:t,spot:s.spot,bait:s.bait,weather:weather.name,...(returning?{tagId:returning.tagId,returnCount:returning.releases||1}: {})},signal,tactic:null,tacticSuccess:null,reaction:null,clue:s.spot==='bridge'?(s.clues.includes('gold1')?'gold2':'gold1'):s.spot==='deep'?(s.clues.includes('moon1')?'moon2':'moon1'):(!s.clues.includes('reed')?'reed':null)}
 }
 export function signalFor(id){const key=id==='perch'?'dart':id==='catfish'?'deep':id==='oldgold'?'broad':id==='shrimp'||id==='minnow'?'peck':'steady';return {id:key,...SIGNALS[key]}}
+export function migrateBiteMode(p,now=Date.now()){
+ if(!p||p.phase!=='cast'||!p.catch)return p;
+ if(!Number.isFinite(p.decisionAt))p.decisionAt=Math.min(p.readyAt-1200,now+1800);
+ if(p.biteMode||p.tactic)return p;
+ p.biteMode='natural';p.readyAt=Math.max(p.readyAt,now+2200);p.decisionAt=Math.min(p.decisionAt,p.readyAt-2200);
+ return p;
+}
 export function chooseTactic(s,id,now=Date.now(),rng=Math.random){
- const p=s.pending;if(!p||p.phase!=='cast'||p.tactic||now<p.decisionAt)return null;
+ const p=s.pending;if(!p||p.biteMode==='natural'||p.phase!=='cast'||p.tactic||now<p.decisionAt||now>=p.decisionAt+BITE_READ_MS)return null;
  const signal=SIGNALS[p.signal?.id]||SIGNALS.steady,success=id===signal.tactic,tripNumber=s.trip?.number||1,forgiven=!success&&(tripNumber===1||tripNumber===2&&rng()<.65),landed=success||forgiven;p.tactic=id;p.tacticSuccess=landed;p.reaction=success?signal.success:forgiven?'鱼被动作惊了一下，但仍留在饵旁。继续看浮漂。':signal.fail;p.reactedAt=now;p.readyAt=now+(landed?2400:1800);
  if(!landed)p.catch=null;
  const skill=s.skill||(s.skill={streak:0,best:0,awards:0});if(success){skill.streak++;skill.best=Math.max(skill.best,skill.streak);if(skill.streak%3===0){skill.awards++;s.knowledge+=1;}}else skill.streak=0;const note={time:now,spot:p.spot,signal:p.signal?.id||'steady',tactic:id,success,forgiven,text:p.reaction,streak:skill.streak,streakAward:success&&skill.streak%3===0};s.observations=[note,...(s.observations||[])].slice(0,GAME_RULES.observationLimit);return note;
 }
+export function missBite(s,now=Date.now()){
+ const p=s?.pending;
+ if(!p||p.biteMode==='natural'||p.phase!=='cast'||p.tactic||!Number.isFinite(p.decisionAt)||now<p.decisionAt+BITE_READ_MS)return null;
+ p.tactic='missed';p.tacticSuccess=false;p.reaction='鱼口渐渐停了，浮漂回稳。这次没来得及判断。';p.reactedAt=now;p.readyAt=now+1800;p.catch=null;
+ const skill=s.skill||(s.skill={streak:0,best:0,awards:0});skill.streak=0;
+ const note={time:now,spot:p.spot,signal:p.signal?.id||'steady',tactic:'missed',success:false,forgiven:false,missed:true,text:p.reaction,streak:0,streakAward:false};
+ s.observations=[note,...(s.observations||[])].slice(0,GAME_RULES.observationLimit);
+ return note;
+}
+export function markNearMiss(p,reason){const fish=p?.catch&&FISH.find(item=>item.id===p.catch.id);if(!fish||fish.object||!['missed','escaped'].includes(reason))return false;p.nearMiss={fishId:fish.id,reason};return true}
+export function expireHookWindow(s,now=Date.now()){
+ const p=s?.pending;
+ if(!p||p.phase!=='cast'||!p.catch||p.biteMode!=='natural'&&!p.tactic||p.directHooked||p.liftedAt||p.fight?.status==='active'||now-p.readyAt<(p.biteWindowMs||GAME_RULES.biteWindowsMs.at(-1)))return false;
+ markNearMiss(p,'missed');p.catch=null;p.reaction='鱼口渐弱，鱼松口离开了。';return true;
+}
 export function finishCast(s){const p=s.pending;if(!p||p.phase==='result')return false;s.casts++;if(p.catch)s.log.unshift(p.catch);if(p.clue&&!s.clues.includes(p.clue))s.clues.push(p.clue);s.log=s.log.slice(0,GAME_RULES.catchLogLimit);p.phase='result';return true}
+export function settleEmptyCast(s){
+ const p=s?.pending;
+ if(!p||p.catch||!['cast','result'].includes(p.phase))return null;
+ if(p.processed){s.pending=null;return {action:p.processed,tripEnded:s.trip.castsLeft===0,alreadyProcessed:true}}
+ if(p.phase==='cast')finishCast(s);
+ const result=processCatch(s,'study');
+ if(result&&!result.error){const trail=trailFromMiss(p);s.pending=null;if(trail)s.waterTrail=trail}
+ return result;
+}
 export function trackRelease(s,c,spot=s.spot,now=Date.now()){
  if(!c||FISH.find(x=>x.id===c.id)?.object)return {tracked:false};s.tracked=Array.isArray(s.tracked)?s.tracked:[];let item=c.tagId&&s.tracked.find(x=>x.tagId===c.tagId);
  if(item){item.weight=Math.max(item.weight,c.weight);item.releases=(item.releases||1)+1;item.spot=spot;item.lastSeen=now;return {tracked:true,upgraded:true,item};}

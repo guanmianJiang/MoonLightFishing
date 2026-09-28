@@ -1,6 +1,6 @@
 # Specimen collection art brief
 
-Art-directed low-poly models for the seven living catches in Moonwater Fishing.
+Art-directed stylized models for the seven living catches in Moonwater Fishing.
 The supplied game references establish the soft faceted style, readable silhouettes,
 and restrained aquatic palette. Each species must remain recognizable at the small
 result-viewer size without relying on a name label.
@@ -17,3 +17,9 @@ Models use metre-like normalized authoring units, +X nose-forward orientation an
 body-centred pivot. Palette PBR materials are embedded in GLB files. The runtime
 animates a named Tail group where present. These are art-directed assets, not a
 skeletal production rig or baked texture set.
+
+Every exported catch GLB must include one non-rendering node named `MouthAnchor` at
+the mouth rim (+X head, before runtime rotation). Keep the `{id}_Tail` node and
+body-centred pivot. Never infer the mouth from overall bounds: whiskers, antennae,
+fins and asymmetrical tails make those bounds species-dependent. Add the anchor in
+`tools/generate_specimens.py` and let the asset tests reject missing exports.

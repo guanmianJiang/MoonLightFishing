@@ -32,5 +32,6 @@
     }
   ],
   "orientation": "+X nose forward",
-  "pivot": "body centre"
+  "pivot": "body centre",
+  "mouthAnchor": "MouthAnchor"
 }

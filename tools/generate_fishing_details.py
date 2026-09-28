@@ -3,12 +3,12 @@ import bpy, math, os, sys, json
 from mathutils import Vector
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT=os.path.join(ROOT,'assets_pipeline','fishing-details')
-WEB=os.path.join(ROOT,'dist','assets','models','fishing-details')
+WEB=os.path.join(ROOT,'public','assets','models','fishing-details')
 os.makedirs(OUT,exist_ok=True);os.makedirs(WEB,exist_ok=True)
 BLOCK='--blockout' in sys.argv
 bpy.ops.wm.read_factory_settings(use_empty=True)
 def mat(n,c,metal=0,glow=0):
- m=bpy.data.materials.new(n);m.diffuse_color=(*c,1);m.use_nodes=True;p=m.node_tree.nodes.get('Principled BSDF');p.inputs['Base Color'].default_value=(*c,1);p.inputs['Roughness'].default_value=.65;p.inputs['Metallic'].default_value=metal;p.inputs['Emission Color'].default_value=(*c,1);p.inputs['Emission Strength'].default_value=glow;return m
+ m=bpy.data.materials.new(n);m.diffuse_color=(*c,1);m.use_nodes=True;p=next((node for node in m.node_tree.nodes if node.type=='BSDF_PRINCIPLED'),None) or m.node_tree.nodes.new('ShaderNodeBsdfPrincipled');output=next((node for node in m.node_tree.nodes if node.type=='OUTPUT_MATERIAL'),None) or m.node_tree.nodes.new('ShaderNodeOutputMaterial');m.node_tree.links.new(p.outputs['BSDF'],output.inputs['Surface']);p.inputs['Base Color'].default_value=(*c,1);p.inputs['Roughness'].default_value=.65;p.inputs['Metallic'].default_value=metal;p.inputs['Emission Color'].default_value=(*c,1);p.inputs['Emission Strength'].default_value=glow;return m
 teal=mat('Seafoam_enamel',(.12,.36,.33));cream=mat('Warm_canvas',(.78,.68,.45));dark=mat('Deep_forest',(.045,.105,.10));brass=mat('Aged_brass',(.58,.36,.12),.65);wood=mat('Cedar',(.36,.18,.075));gold=mat('Wheat',(.92,.57,.12));rose=mat('Worm_rose',(.49,.16,.115));mint=mat('Firefly_light',(.48,.95,.37),0,1.5);wing=mat('Wing_pearl',(.66,.82,.65));clay=mat('Review_clay',(.46,.46,.46))
 assets={}
 def finish(o,n,m):
@@ -83,19 +83,23 @@ def bait(n):
    tube('Wing_vein',[(.028+side*.01,.020,-.045),(.028+side*.025,.019,-.07),(.028+side*.041,.013,-.091)],.0015,teal)
    tube('Antenna',[(.028+side*.01,0,-.035),(.028+side*.027,0,-.012)],.0025,brass)
 for n in ['grain','worm','glow']:collect('bait_'+n,lambda n=n:bait(n))
-manifest={'lane':'Art-directed','units':'metres','materials':'palette PBR, no baked textures','assets':[]}
+manifest={'lane':'Art-directed','units':'metres','materials':'palette PBR, no baked textures','baitHookAnchor':'HookAnchor','assets':[]}
 for n,objects in assets.items():
  bpy.ops.object.select_all(action='DESELECT')
  for o in objects:o.select_set(True)
  bpy.context.view_layer.objects.active=objects[0]
  bpy.ops.object.convert(target='MESH');bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
  objects=list(bpy.context.selected_objects);assets[n]=objects
+ if n in ['bait_grain','bait_worm','bait_glow']:
+  hook_anchor=bpy.data.objects.new('HookAnchor',None);bpy.context.collection.objects.link(hook_anchor);hook_anchor.location=(.047,0,-.164);hook_anchor.select_set(True);objects.append(hook_anchor)
  import bmesh
  tris=0
  for o in objects:
+  if o.type!='MESH':continue
   bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free();o.data.calc_loop_triangles();tris+=len(o.data.loop_triangles)
  assert tris<12000,(n,tris)
  if not BLOCK:bpy.ops.export_scene.gltf(filepath=os.path.join(WEB,n+'.glb'),export_format='GLB',use_selection=True,export_apply=True)
+ if n in ['bait_grain','bait_worm','bait_glow']:hook_anchor.name=n+'_HookAnchor'
  manifest['assets'].append({'name':n,'triangles':tris})
 # Review grid with baits enlarged for shape inspection.
 for i,(n,objects) in enumerate(assets.items()):
@@ -104,7 +108,11 @@ for i,(n,objects) in enumerate(assets.items()):
  parent.location=((i%4-1.5)*1.55,(i//4)*1.65,0)
  if n in ['bait_grain','bait_worm','bait_glow']:parent.scale=(5,5,5);parent.location.z=.9
 scene=bpy.context.scene;scene.render.engine='CYCLES';scene.cycles.samples=16;scene.render.resolution_x=1100;scene.render.resolution_y=650;scene.render.resolution_percentage=100
-scene.world=bpy.data.worlds.new('Studio');scene.world.use_nodes=True;scene.world.node_tree.nodes['Background'].inputs[0].default_value=(.23,.28,.29,1)
+scene.world=bpy.data.worlds.new('Studio');scene.world.use_nodes=True
+background=next((node for node in scene.world.node_tree.nodes if node.type=='BACKGROUND'),None) or scene.world.node_tree.nodes.new('ShaderNodeBackground')
+world_output=next((node for node in scene.world.node_tree.nodes if node.type=='OUTPUT_WORLD'),None) or scene.world.node_tree.nodes.new('ShaderNodeOutputWorld')
+scene.world.node_tree.links.new(background.outputs['Background'],world_output.inputs['Surface'])
+background.inputs[0].default_value=(.23,.28,.29,1)
 bpy.ops.object.light_add(type='AREA',location=(-3,-4,7));bpy.context.object.data.energy=650;bpy.context.object.data.size=5
 bpy.ops.object.camera_add();cam=bpy.context.object;scene.camera=cam;cam.data.type='ORTHO';cam.data.ortho_scale=7.5
 views={'threequarter':(5,-8,7),'front':(0,-10,1),'side':(10,0,1),'top':(0,0,11),'rear':(-5,8,7)}
@@ -112,7 +120,7 @@ for view,p in views.items():
  cam.location=p;cam.rotation_euler=(Vector((0,.65,.3))-cam.location).to_track_quat('-Z','Y').to_euler();scene.render.filepath=os.path.join(OUT,('blockout_' if BLOCK else 'final_')+view+'.png');bpy.ops.render.render(write_still=True)
 if not BLOCK:
  bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT,'fishing_details.blend'))
- with open(os.path.join(OUT,'manifest.json'),'w') as f:json.dump(manifest,f,indent=2)
+ with open(os.path.join(OUT,'manifest.json'),'w',newline='\n') as f:json.dump(manifest,f,indent=2);f.write('\n')
  # Transparent UI icons use the exact in-game models, without the review layout.
  scene.render.film_transparent=True;scene.render.resolution_x=240;scene.render.resolution_y=240;cam.data.ortho_scale=.25
  for n in ['bait_grain','bait_worm','bait_glow']:

@@ -1,11 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newSave,migrateSave,makeCast,chooseTactic,signalFor,finishCast,trackRelease,processHint,processCatch,startNextTrip,spotUnlocked,equipGear,goalForTrip,ruleForTrip,biteWindowForTrip} from '../src/engine.mjs';
+import {newSave,migrateSave,makeCast as makeNaturalCast,chooseTactic,missBite,signalFor,finishCast,trackRelease,processHint,processCatch,startNextTrip,spotUnlocked,equipGear,goalForTrip,ruleForTrip,biteWindowForTrip} from '../src/engine.mjs';
 import {phaseOf} from '../src/fishing-motion.js';
 import {hookTiming} from '../src/fishing-rhythm.mjs';
+import {BITE_READ_MS} from '../src/bite-guidance.mjs';
 import {createFight,stepFight} from '../src/reference-loop.mjs';
 
 function sequence(values){let i=0;return()=>values[i++]??.5}
+// Existing choice tests cover the legacy save path. New casts use natural bite timing.
+function makeCast(...args){const cast=makeNaturalCast(...args);delete cast.biteMode;return cast}
 function resolveCast(state,action,index=0){state.pending=makeCast(state,1_000+index*100,sequence([.2,.4,.5,.5,.5]));finishCast(state);return processCatch(state,action)}
 
 test('bridge casts expose a readable signal before the bite',()=>{
@@ -51,6 +54,26 @@ test('the matching tactic preserves the catch and records a learned reaction',()
  assert.equal(phaseOf(state.pending,state.pending.readyAt-1),'responding');
 });
 
+test('an expired reading window records a missed bite without guessing a tactic',()=>{
+ const state=newSave();state.skill.streak=2;state.pending=makeCast(state,1_000,sequence([.2,.4,.5,.5,.5]));state.pending.signal={id:'steady'};
+ const deadline=state.pending.decisionAt+BITE_READ_MS;
+ assert.equal(missBite(state,deadline-1),null);
+ assert.equal(chooseTactic(state,'wait',deadline),null);
+ const note=missBite(state,deadline);
+ assert.equal(note.tactic,'missed');assert.equal(note.success,false);assert.equal(note.forgiven,false);
+ assert.equal(state.pending.catch,null);assert.equal(state.pending.tactic,'missed');assert.equal(state.skill.streak,0);
+ assert.equal(state.skill.awards,0);assert.equal(phaseOf(state.pending,deadline+1),'spooked');
+ assert.match(state.pending.reaction,/没来得及判断/);
+ assert.equal(missBite(state,deadline+1),null);assert.equal(state.observations.length,1);
+});
+
+test('timeout cannot overwrite a choice that the player already made',()=>{
+ const state=newSave();state.pending=makeCast(state,1_000,sequence([.2,.4,.5,.5,.5]));state.pending.signal={id:'steady'};
+ const note=chooseTactic(state,'wait',state.pending.decisionAt+100);
+ assert.equal(note.success,true);assert.equal(missBite(state,state.pending.decisionAt+BITE_READ_MS),null);
+ assert.equal(state.pending.tactic,'wait');assert.ok(state.pending.catch);
+});
+
 test('a mismatched tactic can scare the visitor away after the opening trips',()=>{
  const state=newSave();state.spot='bridge';state.trip.number=3;state.casts=8;state.pending=makeCast(state,3_000,sequence([.9,.4,.5,.5,.5,.5]));
  const expected=signalFor(state.pending.catch.id).tactic,wrong=['wait','tease','shorten'].find(id=>id!==expected);
@@ -84,10 +107,11 @@ test('the second trip keeps some forgiveness without guaranteeing every wrong re
  }
 });
 
-test('the first two trips give more time to lift, including an ongoing older save',()=>{
+test('new trips keep a calm lift window while existing cast timing is preserved',()=>{
  const state=newSave();assert.equal(makeCast(state,1_000,sequence([.2,.4,.5,.5,.5])).biteWindowMs,9500);
- state.trip.number=2;assert.equal(makeCast(state,1_000,sequence([.2,.4,.5,.5,.5])).biteWindowMs,8000);
- state.trip.number=3;state.pending=makeCast(state,1_000,sequence([.2,.4,.5,.5,.5]));assert.equal(state.pending.biteWindowMs,6500);
+ state.trip.number=2;assert.equal(makeCast(state,1_000,sequence([.2,.4,.5,.5,.5])).biteWindowMs,9500);
+ state.trip.number=3;state.pending=makeCast(state,1_000,sequence([.2,.4,.5,.5,.5]));assert.equal(state.pending.biteWindowMs,9500);
+ state.pending.biteWindowMs=6500;assert.equal(migrateSave(state).pending.biteWindowMs,6500);
  delete state.pending.biteWindowMs;assert.equal(migrateSave(state).pending.biteWindowMs,biteWindowForTrip(3));
 });
 

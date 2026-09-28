@@ -3,6 +3,8 @@ import {shore} from './coast.js';
 // One reachable patch of water per location. The lanes run away from the angler.
 export const CAST_AREAS={reed:[-2,5],bridge:[5,8.5],deep:[0,14.6]};
 export const CAST_RADIUS=3.9;
+const WATER_MARGIN=.2;
+const TARGET_RADIUS=CAST_RADIUS-.12;
 const ANGLER=[-1.2,.35];
 export const CAST_ZONES={
  near:{name:'近岸',hint:'等待稍短 · 小鱼偏多'},
@@ -25,18 +27,55 @@ export function castPreset(spot,zone='middle'){
  return [+(center[0]+forward[0]*offset).toFixed(3),+(center[1]+forward[1]*offset).toFixed(3)];
 }
 
-// A drag on the cast control moves the marker in screen space. The camera never
-// has to raycast a finger that started over the bottom HUD.
-export function castPointFromDrag(spot,dx,dy,viewportWidth,viewportHeight){
- const center=CAST_AREAS[spot];if(!center)return null;
- const forward=direction(spot),right=[forward[1],-forward[0]];
- const lateral=Math.max(-2.5,Math.min(2.5,dx/Math.max(80,viewportWidth*.24)*2.5));
- const distance=Math.max(-2.7,Math.min(2.7,-dy/(dy>0?Math.max(34,viewportHeight*.055):Math.max(90,viewportHeight*.13))*2.7));
- let radius=Math.hypot(lateral,distance),scale=radius>3.35?3.35/radius:1;
- for(let i=0;i<8;i++){
-  const point=[center[0]+(right[0]*lateral+forward[0]*distance)*scale,center[1]+(right[1]*lateral+forward[1]*distance)*scale];
-  if(point[1]>shore(point[0])+.2&&castZone(spot,point))return point;
-  scale*=.75;
+export function castPointFromWorld(spot,x,z){
+ const point=[x,z];
+ return castZone(spot,point)&&z>shore(x)+WATER_MARGIN?point:null;
+}
+
+// The rendered boundary uses the same reach and shoreline as touch validation.
+export function castFootprint(spot,segments=64){
+ const center=CAST_AREAS[spot];
+ if(!center||!Number.isInteger(segments)||segments<16||segments>256||!castPointFromWorld(spot,...center))return null;
+ return Array.from({length:segments},(_,index)=>{
+  const angle=index*2*Math.PI/segments,dx=Math.cos(angle),dz=Math.sin(angle);
+  const at=distance=>[center[0]+dx*distance,center[1]+dz*distance];
+  let low=0,high=CAST_RADIUS;
+  for(let step=1;step<=24;step++){
+   const distance=CAST_RADIUS*step/24;
+   if(!castPointFromWorld(spot,...at(distance))){high=distance;break}
+   low=distance;
+  }
+  if(low===CAST_RADIUS)return at(CAST_RADIUS);
+  for(let iteration=0;iteration<12;iteration++){
+   const middle=(low+high)/2;
+   if(castPointFromWorld(spot,...at(middle)))low=middle;
+   else high=middle;
+  }
+  return at(low);
+ });
+}
+
+// Project a water touch onto the reachable patch instead of discarding distant water.
+export function castPointFromWaterTouch(spot,x,z){
+ const center=CAST_AREAS[spot];
+ if(!center||!Number.isFinite(x)||!Number.isFinite(z)||z<=shore(x)+.2)return null;
+ const dx=x-center[0],dz=z-center[1],length=Math.hypot(dx,dz);
+ let scale=length>TARGET_RADIUS?TARGET_RADIUS/length:1;
+ for(let i=0;i<10;i++){
+  const point=[center[0]+dx*scale,center[1]+dz*scale];
+  if(castPointFromWorld(spot,...point))return point;
+  scale*=.72;
  }
- return [...center];
+ return castPointFromWorld(spot,...center)?[...center]:null;
+}
+
+export function readyWaterTarget(state,x,z){
+ if(!state||state.pending||state.aiming||state.overview||!state.keepFishingView)return null;
+ return castPointFromWorld(state.spot,x,z);
+}
+
+export function confirmedCastPoint(spot,aiming,point){
+ if(!aiming)return null;
+ const valid=Array.isArray(point)?castPointFromWorld(spot,point[0],point[1]):null;
+ return valid||castPreset(spot);
 }

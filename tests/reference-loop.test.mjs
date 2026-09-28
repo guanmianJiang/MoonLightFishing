@@ -48,6 +48,22 @@ test('holding winds in line while the fish swims on its own path',()=>{
  assert.equal(releasing.held,false);
 });
 
+test('a fresh hook gives a readable opening before the species first run',()=>{
+ const f=createFight({id:'carp',weight:6});
+ assert.equal(f.fishState,'hookset');
+ assert.equal(pumpOpportunity(f,false).state,'settling');
+ assert.deepEqual(pumpRod(f,false),{ok:false,state:'settling'});
+ for(let i=0;i<120;i++)stepFight(f,false,.016);
+ assert.equal(f.status,'active');
+ assert.equal(f.fishState,'hookset');
+ assert.ok(f.distance<f.startDistance+.7);
+ for(let i=0;i<50;i++)stepFight(f,false,.016);
+ assert.equal(f.fishState,'windup');
+ const resumed=createFight({id:'carp',weight:6});resumed.fishState='run';resumed.stateAge=.2;
+ stepFight(resumed,false,0);
+ assert.equal(resumed.fishState,'run','an ongoing fight must not restart its opening');
+});
+
 test('line load comes from stretch, and paying out line relieves it',()=>{
  const fight=createFight({weight:2});
  for(let i=0;i<90;i++)stepFight(fight,true,.016);
@@ -130,6 +146,7 @@ test('small fish can be reeled steadily and a large fish gives time after the wa
 
 test('lifting the rod needs an opening and creates a measurable pull on the fish',()=>{
  const ordinary=createFight({weight:2}),lifted=createFight({weight:2});
+ ordinary.fishState=lifted.fishState='recover';
  assert.equal(pumpOpportunity(lifted,false).ready,true);
  assert.equal(pumpOpportunity(lifted,true).state,'reeling');
  lifted.surgeWarning=.9;
@@ -143,8 +160,28 @@ test('lifting the rod needs an opening and creates a measurable pull on the fish
  assert.equal(pumpOpportunity(lifted,false).state,'lowering');
 });
 
+test('an unavailable lift does not consume stamina or fake progress',()=>{
+ const cases=[
+  {fishState:'hookset',held:false},
+  {fishState:'windup',held:false},
+  {fishState:'run',held:false},
+  {fishState:'anchor',held:false},
+  {fishState:'recover',held:true},
+  {fishState:'recover',held:false,slack:.8},
+  {fishState:'recover',held:false,radialVelocity:.5},
+  {fishState:'recover',held:false,pumpCooldown:.5},
+ ];
+ for(const changes of cases){
+  const f=createFight({weight:2});Object.assign(f,changes);
+  const before=structuredClone(f),result=pumpRod(f,changes.held);
+  assert.equal(result.ok,false,JSON.stringify(changes));
+  assert.deepEqual(f,before,JSON.stringify(changes));
+ }
+});
+
 test('reeling after a lift keeps the gained line instead of giving it back',()=>{
  const reelOnly=createFight({weight:2}),liftThenReel=createFight({weight:2});
+ reelOnly.fishState=liftThenReel.fishState='recover';
  assert.equal(pumpRod(liftThenReel,false).ok,true);
  for(let i=0;i<45;i++){stepFight(reelOnly,false,.016);stepFight(liftThenReel,false,.016)}
  for(let i=0;i<45;i++){stepFight(reelOnly,true,.016);stepFight(liftThenReel,true,.016)}
