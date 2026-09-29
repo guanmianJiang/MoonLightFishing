@@ -5,7 +5,8 @@ import {GAME_RULES} from '../src/config/game-rules.mjs';
 import {phaseOf} from '../src/fishing-motion.js';
 
 test('new casts reach fish activity within a compact but varied wait',()=>{
- const t=1000,early=makeCast(newSave(),t,()=>0),late=makeCast(newSave(),t,()=>.999);
+ const t=1000,save=newSave();save.casts=1;
+ const early=makeCast(save,t,()=>0),late=makeCast(save,t,()=>.999);
  assert.equal(early.readyAt-t,GAME_RULES.castWaitBaseMs);
  assert.ok(late.readyAt-t<GAME_RULES.castWaitBaseMs+GAME_RULES.castWaitRandomMs);
  assert.ok(late.readyAt-early.readyAt>3000);

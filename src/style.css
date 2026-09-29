@@ -58,6 +58,13 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--gold);outline
 #game{position:relative;height:100svh;min-height:560px;overflow:hidden;isolation:isolate}
 #world{position:absolute;inset:0;z-index:-1}
 #world canvas{display:block;width:100%;height:100%;touch-action:none}
+#game.boot-loading > :not(#world):not(#bootStatus):not(#renderError){visibility:hidden}
+#bootStatus{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:linear-gradient(160deg,#2d706d,#103d3d);color:#eef9f4;text-align:center}
+#bootStatus strong{font-size:20px;font-weight:600;letter-spacing:.08em}
+#bootStatus small{color:#c7e3db;font-size:13px}
+.boot-spinner{width:32px;height:32px;border:3px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:boot-spin .9s linear infinite}
+@keyframes boot-spin{to{transform:rotate(360deg)}}
+#bootStatus[hidden]{display:none}
 #world:after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,rgba(10,48,44,.05),transparent 22%,transparent 74%,rgba(8,42,38,.12)),
   radial-gradient(ellipse at 50% 44%,transparent 58%,rgba(8,42,38,.10) 118%)}
@@ -266,6 +273,16 @@ header{position:absolute;top:20px;left:24px;right:24px;z-index:6;display:flex;al
 #fightMode{font:700 16px/1.2 var(--sans);color:var(--pine)}
 #fightPercent{flex:none;padding:5px 11px;border-radius:var(--r-pill);background:var(--surface-soft);color:var(--pine-2);font-size:13px;font-weight:800;white-space:nowrap}
 #fight.danger #fightPercent{background:#f7e3d8;color:#a3543f}
+.fight-outlook{margin-top:7px;padding:5px 8px 6px;border:1px solid #d5e5d9;border-radius:9px;background:rgba(235,244,231,.72);color:#3b6b59}
+.fight-outlook>div{display:flex;align-items:center;justify-content:space-between;gap:8px;font:700 10.5px/1.15 var(--sans)}
+.fight-outlook strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fight-outlook span#fightLineStatus{flex:none;font-weight:800}
+.fight-outlook-track{display:block;overflow:hidden;height:4px;margin-top:5px;border-radius:5px;background:rgba(91,137,108,.18)}
+#fightApproachFill{display:block;width:0;height:100%;border-radius:inherit;background:#5c9a7d;transition:width .12s linear}
+.fight-outlook[data-state="line-strain"],.fight-outlook[data-state="escaping"],.fight-outlook[data-state="exhausted"]{border-color:#dfca9c;background:rgba(250,238,210,.88);color:#86643a}
+.fight-outlook[data-state="line-critical"]{border-color:#cb8f73;background:#f7e2d4;color:#934c39;animation:fight-risk-pulse .48s ease-in-out infinite alternate}
+.fight-outlook[data-state="line-critical"] #fightApproachFill{background:#b87253}
+@keyframes fight-risk-pulse{from{box-shadow:0 0 0 rgba(174,94,61,0)}to{box-shadow:0 0 0 2px rgba(174,94,61,.18)}}
 #fightBeat{display:flex;align-items:center;gap:10px;min-height:42px;margin:11px 0 10px}
 #fightBeat>span:last-child{display:flex;min-width:0;flex-direction:column;gap:1px}
 #fightBeat strong{font-size:13px;font-weight:700;color:var(--pine)}
@@ -316,46 +333,13 @@ header{position:absolute;top:20px;left:24px;right:24px;z-index:6;display:flex;al
 #fight[data-next="lift"] #fightHold,#fight[data-next="reel"] #fightHold{outline:2px solid #b6ce9d;outline-offset:2px}
 #fight[data-next="release"] #fightHold{outline:2px solid #dec692;outline-offset:2px}
 #fight[data-next="wait"] .fight-actions{opacity:.85}
-/* 收线：线轮按钮 */
-#fightHold{display:flex;align-items:center;gap:11px;min-height:72px;padding:8px 12px;border:1px solid #184a40;
-  border-radius:var(--r-md);background:linear-gradient(180deg,#2a5f51,#1e4a41);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 4px 0 #123a32;color:#fff;text-align:left;
-  touch-action:none;user-select:none;transition:transform .09s ease,box-shadow .09s ease,background .14s ease}
-#fightHold.held{transform:translateY(3px);background:linear-gradient(180deg,#225349,#1a4239);
-  box-shadow:inset 0 2px 5px rgba(6,30,25,.35),0 1px 0 #123a32}
-#fightHold.tap-flash{box-shadow:0 0 0 4px rgba(185,214,172,.5),0 4px 0 #123a32}
-#fightHold.lift-ready{border-color:#d7e8ab;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 4px 0 #123a32,0 0 0 3px rgba(186,218,142,.25)}
-#fightHold.lifting{background:linear-gradient(180deg,#3c7460,#245647)}
-.fight-lift-cue{flex:none;display:flex;align-items:center;justify-content:center;flex-direction:column;width:44px;height:54px;border:1px solid rgba(227,247,205,.44);border-radius:12px;color:#e7f6d4;opacity:.55}
-.fight-lift-cue i{font:800 25px/1 var(--sans);font-style:normal;transform:translateY(calc(-15px * var(--lift-progress,0)));transition:transform .08s linear}
-.fight-lift-cue small{font:700 10px/1 var(--sans)}
-#fightHold.lift-ready .fight-lift-cue,#fightHold.lifting .fight-lift-cue{opacity:1;background:rgba(216,237,188,.15)}
-#fightHold.lift-ready .fight-lift-cue i{animation:pump-arrow-call 1.15s ease-in-out infinite}
-#fightHold.held .fight-lift-cue i{animation:none}
-.fight-reel-art{flex:none;width:48px;height:48px;transform:translateX(var(--torque-shift,0px));transition:transform .08s ease;filter:drop-shadow(0 2px 3px rgba(9,34,28,.35))}
-.fight-reel-art svg{display:block;width:100%;height:100%;overflow:visible}
-.reel-body{fill:#173b36;stroke:#b9d8c8;stroke-width:3}
-.reel-bezel{fill:#315f52;stroke:#6da08b;stroke-width:2}
-.reel-drum{fill:#e3d19c;stroke:#fff0c3;stroke-width:2}
-.reel-spokes{stroke:#a87948;stroke-width:2.5;stroke-linecap:round}
-.reel-hub,.reel-knob{fill:#fbf3d5;stroke:#825f3d;stroke-width:1.5}
-#fightReelRotor{transform-origin:35px 36px;transform:rotate(var(--reel-angle,0deg));transition:transform .07s linear}
-#fightReelLine{fill:none;stroke:#e9f5dc;stroke-width:2;stroke-linecap:round;transition:stroke .12s}
-#fight.danger #fightReelLine{stroke:#ffc9b3}
-#fightHold[data-spool="paying"] .reel-bezel{stroke:#d6c28e}
-#fightHold[data-spool="paying"] #fightReelLine{stroke:#e8d8a4}
-.fight-reel-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
-#fightHoldLabel{font:800 13px/1.15 var(--sans)}
-#fightHoldHint{font:600 10px/1.25 var(--sans);color:#cde8d5}
-#fightHold kbd{flex:none;min-width:44px;padding:5px;border:1px solid rgba(255,255,255,.35);border-radius:6px;
-  background:rgba(255,255,255,.12);text-align:center;font:700 10px/1.2 var(--sans);color:#eaf4ea}
 @keyframes fight-arrive{from{opacity:0;transform:translate(-50%,16px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 @keyframes fight-fish-surge{0%,100%{transform:translateX(-2px) rotate(-7deg)}50%{transform:translateX(3px) rotate(9deg)}}
 @keyframes fight-fish-rest{0%,100%{transform:scale(.93)}50%{transform:scale(1.09)}}
 @keyframes fight-fish-lift{from{transform:translateY(4px) rotate(-8deg)}to{transform:translateY(-4px) rotate(8deg)}}
 @keyframes fight-line-tremor{0%,100%{transform:translateY(0)}50%{transform:translateY(1.5px)}}
 @keyframes fight-wake{0%,100%{opacity:.28}50%{opacity:.8}}
-@keyframes pump-arrow-call{0%,100%{transform:translateY(2px);opacity:.66}50%{transform:translateY(-2px);opacity:1}}
+@media(prefers-reduced-motion:reduce){.fight-outlook[data-state="line-critical"]{animation:none}#fightApproachFill{transition:none}}
 
 /* ============ 视角、现场与操作栏 ============ */
 .camera-controls{position:absolute;right:20px;top:45%;z-index:7;display:flex;flex-direction:column;gap:7px;pointer-events:auto}

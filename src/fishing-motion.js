@@ -1,11 +1,12 @@
 import * as T from './three.module.js';
+import {isObjectCatch} from './catch-kind.mjs';
 export function phaseOf(p,now=Date.now()){
  if(!p||p.phase==='result')return 'idle';
  if(now-p.start<1850)return 'casting';
  if(p.directHooked)return p.catch?'hooked':'empty';
  if(p.biteMode==='natural'){
   if(now>=p.readyAt)return p.catch?'hooked':'empty';
-  if(p.catch&&!['bottle','bell'].includes(p.catch.id)){
+  if(p.catch&&!isObjectCatch(p.catch)){
    if(p.readyAt-now<2200)return 'nibble';
    if(now>=p.decisionAt)return 'reading';
    if(p.readyAt-now<5500)return 'approach';
@@ -16,7 +17,7 @@ export function phaseOf(p,now=Date.now()){
  if(p.decisionAt&&now>=p.decisionAt&&!p.tactic)return 'reading';
  if(p.reactedAt&&now<p.readyAt)return p.tacticSuccess?'responding':'spooked';
  if(now>=p.readyAt)return p.catch?'hooked':'empty';
- if(p.catch&&!['bottle','bell'].includes(p.catch.id)){
+ if(p.catch&&!isObjectCatch(p.catch)){
   if(p.readyAt-now<2200)return 'nibble';
   if(p.readyAt-now<5500)return 'approach';
  }

@@ -108,7 +108,7 @@ test('the second trip keeps some forgiveness without guaranteeing every wrong re
 });
 
 test('new trips keep a calm lift window while existing cast timing is preserved',()=>{
- const state=newSave();assert.equal(makeCast(state,1_000,sequence([.2,.4,.5,.5,.5])).biteWindowMs,9500);
+ const state=newSave();state.casts=1;assert.equal(makeCast(state,1_000,sequence([.2,.4,.5,.5,.5])).biteWindowMs,9500);
  state.trip.number=2;assert.equal(makeCast(state,1_000,sequence([.2,.4,.5,.5,.5])).biteWindowMs,9500);
  state.trip.number=3;state.pending=makeCast(state,1_000,sequence([.2,.4,.5,.5,.5]));assert.equal(state.pending.biteWindowMs,9500);
  state.pending.biteWindowMs=6500;assert.equal(migrateSave(state).pending.biteWindowMs,6500);

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fightPerformance} from '../src/fight-performance.mjs';
+import {fightPerformance,fightSurfacePulse} from '../src/fight-performance.mjs';
 
 test('a taut, loaded line braces the angler while slack releases the pose',()=>{
  const taut=fightPerformance({slack:0,tension:.65,load:.5,surge:.4,spoolVelocity:-1.2});
@@ -40,6 +40,43 @@ test('fish struggle transfers a bounded shock only through a taut line',()=>{
  assert.ok(loose.struggle>.3,'the fish can still fight while the loose line stops transmitting force');
  const invalid=fightPerformance({tension:Infinity,load:NaN,fishVelocity:Infinity,surge:Infinity});
  assert.ok(Number.isFinite(invalid.shock)&&invalid.shock<=1);
+});
+
+test('pressing or releasing an unloaded reel cannot kick the rod by itself',()=>{
+ const loaded=fightPerformance({slack:0,tension:.7,load:.6,inputPulse:1});
+ const loose=fightPerformance({slack:.8,tension:.7,load:.6,inputPulse:1});
+ assert.ok(loaded.recoil>.2);
+ assert.equal(loose.recoil,0);
+});
+
+test('surface water responds to actual load and spool travel, not a held-button change',()=>{
+ const f={status:'active',elapsed:0,slack:0,tension:.6,load:.5,pumpPulse:0,reelTurns:1.8,held:false,surge:0,surgeWarning:0};
+ const initial=fightSurfacePulse(f);
+ assert.equal(initial.amount,0);
+ const pressed=fightSurfacePulse({...f,held:true},initial.tracker);
+ assert.equal(pressed.amount,0);
+ const reeled=fightSurfacePulse({...f,held:true,reelTurns:2.1},pressed.tracker);
+ assert.equal(reeled.kind,'reel');
+ const loose=fightSurfacePulse({...f,held:true,reelTurns:4.2,slack:.6},reeled.tracker);
+ assert.equal(loose.amount,0);
+ assert.equal(fightSurfacePulse({...f,held:true,reelTurns:4.2},loose.tracker).amount,0,'a loose-line beat must not play later');
+ const lifted=fightSurfacePulse({...f,pumpPulse:.4},initial.tracker);
+ assert.equal(lifted.kind,'pump');
+ assert.equal(fightSurfacePulse({...f,pumpPulse:.4,slack:.6},initial.tracker).amount,0);
+});
+
+test('surge and warning splashes follow simulation time across render frame rates',()=>{
+ const f={status:'active',elapsed:0,slack:0,tension:.6,load:.5,pumpPulse:0,reelTurns:0,held:false,surge:0,surgeWarning:0};
+ const initial=fightSurfacePulse(f);
+ const surge=fightSurfacePulse({...f,elapsed:1,surge:.7},initial.tracker);
+ assert.equal(surge.kind,'surge');
+ assert.equal(fightSurfacePulse({...f,elapsed:1.1,surge:.7},surge.tracker).amount,0);
+ assert.equal(fightSurfacePulse({...f,elapsed:1.3,surge:.7},surge.tracker).kind,'surge');
+ const warning=fightSurfacePulse({...f,elapsed:2,surgeWarning:.8},initial.tracker);
+ assert.equal(warning.kind,'warning');
+ assert.equal(fightSurfacePulse({...f,elapsed:2.1,surgeWarning:.8},warning.tracker).amount,0);
+ assert.equal(fightSurfacePulse({...f,elapsed:3,surge:.8,slack:.8},warning.tracker).amount,0);
+ assert.equal(fightSurfacePulse({...f,status:'lost'},warning.tracker).tracker,null);
 });
 
 test('fish thrashes in short beats and transmits those beats only through a taut line',()=>{

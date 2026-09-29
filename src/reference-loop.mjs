@@ -12,7 +12,9 @@ const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const START_DISTANCE=9;
 const LANDING_DISTANCE=1.8;
 const HOOKSET_DURATION=2.4;
-export function createFight(c,upgrades={},options={}){const weight=Math.max(.01,c?.weight||.5),startDistance=START_DISTANCE,hookQuality=clamp(options.hookQuality??.65,.65,1),lead=(hookQuality-.65)/.35*.42,distance=startDistance-lead;return {fishPosition:.53,fishVelocity:0,progress:lead/(startDistance-LANDING_DISTANCE),tension:0,load:0,force:0,elapsed:0,overload:0,warningAge:0,weight,seed:(weight*13.7)%6.28,levels:{rod:upgrades.rod||0,reel:upgrades.reel||0,line:upgrades.line||0},held:false,inputPulse:0,surge:0,surgeWarning:0,fatigue:0,status:'active',startDistance,distance,radialVelocity:0,lineLength:distance+.22,slack:.22,spoolVelocity:0,reelTurns:0,physicsCarry:0,hookQuality,pumpAge:0,pumpCooldown:0,pumpPulse:0,pumpQuality:0,pumps:0,goodPumps:0,fishState:'hookset',stateAge:0,stateDuration:HOOKSET_DURATION,stamina:1,pressure:0,runCount:0,runsSeen:0,cleanRuns:0,runReward:0,behaviorId:fishBehavior(c?.id).id};}
+export const FIGHT_LIMITS=Object.freeze({landingDistance:LANDING_DISTANCE,lineWarningAge:.95,overloadAge:.3,escapeExtra:3.49,maxElapsed:80});
+export function lineBreakForce(f){return 26+(f?.levels?.line||0)*5+(f?.levels?.rod||0)*2}
+export function createFight(c,upgrades={},options={}){const weight=Math.max(.01,c?.weight||.5),startDistance=START_DISTANCE,hookQuality=clamp(options.hookQuality??.65,.65,1),lead=(hookQuality-.65)/.35*.42,distance=startDistance-lead;return {fishPosition:.53,fishVelocity:0,progress:lead/(startDistance-LANDING_DISTANCE),tension:0,load:0,force:0,elapsed:0,overload:0,warningAge:0,lossReason:null,weight,seed:(weight*13.7)%6.28,levels:{rod:upgrades.rod||0,reel:upgrades.reel||0,line:upgrades.line||0},held:false,inputPulse:0,surge:0,surgeWarning:0,fatigue:0,status:'active',startDistance,distance,radialVelocity:0,lineLength:distance+.22,slack:.22,spoolVelocity:0,reelTurns:0,physicsCarry:0,hookQuality,pumpAge:0,pumpCooldown:0,pumpPulse:0,pumpQuality:0,pumps:0,goodPumps:0,fishState:'hookset',stateAge:0,stateDuration:HOOKSET_DURATION,stamina:1,pressure:0,runCount:0,runsSeen:0,cleanRuns:0,runReward:0,behaviorId:fishBehavior(c?.id).id};}
 export function pumpOpportunity(f,held=f?.held){if(!f||f.status!=='active')return {ready:false,state:'done'};if((f.pumpAge||0)>0)return {ready:false,state:'lifting'};if((f.pumpCooldown||0)>0)return {ready:false,state:'lowering'};if(f.fishState==='hookset')return {ready:false,state:'settling'};if(f.slack>.58)return {ready:false,state:'slack'};if(f.fishState==='windup'||(f.surgeWarning||0)>.78)return {ready:false,state:'gathering'};if(f.fishState==='run'||f.fishState==='anchor'||f.load>.72)return {ready:false,state:f.fishState==='anchor'?'anchor':'surge'};if(held)return {ready:false,state:'reeling'};if((f.radialVelocity||0)>.25)return {ready:false,state:'moving'};return {ready:true,state:'opening'};}
 export function pumpRod(f,held=f?.held){const chance=pumpOpportunity(f,held);if(!chance.ready)return {ok:false,state:chance.state};f.pumpAge=.68;f.pumpCooldown=1.18;f.pumpQuality=clamp((f.fishState==='recover'?1:.7)*(1-f.load*.45)*clamp(1-f.slack/.9,.15,1),.12,1);f.stamina=clamp((f.stamina??1)-.32*f.pumpQuality,0,1);f.fatigue=1-f.stamina;f.pumps=(f.pumps||0)+1;if(f.pumpQuality>=.55)f.goodPumps=(f.goodPumps||0)+1;return {ok:true,quality:f.pumpQuality,state:chance.state};}
 function advanceFishState(f,h,held,difficulty){
@@ -50,7 +52,7 @@ function advanceFishState(f,h,held,difficulty){
  f.fatigue=1-(f.stamina??1);
 }
 function physicsStep(f,held,h){
- const difficulty=clamp(Math.sqrt(f.weight)/4.3,0,1),breakForce=26+(f.levels.line||0)*5+(f.levels.rod||0)*2;
+ const difficulty=clamp(Math.sqrt(f.weight)/4.3,0,1),breakForce=lineBreakForce(f);
  const behavior=fishBehavior(f.behaviorId);
  f.elapsed+=h;
  const fishTarget=.5+Math.sin(f.elapsed*(1.35+difficulty*.45)*behavior.lateral+f.seed)*.23+Math.sin(f.elapsed*(3.6+difficulty)*behavior.lateral+f.seed*.7)*.07+f.surge*Math.sin(f.elapsed*(9.5+difficulty*2)*behavior.lateral+f.seed*1.7)*.11;
@@ -81,6 +83,9 @@ function physicsStep(f,held,h){
  if(held&&f.load>.68)f.warningAge=(f.warningAge||0)+h;else if(!held&&f.load<.36)f.warningAge=0;
  f.progress=clamp((f.startDistance-f.distance)/(f.startDistance-LANDING_DISTANCE),0,1);
  f.overload=f.force>breakForce?f.overload+h:Math.max(0,f.overload-h*.35);
- if(f.distance<=LANDING_DISTANCE)f.status='won';else if((f.overload>.3&&f.warningAge>.95)||f.elapsed>80||f.distance>=f.startDistance+3.49)f.status='lost';
+ if(f.distance<=LANDING_DISTANCE){f.status='won';f.lossReason=null}
+ else if(f.overload>FIGHT_LIMITS.overloadAge&&f.warningAge>FIGHT_LIMITS.lineWarningAge){f.status='lost';f.lossReason='line-break'}
+ else if(f.distance>=f.startDistance+FIGHT_LIMITS.escapeExtra){f.status='lost';f.lossReason='escaped'}
+ else if(f.elapsed>FIGHT_LIMITS.maxElapsed){f.status='lost';f.lossReason='exhausted'}
 }
 export function stepFight(f,held,dt){if(!f||f.status!=='active')return f;if(!Number.isFinite(f.lineLength)){f.startDistance=START_DISTANCE;f.distance=START_DISTANCE-clamp(f.progress||0,0,1)*(START_DISTANCE-LANDING_DISTANCE);f.lineLength=f.distance+.22;f.radialVelocity=0;f.force=0;f.slack=.22;f.reelTurns=0;f.physicsCarry=0}else if(f.startDistance>START_DISTANCE+.1){const oldDistance=f.distance,ratio=(oldDistance-LANDING_DISTANCE)/(f.startDistance-LANDING_DISTANCE);f.distance=LANDING_DISTANCE+clamp(ratio,0,1.3)*(START_DISTANCE-LANDING_DISTANCE);f.lineLength=clamp(f.distance+f.lineLength-oldDistance,LANDING_DISTANCE,START_DISTANCE+3.5);f.startDistance=START_DISTANCE;f.progress=clamp((START_DISTANCE-f.distance)/(START_DISTANCE-LANDING_DISTANCE),0,1);f.overload=0}if(!Number.isFinite(f.load))f.load=f.tension||0;if(!f.fishState){f.fishState='cruise';f.stateAge=0;f.stateDuration=1.4;f.stamina=1}dt=clamp(dt,0,.12);if(held!==f.held)f.inputPulse=1;else f.inputPulse=Math.max(0,f.inputPulse-dt*3.4);f.held=held;f.physicsCarry=(f.physicsCarry||0)+dt;let steps=0;while(f.physicsCarry>=1/120&&steps++<15&&f.status==='active'){physicsStep(f,held,1/120);f.physicsCarry-=1/120}return f;}

@@ -25,3 +25,22 @@ export function landingHoldBlend(age){
  const u=clamp(age/.28,0,1);
  return u*u*(3-2*u);
 }
+
+export function lostFightRecoil(age,initialBend,initialAngle,restAngle,reason='escaped'){
+ const rest=clamp(Number.isFinite(restAngle)?restAngle:.8,.3,2.2);
+ if(!Number.isFinite(age)||age<0)return {active:false,bend:0,angle:rest,kick:0,slack:0};
+ const loaded=clamp(Number.isFinite(initialBend)?initialBend:0,0,6);
+ const start=clamp(Number.isFinite(initialAngle)?initialAngle:rest,-.5,3.2);
+ const strength=reason==='line-break'?1:reason==='escaped'?.8:.7;
+ const settleU=clamp(age/.52,0,1),settle=settleU*settleU*(3-2*settleU);
+ const kick=age<.32?Math.sin(Math.PI*age/.32)*Math.exp(-age*3.5)*strength:0;
+ const oscillation=Math.exp(-age*14)*Math.cos(age*23);
+ const counterbend=Math.exp(-age*10)*Math.sin(age*23)*strength*Math.max(loaded,.35)*.36;
+ return {active:age<.62,bend:age<.62?loaded*oscillation-counterbend:0,angle:start+(rest-start)*settle+kick*.25,kick,slack:clamp(1-age/.4,0,1)};
+}
+
+export function fightLossCue(fight,castStart,at){
+ if(fight?.status!=='lost'||!Number.isFinite(castStart)||!Number.isFinite(at))return null;
+ const reason=['line-break','escaped','exhausted'].includes(fight.lossReason)?fight.lossReason:'escaped';
+ return {at,castStart,reason};
+}

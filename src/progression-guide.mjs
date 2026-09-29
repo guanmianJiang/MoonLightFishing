@@ -1,3 +1,6 @@
+import {isOpeningCast} from './opening-cast.mjs';
+import {openingCastPoint} from './cast-target.mjs';
+
 const countAt=(log,spot)=>log.reduce((count,catchItem)=>count+(catchItem?.spot===spot?1:0),0);
 
 export function explorationProgress(save){
@@ -15,6 +18,11 @@ export function castDifficultyHint(zone){
 export function progressionGuide(save){
  const progress=explorationProgress(save),log=Array.isArray(save?.log)?save.log:[];
  const reedCatches=countAt(log,'reed'),bridgeCatches=countAt(log,'bridge'),spot=save?.spot||'reed';
+ if(isOpeningCast(save))return {
+  opening:true,stage:'第一竿 · 看水面',title:'这片浅滩会有什么动静？',
+  detail:`${save.bait==='grain'?'麦粒':'鱼饵'}已经备好。先选一处近水，看浮漂和鱼线什么时候被带动。`,
+  progress:0,target:3,action:{kind:'aim',zone:'near',point:openingCastPoint(),label:'选近水落点'},
+ };
  if(progress<3)return {
   stage:'第一站 · 近岸',title:progress===2?'再差 1 点去栈桥':'摸清去栈桥的路',
   detail:progress===2?'再钓获 2 次，或把下一尾做成记录，就能去栈桥。试试稍远的水面。':reedCatches>=2?'每钓获 2 次，探索增加 1 点；做成记录更快。远水会遇到更有力的鱼。':'用麦粒在近水练手；钓获会推进探索，做成记录还会更快。',

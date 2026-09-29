@@ -12,10 +12,10 @@ export function fishingCue(phase){return cues[phase]||{period:3.4,intensity:0,co
 
 const presentation={
  waiting:{step:'wait',title:'浮漂平稳',hint:'水面暂时安静'},
- approach:{step:'wait',title:'浮漂边有动静',hint:'水纹正靠近落点'},
- reading:{step:'read',title:'漂尖轻动',hint:'鱼还在饵旁试探'},
- responding:{step:'read',title:'浮漂又动了',hint:'鱼仍在饵旁'},
- nibble:{step:'read',title:'鱼线慢慢拉直',hint:'漂尖正在下沉'},
+ approach:{step:'wait',title:'鱼影靠近',hint:'水纹正靠近落点'},
+ reading:{step:'read',title:'鱼影试饵',hint:'鱼还在饵旁试探'},
+ responding:{step:'read',title:'鱼影回身',hint:'鱼仍在饵旁'},
+ nibble:{step:'read',title:'鱼嘴靠近',hint:'等它真正咬住鱼饵'},
  hooked:{step:'lift',title:'鱼线绷紧',hint:'现在提竿'},
  spooked:{step:'settle',title:'鱼影散开',hint:'浮漂渐渐回稳'},
  empty:{step:'return',title:'浮漂回稳',hint:'收回鱼线'}

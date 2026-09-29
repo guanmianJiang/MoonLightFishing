@@ -97,6 +97,24 @@ test('bite orientation and position remain continuous across the hook and fight 
  assert.ok(middle.x<start.x&&middle.x>target.x&&middle.y<start.y&&middle.y>target.y);
 });
 
+test('fish only begins forceful tail and body struggle after the hook is set',()=>{
+ const outward={x:1,z:0},time=.1,seed=0;
+ for(const age of [-5,-2,-.6,-.001]){
+  const pose=biteFishPose(outward,age,time,seed,false);
+  assert.ok(Math.abs(pose.tail)<=.12,'an unhooked fish only paddles gently');
+  assert.ok(Math.abs(pose.roll)<.04,'an unhooked fish must not thrash its body');
+ }
+ const before=biteFishPose(outward,-.001,time,seed,false);
+ const contact=biteFishPose(outward,0,time,seed,true);
+ const struggling=biteFishPose(outward,.3,time,seed,true);
+ assert.ok(Math.abs(contact.tail-before.tail)<.002,'the bite frame keeps the previous tail pose');
+ assert.ok(Math.abs(contact.roll-before.roll)<.002,'the body does not snap on contact');
+ assert.ok(Math.abs(struggling.tail)>.4,'strong tail action starts after the bite');
+ assert.ok(Math.abs(struggling.roll)>Math.abs(contact.roll));
+ const restored=biteFishPose(outward,NaN,NaN,NaN,false);
+ assert.ok([restored.heading.x,restored.heading.z,restored.pitch,restored.roll,restored.tail].every(Number.isFinite));
+});
+
 test('lateral swimming faces the actual side of travel and turning has a speed limit',()=>{
  const angler={x:0,z:0},spot={x:8,z:0},side={x:0,z:1};
  for(const fishVelocity of [-.8,.8]){

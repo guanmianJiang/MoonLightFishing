@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {newSave,processCatch,settleEmptyCast} from '../src/engine.mjs';
 import {shouldStartLanding} from '../src/reel-transition.mjs';
+import {isObjectCatch} from '../src/catch-kind.mjs';
 
 const source=readFileSync(new URL('../src/app-final.js',import.meta.url),'utf8');
 function setup(castsLeft=4, caught=null){
@@ -50,11 +51,13 @@ test('restoring an already processed empty result clears the stale pending state
 test('caught specimen still requires an explicit decision and returns near water',()=>{
  const caught={id:'minnow',weight:.1,length:10,time:1000};
  const {state,$,context,resets}=setup(4,caught);let prevented=false;
+ context.revealing=true;
  $('#result').cancel({preventDefault(){prevented=true}});
  assert.ok(prevented);assert.ok(state.pending);
  $('#processActions').click({target:{closest:()=>({dataset:{process:'study'}})}});
  assert.equal($('#result').open,false);
  assert.equal(state.pending,null);
+ assert.equal(context.revealing,false);
  assert.equal(context.keepFishingView,true);
  assert.equal(resets(),1);
 });
@@ -72,17 +75,20 @@ test('a landed catch cannot replay its lift or sound after the result opens',()=
  const pending={phase:'cast',landedFromFight:true,catch:{id:'minnow'}};
  const state={pending};const nodes=new Map();const timers=[];let resultCount=0,settleCount=0,vibrationCount=0,audioCount=0;
  const $=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,textContent:''});return nodes.get(id)};
- const context=vm.createContext({state,$,revealing:false,revealStart:0,Date,ensureAudio:()=>Promise.resolve(),sound:()=>{audioCount++},navigator:{vibrate:()=>{vibrationCount++}},update(){},startReelLoop(){throw Error('landed catch must not start the reel loop')},stopReelLoop(){},setInterval(){throw Error('landed catch must not pulse the reel sound')},clearInterval(){},setTimeout(fn){timers.push(fn)},finishCast(){pending.phase='result';settleCount++},save(){},showResult(){resultCount++},renderSetup(){}});
+ const context=vm.createContext({state,$,revealing:false,revealStart:0,Date,isObjectCatch,ensureAudio:()=>Promise.resolve(),sound:()=>{audioCount++},navigator:{vibrate:()=>{vibrationCount++}},update(){},startReelLoop(){throw Error('landed catch must not start the reel loop')},stopReelLoop(){},setInterval(){throw Error('landed catch must not pulse the reel sound')},clearInterval(){},setTimeout(fn,ms){timers.push({fn,ms})},finishCast(){pending.phase='result';settleCount++},save(){},showResult(){resultCount++},renderSetup(){}});
  vm.runInContext(source.slice(source.indexOf('function finishReel('),source.indexOf('async function reel(')),context);
  context.finishReel();
  assert.equal(timers.length,1);
- timers[0]();
+ assert.equal(timers[0].ms,3200);
+ timers[0].fn();
  assert.equal(pending.phase,'result');
+ assert.equal(context.revealing,true,'hold the 3D fish behind the open result');
  context.finishReel();
  assert.equal(timers.length,1);
  assert.equal(settleCount,1);
  assert.equal(resultCount,1);
- assert.equal(vibrationCount,1);
+ assert.equal(context.revealing,true);
+ assert.equal(vibrationCount,0,'landing vibration occurs at the physics win, not during the later result animation');
  assert.equal(audioCount,0);
 });
 

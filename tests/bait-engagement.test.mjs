@@ -46,3 +46,27 @@ test('the mouth swims diagonally into the hook without a final vertical lift',()
  assert.deepEqual(bite,hook);
  assert.ok(Object.values(fishMouthApproach(null,NaN,NaN,'deep','approach')).every(Number.isFinite));
 });
+
+test('an unhooked fish keeps its own depth while the float bobs above it',()=>{
+ const restY=-.22,rest={x:4,y:restY,z:2};
+ for(const [phase,age] of [['approach',-4.8],['reading',-3.1],['nibble',-.7],['nibble',-.001]]){
+  const high=fishMouthApproach({...rest,y:-.12},age,1,'dart',phase,0,restY);
+  const low=fishMouthApproach({...rest,y:-.42},age,1,'dart',phase,0,restY);
+  assert.equal(high.y,low.y,`${phase} must ignore float height before contact`);
+  assert.equal(high.x,low.x);
+  assert.equal(high.z,low.z);
+ }
+ const orbitStart=fishMouthApproach(rest,-3.4,0,'broad','reading',0,restY);
+ const orbitEnd=fishMouthApproach(rest,-3.4,2,'broad','reading',.5,restY);
+ assert.ok(Math.hypot(orbitStart.x-orbitEnd.x,orbitStart.z-orbitEnd.z)>.1);
+ assert.equal(orbitStart.y,orbitEnd.y,'circling and probe pulses must not bob the whole fish');
+ const depths=[-5.5,-4.3,-3.4,-2.2,-1.1,-.3,-.001].map(age=>fishMouthApproach(rest,age,1,'broad','nibble',0,restY).y);
+ assert.ok(depths.every((depth,i)=>i===0||depth>=depths[i-1]),'pre-hook depth only rises with the approach');
+ const before=fishMouthApproach(rest,-.001,1,'dart','nibble',0,restY);
+ const contact=fishMouthApproach(rest,0,1,'dart','hooked',0,restY);
+ assert.ok(Math.abs(contact.y-before.y)<.001);
+ assert.ok(Math.hypot(contact.x-rest.x,contact.y-rest.y,contact.z-rest.z)<1e-9);
+ const hooked=fishMouthApproach({...rest,y:-.4},.1,1,'dart','hooked',0,restY);
+ assert.equal(hooked.y,-.4,'after contact the mouth follows the real hook');
+ assert.ok(Object.values(fishMouthApproach({x:0,y:NaN,z:0},-.4,1,'dart','nibble',0,NaN)).every(Number.isFinite));
+});

@@ -27,6 +27,12 @@ export function castPreset(spot,zone='middle'){
  return [+(center[0]+forward[0]*offset).toFixed(3),+(center[1]+forward[1]*offset).toFixed(3)];
 }
 
+export function openingCastPoint(){
+ const near=castPreset('reed','near');
+ const point=[+(near[0]-1.1).toFixed(3),+(near[1]+.25).toFixed(3)];
+ return castPointFromWorld('reed',...point)?point:near;
+}
+
 export function castPointFromWorld(spot,x,z){
  const point=[x,z];
  return castZone(spot,point)&&z>shore(x)+WATER_MARGIN?point:null;

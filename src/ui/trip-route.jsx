@@ -1,11 +1,13 @@
 import {For, createSignal} from 'solid-js';
 import {render} from 'solid-js/web';
 import {progressionGuide} from '../progression-guide.mjs';
+import {nextCastThread} from '../next-cast-thread.mjs';
+import {weatherAt} from '../engine.mjs';
 
 export function mountTripRoute(root, onOpen, onGuide) {
   const [trip, setTrip] = createSignal({number: 1, castsLeft: 4, goal: '', progress: 0, target: 1, complete: false});
   const [guide, setGuide] = createSignal(progressionGuide(null));
-  const dispose = render(() => <aside class="route-card" aria-label="垂钓路线与本轮目标">
+  const dispose = render(() => <aside class="route-card" classList={{opening:!!guide().opening}} aria-label="垂钓路线与本轮目标">
     <div class="route-card__top"><span>下一步</span><strong>{guide().stage}</strong></div>
     <div class="route-card__goal">{guide().title}</div>
     <p class="route-card__detail">{guide().detail}</p>
@@ -32,7 +34,9 @@ export function mountTripRoute(root, onOpen, onGuide) {
       };
       const previous = trip();
       if (Object.keys(next).some(key => next[key] !== previous[key])) setTrip(next);
-      const nextGuide = progressionGuide(state);
+      const route = progressionGuide(state);
+      const thread = nextCastThread(state, weatherAt(Date.now()).id);
+      const nextGuide = thread ? {...route, stage:'下一竿 · 水域线索', title:thread.title, detail:thread.detail, action:thread.action} : route;
       if (JSON.stringify(nextGuide) !== JSON.stringify(guide())) setGuide(nextGuide);
     },
     dispose,

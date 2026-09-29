@@ -215,6 +215,10 @@ dialog::backdrop { background: rgba(10, 39, 36, .5); backdrop-filter: blur(3px);
   opacity: .12; pointer-events: none;
 }
 #result > * { position: relative; z-index: 1; }
+#result[open] { animation: result-reveal .32s ease-out both; }
+#result[open]::backdrop { animation: result-backdrop .32s ease-out both; }
+@keyframes result-reveal { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes result-backdrop { from { background: rgba(10, 39, 36, 0); backdrop-filter: blur(0); } to { background: rgba(10, 39, 36, .5); backdrop-filter: blur(3px); } }
 #result[open] > *, #book[open] > *, #tripEnd[open] > * { animation: sim-enter .26s ease-out both; }
 @keyframes sim-enter { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -255,7 +259,7 @@ dialog::backdrop { background: rgba(10, 39, 36, .5); backdrop-filter: blur(3px);
 @media (prefers-reduced-motion: reduce) {
   #tripRoute { transition: none; }
   #spots .spot, #baits .bait, #cast, #bookContent :is(.market-card,.shop-card,.collection-card,.water-row,.gear-item) { transition: none; }
-  #result[open] > *, #book[open] > *, #tripEnd[open] > * { animation: none; }
+  #result[open], #result[open]::backdrop, #result[open] > *, #book[open] > *, #tripEnd[open] > * { animation: none; }
 }
 #game:has(#renderError:not([hidden])) #tripRoute { display: none; }
 

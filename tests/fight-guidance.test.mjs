@@ -10,6 +10,7 @@ test('fight guidance follows the line and gives a usable next action',()=>{
  f.fishState='cruise';
  f.load=.72;
  assert.equal(fightGuidance(f,true).step,'release');
+ assert.match(fightGuidance(f,true).title,/下压让线/);
  assert.equal(fightGuidance(f,false).step,'wait');
  f.load=.2;f.slack=.7;
  assert.equal(fightGuidance(f,false).step,'reel');

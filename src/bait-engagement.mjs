@@ -11,12 +11,14 @@ export function fishApproachOffset(biteAge,time,signal){
   z:(1.45-1.1*near)*(1-commit)+Math.sin(t*(signal==='dart'?2.4:.7))*radius*orbit};
 }
 
-export function fishMouthApproach(hook,biteAge,time,signal,phase,readingAge=0){
- const swim=fishApproachOffset(biteAge,time,signal),engagement=baitEngagement(phase,readingAge,biteAge);
- const scale=1-.16*engagement,x=swim.x*scale,z=swim.z*scale;
- const horizontal=Math.hypot(x,z),rise=smooth(1-horizontal/3.05);
- const hx=Number.isFinite(hook?.x)?hook.x:0,hy=Number.isFinite(hook?.y)?hook.y:-.25,hz=Number.isFinite(hook?.z)?hook.z:0;
- return {x:hx+x,y:-.72+(hy+.72)*rise,z:hz+z};
+export function fishMouthApproach(hook,biteAge,time,signal,phase,_readingAge=0,restHookY=hook?.y){
+ const age=Number.isFinite(biteAge)?biteAge:-5.5,swim=fishApproachOffset(age,time,signal);
+ const near=smooth((age+5.5)/1.2),commit=smooth((age+2.2)/2.2);
+ const horizontal=Math.hypot((2.6-2.1*near)*(1-commit),(1.45-1.1*near)*(1-commit));
+ const rise=smooth(1-horizontal/3.05);
+ const hx=Number.isFinite(hook?.x)?hook.x:0,hookY=Number.isFinite(hook?.y)?hook.y:-.25,hz=Number.isFinite(hook?.z)?hook.z:0;
+ const restingY=Number.isFinite(restHookY)?restHookY:hookY,goalY=phase==='hooked'?hookY:restingY;
+ return {x:hx+swim.x,y:-.72+(goalY+.72)*rise,z:hz+swim.z};
 }
 
 // Probe the bait while it is being read, then commit the mouth to the hook.

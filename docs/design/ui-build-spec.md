@@ -28,3 +28,5 @@
 ## 异常与验证
 
 缺少 `src/`、关键资源或工具依赖时，构建应失败并报告具体缺口，不得把旧构建副本当作发布目录。`tests/result-dialog.test.mjs` 读取活动入口，`tests/trip-summary.test.mjs`、`tests/cast-target.test.mjs`、`tests/project-structure.test.mjs` 和 `tools/verify-build.mjs` 提供自动验证；交互可用性仍需浏览器与真机检查。
+
+本地页面在游戏脚本尚未初始化时显示可读的加载状态，不得把原始 HUD 与空背景当作可玩画面。游戏完成首次场景与界面初始化后清除加载状态；模块加载失败、初始化异常或超时要显示错误与重试入口。诊断只覆盖启动阶段，不把运行中普通资源警告误报为启动失败。
