@@ -1,0 +1,24 @@
+✔ fragment uses the tested geometry and contains no detached base or directional arrows (3.5446ms)
+✔ rear attachment stays anchored; top and foot deform by related continuous weights (2.2788ms)
+✔ four directions and diagonal offsets have equal bounds and finite closed surfaces (33.057ms)
+✔ bad coordinates fall back, pressure clamps, edge is local and risk suppresses the opportunity direction (3.0117ms)
+✔ surface and correction geometry stay within narrow portrait and below the scene focus (29.2964ms)
+✔ single-pointer hold renders pressure; second pointer cannot move or release it (5.0117ms)
+✔ lift opportunity and original lane/threshold/hysteresis are preserved, no false acceptance (13.1532ms)
+✔ risk keeps its connected side tone, prevents success and stops repeating release after payout (5.0754ms)
+✔ bite continues on same pointer and object retrieval stays a tap (6.6225ms)
+✔ release returns all surfaces together and stops RAF; new touch immediately takes over (10.0095ms)
+✔ cancel, lost capture, blur and hidden page clean input, events and return animation (20.2087ms)
+✔ spring is finite, bounded, rebounds once visibly and reduced motion skips return RAF (8.2411ms)
+✔ pressure squash and drag narrowing are connected to the same body (1.3382ms)
+✔ internal relief is self-contained with no visual action text or old rod (3.1552ms)
+✔ generated fragment exactly embeds its own sources and assets, no older draft dependencies (1.0238ms)
+✔ four-way playback is finite and manual input cancels it (12.87ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 260.3765

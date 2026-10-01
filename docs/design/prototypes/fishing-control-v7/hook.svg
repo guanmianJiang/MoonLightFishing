@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <defs>
+    <linearGradient id="hook-matte" x1="0" y1="0" x2=".6" y2="1">
+      <stop stop-color="#6f8b71"/><stop offset="1" stop-color="#4b6957"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(5 -1)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M35 16v23c0 8-5 13-12 13S11 47 11 40v-8l7 7" stroke="#bd9f73" stroke-width="8" transform="translate(0 2)"/>
+    <circle cx="35" cy="11" r="5" stroke="#bd9f73" stroke-width="7" transform="translate(0 2)"/>
+    <path d="M35 16v23c0 8-5 13-12 13S11 47 11 40v-8l7 7" stroke="#fae8c7" stroke-width="8" transform="translate(0 -1)"/>
+    <circle cx="35" cy="11" r="5" stroke="#fae8c7" stroke-width="7" transform="translate(0 -1)"/>
+    <path d="M35 16v23c0 8-5 13-12 13S11 47 11 40v-8l7 7" stroke="url(#hook-matte)" stroke-width="7"/>
+    <circle cx="35" cy="11" r="5" stroke="url(#hook-matte)" stroke-width="6"/>
+  </g>
+</svg>
