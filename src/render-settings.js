@@ -1,7 +1,14 @@
 import publishedDefaults from './render-defaults.js';
 import {Color} from './three.module.js';
+import {DEFAULT_SKY_TEXTURE,normalizeSkyTexture,normalizeSkyRotation} from './sky-settings.mjs';
+import {atmosphereDefaults,applyAtmosphereSettings,DEFAULT_ATMOSPHERE_COLOR} from './atmosphere-settings.mjs';
+import {reflectionDefaults,applyReflectionSettings} from './reflection-settings.mjs';
+import {waterWaveDefaults,applyWaterWaveSettings} from './water-surface.js';
 // 修改后刷新页面；贴图路径相对于页面入口。
 export const renderSettings = {
+  ...atmosphereDefaults,
+  ...waterWaveDefaults,
+  atmosphereColor:DEFAULT_ATMOSPHERE_COLOR,
   waterGradient: [{depth:0,color:'#1f6e91'},{depth:3.4,color:'#0a4482'},{depth:8.8,color:'#031d71'}],
   waterAbsorption: 1.0, // 水体吸收倍率：越高，水下颜色随深度衰减越快
   sandSparkleStrength: 1.2, // 沙粒离散高光强度
@@ -11,6 +18,8 @@ export const renderSettings = {
   wetSandRoughness: 0.24, // 湿沙高光粗糙度
   wetSandSpecular: 1.0, // 湿沙高光倍率
   sunColor: '#fff0d6', // 主光颜色，sRGB
+  skyTexture: DEFAULT_SKY_TEXTURE, // 2:1 全景天空球贴图
+  skyRotation: 0, // 天空球与水面倒影共同水平旋转，度
   foamColor: '#f5f5e8',
   toneMapping: 'aces', // aces / neutral / agx / reinhard / linear / none
   shadingMode: 'shaded', // shaded / wireframe / shaded-wireframe
@@ -23,10 +32,7 @@ export const renderSettings = {
   normalScaleB: 0.173,
   normalSpeedA: 3.0, // 主层流动速度倍率，0 静止
   normalSpeedB: -1.55, // 次层独立速度倍率，0 静止
-  reflectionStrength: 0.85, // 环境反射混合强度，0 关闭，建议 0～1
-  reflectionFresnelPower: 12.0, // 菲涅尔幂次，越大越集中在掠射角（通常是远处），建议 1～10
-  reflectionFresnelMin: 0.02, // 正视水面的基础反射比例，范围 0～1
-  reflectionNormalStrength: 0.35, // 细节法线对环境反射的影响，0 仅大波形，1 完整法线
+  ...reflectionDefaults, // 5 次 Schlick；反射直接使用合成水面法线
   specularStrength: 2.45, // 风格化高光强度，0 关闭；建议 0～3
   specularPower: 128.0, // Raider 高光幂次，越大亮斑越小
   specularThreshold: 0.5, // 高光阈值，越大亮斑越少，范围 0～0.95
@@ -71,9 +77,20 @@ export const renderSettings = {
 export const glslNumber = value => Number(value).toFixed(6);
 
 Object.assign(renderSettings, publishedDefaults);
+applyAtmosphereSettings(renderSettings,applyAtmosphereSettings({...atmosphereDefaults},publishedDefaults));
+applyReflectionSettings(renderSettings,applyReflectionSettings({...reflectionDefaults},publishedDefaults));
+applyWaterWaveSettings(renderSettings,applyWaterWaveSettings({...waterWaveDefaults},publishedDefaults));
+delete renderSettings.reflectionRoughness;
+delete renderSettings.reflectionFarRetention;
+delete renderSettings.reflectionWaveStrength;
+delete renderSettings.reflectionNormalStrength;
+if(!/^#[0-9a-f]{6}$/i.test(renderSettings.atmosphereColor??''))renderSettings.atmosphereColor=DEFAULT_ATMOSPHERE_COLOR;
+for(const key of ['skyFogStrength','sceneFogStrength','waterFogDensity'])delete renderSettings[key];
+renderSettings.skyTexture=normalizeSkyTexture(renderSettings.skyTexture);
+renderSettings.skyRotation=normalizeSkyRotation(renderSettings.skyRotation);
 export const defaultRenderSettings = structuredClone(renderSettings);
 export const settingsUniforms=Object.fromEntries(Object.keys(renderSettings).filter(k=>typeof renderSettings[k]==='number').map(k=>['uSetting_'+k,{get value(){return renderSettings[k];}}]));
-export const colorSettingKeys=['sunColor','foamColor'];
+export const colorSettingKeys=['sunColor','foamColor','atmosphereColor'];
 for(const key of colorSettingKeys){const color=new Color();let previous;settingsUniforms['uSetting_'+key]={get value(){if(previous!==renderSettings[key]){previous=renderSettings[key];color.set(previous);}return color;}};}
 export const settingsGLSL=Object.keys(settingsUniforms).map(k=>'uniform '+(colorSettingKeys.includes(k.slice(9))?'vec3':'float')+' '+k+';').join('\n');
 

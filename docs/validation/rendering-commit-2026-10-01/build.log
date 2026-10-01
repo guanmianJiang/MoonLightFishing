@@ -1,0 +1,17 @@
+
+> build
+> vite build --config vite.config.js && node tools/verify-build.mjs
+
+vite v6.4.3 building for production...
+transforming...
+✓ 93 modules transformed.
+rendering chunks...
+computing gzip size...
+../build/index.html                         14.98 kB │ gzip:   5.32 kB
+../build/bundles/index-C67ckles.css        160.59 kB │ gzip:  32.13 kB
+../build/bundles/solid-D1hlGe58.js           9.73 kB │ gzip:   4.03 kB
+../build/bundles/three-core-B3wIrYP5.js    246.71 kB │ gzip:  69.31 kB
+../build/bundles/index-Wh4TWNSJ.js         346.27 kB │ gzip: 127.86 kB
+../build/bundles/three-addons-iJQqdFjz.js  369.22 kB │ gzip:  91.35 kB
+✓ built in 2.08s
+构建校验通过：页面入口、代码、模型、贴图和音频均在 build/ 中。

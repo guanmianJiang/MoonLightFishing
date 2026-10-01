@@ -2,13 +2,22 @@ import {writeFile,rename} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import solid from 'vite-plugin-solid';
 import {defaultRenderSettings} from './src/render-settings.js';
+import {isSkyTexture} from './src/sky-settings.mjs';
+import {isAtmosphereSetting,validAtmosphereSetting} from './src/atmosphere-settings.mjs';
+import {isReflectionSetting,validReflectionSetting} from './src/reflection-settings.mjs';
+import {waterWaveFields,validWaterWaveSetting} from './src/water-surface.js';
 
-function validDefaults(value,template=defaultRenderSettings){
+export function validDefaults(value,template=defaultRenderSettings,key=''){
+ if(isAtmosphereSetting(key))return validAtmosphereSetting(key,value);
+ if(isReflectionSetting(key))return validReflectionSetting(key,value);
+ if(waterWaveFields.some(([name])=>name===key))return validWaterWaveSetting(key,value);
+ if(key==='skyTexture')return isSkyTexture(value);
+ if(key==='skyRotation')return typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=360;
  if(typeof template==='number')return typeof value==='number'&&Number.isFinite(value)&&Math.abs(value)<=10000;
  if(typeof template==='boolean')return typeof value==='boolean';
  if(typeof template==='string')return typeof value==='string'&&value.length<200&&(template.startsWith('#')?/^#[0-9a-f]{6}$/i.test(value):template.startsWith('./assets/')?/^\.\/assets\/[\w.-]+$/.test(value):template==='shaded'?['shaded','wireframe','shaded-wireframe'].includes(value):['aces','neutral','agx','reinhard','linear','none'].includes(value));
  if(Array.isArray(template))return Array.isArray(value)&&value.length>=2&&value.length<=8&&value.every((v,i)=>validDefaults(v,template[0])&&v.depth>=0&&v.depth<=50&&(!i||v.depth-value[i-1].depth>=.01));
- return value!==null&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===Object.keys(template).length&&Object.keys(template).every(k=>Object.hasOwn(value,k)&&validDefaults(value[k],template[k]));
+ return value!==null&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===Object.keys(template).length&&Object.keys(template).every(k=>Object.hasOwn(value,k)&&validDefaults(value[k],template[k],k));
 }
 export default {
  root:'src',base:'./',publicDir:fileURLToPath(new URL('./public/',import.meta.url)),

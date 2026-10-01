@@ -1,0 +1,5 @@
+{
+  "skyRadianceGLSL": "float skyAtmosphereScatter(float y){\n float horizonPath=exp(-abs(y)*15.0);\n float upperScatter=exp(-max(y,0.)*8.0);\n float lowerScatter=exp(-max(-y,0.)*23.0);\n float scatter=horizonPath*.24+upperScatter*lowerScatter*.08;\n return clamp(scatter,0.,.32);\n}\nfloat skyAtmosphereChannel(float sampleChannel,float luminance,float air,float scatter){\n float col=mix(luminance,sampleChannel,1.-scatter*.12);\n return mix(col,air,scatter);\n}\nvec3 skyEnvironmentRadiance(vec3 direction,vec3 sampleColor){\n vec3 d=normalize(direction);\n // Linear RGB, approximately sRGB #76b5ce: keep colour in the horizon haze.\n vec3 horizonAir=vec3(.1812,.4621,.6172);\n float scatter=skyAtmosphereScatter(d.y);\n float luminance=dot(sampleColor,vec3(.2126,.7152,.0722));\n return vec3(skyAtmosphereChannel(sampleColor.r,luminance,horizonAir.r,scatter),\n             skyAtmosphereChannel(sampleColor.g,luminance,horizonAir.g,scatter),\n             skyAtmosphereChannel(sampleColor.b,luminance,horizonAir.b,scatter));\n}",
+  "normalDensity": 0.0019,
+  "mistDensity": 0.0028
+}

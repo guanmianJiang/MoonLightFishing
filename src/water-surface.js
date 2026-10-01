@@ -1,7 +1,21 @@
 // Height and its world-space gradient are evaluated by both shader stages.
 // Keep the shore envelope in the derivative: fading only the normal flattens
 // the highlight before the visible wave has actually flattened.
+export const WATER_LEVEL = .14;
+export const waterWaveFields=Object.freeze([
+ Object.freeze(['waterWaveStrength','海面波浪强度',0,2,.01,.35])
+]);
+export const waterWaveDefaults=Object.freeze({waterWaveStrength:waterWaveFields[0][5]});
+export function validWaterWaveSetting(key,value){
+ const field=waterWaveFields.find(([name])=>name===key);
+ return !!field&&Number.isFinite(value)&&value>=field[2]&&value<=field[3];
+}
+export function applyWaterWaveSettings(target,values){
+ for(const [key,,min,max] of waterWaveFields)if(Number.isFinite(values?.[key]))target[key]=Math.min(max,Math.max(min,values[key]));
+ return target;
+}
 export const waterSurfaceGLSL = `
+const float waterLevel=${WATER_LEVEL};
 float smoothDerivative(float a,float b,float x){
  float q=clamp((x-a)/(b-a),0.,1.);return 6.*q*(1.-q)/(b-a);
 }
@@ -27,6 +41,9 @@ vec3 waterSurface(vec2 p,float t){
  float de=smoothDerivative(.4,2.5,d)*leave-enter*smoothDerivative(5.,12.,d);
  w.xy+=.014*(cos(a)*(dg*1.45+vec2(.07,0.))*e+sin(a)*dg*de);
  w.z+=.014*sin(a)*e;
+ // Scale the actual default wave height and its derivative together.
+ // Shore runup below owns the contact line and stays independent.
+ w*=clamp(uSetting_waterWaveStrength,0.,2.);
  // Differentiate the shared surge, including its offshore envelope.
  float h=.025;
  w.xy+=vec2(shoreWaterHeight(p+vec2(h,0.),t)-shoreWaterHeight(p-vec2(h,0.),t),

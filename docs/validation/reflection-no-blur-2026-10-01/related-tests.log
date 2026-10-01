@@ -1,0 +1,37 @@
+✔ height density integral agrees with numerical air-layer integration in both directions (9.6047ms)
+✔ equal distance is not equal haze: both observer altitude and target altitude matter (0.2659ms)
+✔ sky paths leave the dense layer when looking up; raising layer height broadens the horizon band (0.3251ms)
+✔ nearly horizontal, below-sea, short and extreme paths stay finite, continuous and genuinely off (0.2242ms)
+✔ single-scattering phase is bounded, uses the real sun and never injects an unbounded white boost (0.7157ms)
+✔ material patch uses animated world positions and composes before tone mapping without global shader edits (0.7671ms)
+✔ installation preserves previous hooks and cache keys, finds late materials, skips opted-out shaders and restores on disposal (0.4841ms)
+✔ height parameters and weather update without recompiling, and underwater capture suppresses double air transmission (0.9708ms)
+✔ dome, reflected environment and observer-to-water rays share height density but use the right origins (1.1733ms)
+✔ air colour is linear once, adjustable live, and the forward source retains solar energy (0.4837ms)
+✔ reviewed published strength preserves horizon texture while the prior strength saturates it (0.0797ms)
+✔ Fresnel power actually changes mid angles; normal-incidence water reflectance stays fixed (1.8206ms)
+✔ above-one strength boosts radiance without flattening Fresnel or losing transmission (0.1246ms)
+✔ reflection samples the real pixel footprint and never forces a blurred mip level (0.2527ms)
+✔ reflection controls share saved/published bounds, retain old tuning and ignore invalid saves (2.5743ms)
+✔ air base colour survives JSON/defaults, is linear once, and rejects malformed publishing (0.6672ms)
+✔ sky mirror uses one unbiased texture query, a horizon fallback and no water colour grading (1.5186ms)
+✔ all six sky choices are bundled 2:1 panoramas with a stable default (4.876ms)
+✔ horizontal rotation stays finite and drives the shared sky uniform (0.1649ms)
+✔ sky switching keeps only the latest selection and reuses loaded textures (0.4322ms)
+✔ failed sky loads can retry and disposal ignores late results (0.2006ms)
+✔ sky panorama lookup is shared by dome and both water reflections (0.835ms)
+✔ water air transmission uses actual height endpoints and has no depth-only haze or forced desaturation (0.9338ms)
+✔ refracted paths stay continuous, bounded and monotonic at grazing and deep water (1.3337ms)
+✔ two transport legs preserve a clear film and preferentially attenuate red light (0.3984ms)
+✔ zero absorption retains scattering and same-colour objects respond across the slider (0.1961ms)
+✔ reflection has water Fresnel at normal view and becomes dominant at grazing (0.1416ms)
+✔ local reflection rejects submerged receivers, screen edges and false depth intersections (0.1459ms)
+✔ reflection reuses capture, keeps its bounded trace and shares sky radiance (0.8063ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 589.5208

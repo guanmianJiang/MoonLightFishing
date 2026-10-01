@@ -1,0 +1,35 @@
+{
+  "asset": "public/assets/Tex_Water_Normal_07.png",
+  "size": [
+    1024,
+    1024
+  ],
+  "raw": {
+    "slope_rms": 0.11421540831142131,
+    "slope_mean": [
+      -2.1646101499316136e-05,
+      -1.7519270813384033e-05
+    ],
+    "slope_std": [
+      0.09553897689134228,
+      0.06258963664083039
+    ]
+  },
+  "anisotropic_box": {
+    "x_texels": 9,
+    "y_texels": 97,
+    "slope_rms": 0.06978720257796604,
+    "slope_mean": [
+      -2.1799177432393098e-05,
+      -1.758467430541388e-05
+    ],
+    "slope_std": [
+      0.06351451551143607,
+      0.02891641711175215
+    ]
+  },
+  "illustrative_uv_scale": 0.276,
+  "illustrative_world_footprint_metres": 0.34321218297101447,
+  "old_extra_fade_at_this_footprint": 0,
+  "limit": "Asset-only periodic box diagnostic, not GPU sampling or a recreation of the screenshot."
+}

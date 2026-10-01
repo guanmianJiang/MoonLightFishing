@@ -1,11 +1,16 @@
 import {renderSettings as settings,glslNumber,settingsUniforms} from './render-settings.js';
+import {skyPanoramaGLSL,skyRadianceGLSL,skyReflectionGLSL} from './sky-settings.mjs';
+import {waterOpticsGLSL} from './water-optics.mjs';
+import {waterNormalsGLSL} from './water-normals.mjs';
+import {waterContactGLSL} from './water-contact.mjs';
+import {waterCapturedDepthGLSL} from './water-captured-depth.mjs';
 import * as T from './three.module.js';
-import {coastGeometry,shoreGLSL,shore} from './coast.js?v=beach-relief-9';
+import {coastGeometry,shoreGLSL,shore} from './coast.js';
 import {waterSurfaceGLSL} from './water-surface.js';
 import {causticsGLSL} from './caustics.js';
-import {createWaterFlow,interactionDriveFromSpeed,sampleInteractionStroke} from './water-flow.js?v=wave-repair-32-slow-drag';
+import {createWaterFlow,interactionDriveFromSpeed,sampleInteractionStroke} from './water-flow.js';
 
-export function createWater(renderer,scene,time,lighting){
+export function createWater(renderer,scene,time,lighting,atmosphereUniforms){
  const loader=new T.TextureLoader();
  const waterNormal07=loader.load(settings.normalTexture);
  const waterNormal03=loader.load('./assets/water-normal-03.jpg');
@@ -77,7 +82,7 @@ export function createWater(renderer,scene,time,lighting){
   // keep depth testing enabled: otherwise WebGL never writes sea depth and
   // submerged fish render a second, unabsorbed copy over the composite.
   depthTest:true,depthFunc:T.AlwaysDepth,depthWrite:true,
-  uniforms:{...settingsUniforms,...interactionUniforms,uPatchMode:{value:0},uGridCenter:{value:new T.Vector2()},uInvProjection:{value:new T.Matrix4()},uInvView:{value:new T.Matrix4()},uTime:time,uScene:{value:captureTarget.texture},uDepth:{value:captureTarget.depthTexture},uNormalA:{value:waterNormal07},uNormalB:{value:waterNormal07},uNoise:{value:blueNoise},uNear:{value:.1},uFar:{value:1800},uEvents:{value:events},uWeather:{value:0}},
+  uniforms:{...settingsUniforms,...atmosphereUniforms,...interactionUniforms,uPatchMode:{value:0},uGridCenter:{value:new T.Vector2()},uInvProjection:{value:new T.Matrix4()},uInvView:{value:new T.Matrix4()},uViewProjection:{value:new T.Matrix4()},uTime:time,uScene:{value:captureTarget.texture},uDepth:{value:captureTarget.depthTexture},uNormalA:{value:waterNormal07},uNormalB:{value:waterNormal07},uNoise:{value:blueNoise},uNear:{value:.1},uFar:{value:1800},uEvents:{value:events},uWeather:{value:0}},
   vertexShader:`
    uniform float uTime,uPatchMode,uInteractionRadius,uInteractionGain,uInteractionStart;
    uniform vec2 uInteractionCenter,uInteractionDirection,uGridCenter;
@@ -118,7 +123,7 @@ export function createWater(renderer,scene,time,lighting){
      vec3 wave=interactionWave(p.xz);
      p.y+=wave.y;
     }
-    p.y+=waterSurface(p.xz,uTime).z+lift;
+    p.y+=waterLevel+waterSurface(p.xz,uTime).z+lift;
     vec4 world=modelMatrix*vec4(p,1.);vWorld=world.xyz;vClip=projectionMatrix*viewMatrix*world;gl_Position=vClip;
    }`,
   fragmentShader:`
@@ -127,23 +132,59 @@ export function createWater(renderer,scene,time,lighting){
    uniform vec3 uGradientColors[8];uniform float uGradientDepths[8];uniform int uGradientCount;
    uniform vec3 uSunDirection,uSunRadiance;
    uniform sampler2D uScene,uDepth,uNormalA,uNormalB,uNoise,uSky;uniform vec4 uEvents[12];
-   uniform mat4 uInvProjection,uInvView;
+   uniform mat4 uInvProjection,uInvView,uViewProjection;
    varying vec3 vWorld;varying vec4 vClip;
    ${shoreGLSL}
+   ${skyPanoramaGLSL}
+   ${skyRadianceGLSL}
+   ${waterOpticsGLSL}
+   ${waterNormalsGLSL}
+   ${waterContactGLSL}
+   ${waterCapturedDepthGLSL}
+   ${skyReflectionGLSL}
    ${waterSurfaceGLSL}
    ${causticsGLSL}
    ${interactionWaveGLSL}
-   float linearDepth(float d){return uNear*uFar/(uFar-d*(uFar-uNear));}
+   float linearDepth(float d){return waterLinearEyeDepth(d,uNear,uFar);}
    vec3 receiverWorldPosition(vec2 uv,float depth){
     vec4 view=uInvProjection*vec4(uv*2.-1.,depth*2.-1.,1.);
     return (uInvView*vec4(view.xyz/max(view.w,.00001),1.)).xyz;
    }
-   vec3 unpackWaterNormal(vec3 c){vec3 n=c*2.-1.;return normalize(vec3(n.xy,max(n.z,.16)));}
-   float bedHeightAt(vec2 q){
-    float sd=q.y-shore(q.x);
-    float ripple=sin(q.x*.31+q.y*.13)*.075+sin(q.x*.12-q.y*.27+1.8)*.045;
-    return sd<0.?.14+min(2.4,-sd*.115)+ripple*min(1.,abs(sd)/1.8):seabedHeight(q);
+   vec4 localEnvironmentReflection(vec3 origin,vec3 direction){
+    if(uSetting_reflectionSceneStrength<=0.||direction.y<=.015)return vec4(0.);
+    vec3 start=origin+vec3(0.,.04,0.);
+    float previousTravel=0.,travel=0.;
+    for(int i=0;i<12;i++){
+     travel=travel*1.52+.0936;
+     vec3 probe=start+direction*travel;
+     vec4 clip=uViewProjection*vec4(probe,1.);
+     if(clip.w<=0.)break;
+     vec2 hitUV=clip.xy/clip.w*.5+.5;
+     if(any(lessThan(hitUV,vec2(.001)))||any(greaterThan(hitUV,vec2(.999))))break;
+     float raw=texture2D(uDepth,hitUV).r;
+     float gap=-(viewMatrix*vec4(probe,1.)).z-linearDepth(raw);
+     if(raw<.9999&&gap>=0.){
+      float lo=previousTravel,hi=travel;
+      vec3 hitWorld=receiverWorldPosition(hitUV,raw);
+      for(int j=0;j<3;j++){
+       float mid=(lo+hi)*.5;
+       vec3 point=start+direction*mid;
+       vec4 midClip=uViewProjection*vec4(point,1.);
+       vec2 midUV=midClip.xy/midClip.w*.5+.5;
+       float midRaw=texture2D(uDepth,midUV).r;
+       float midGap=-(viewMatrix*vec4(point,1.)).z-linearDepth(midRaw);
+       if(midRaw<.9999&&midGap>=0.){hi=mid;hitUV=midUV;hitWorld=receiverWorldPosition(midUV,midRaw);}else lo=mid;
+      }
+      vec3 hitPoint=start+direction*hi;
+      float edge=min(min(hitUV.x,hitUV.y),min(1.-hitUV.x,1.-hitUV.y));
+      float confidence=waterReflectionHit(edge,hitWorld.y-origin.y,length(hitPoint-hitWorld),hi);
+      return vec4(texture2D(uScene,hitUV).rgb,confidence);
+     }
+     previousTravel=travel;
+    }
+    return vec4(0.);
    }
+   vec3 unpackWaterNormal(vec3 c){vec3 n=c*2.-1.;return normalize(vec3(n.xy,max(n.z,.16)));}
    void main(){
    vec2 p=vWorld.xz,uv=vClip.xy/vClip.w*.5+.5;
     // Each fine patch covers its signed crest and trough. Empty pixels stay
@@ -155,13 +196,12 @@ export function createWater(renderer,scene,time,lighting){
     // as long straight wedges whenever the mesh crossed the sloped sand.
     float contactClipAA=max(fwidth(contactDistance),.005);
     if(contactDistance<-contactClipAA)discard;
-    float signedWaterGap=vWorld.y-bedHeightAt(p);
     float shoreFade=smoothstep(0.,1.8,contactDistance),distanceToEye=length(cameraPosition-vWorld);
     float pixelFootprint=max(length(dFdx(p)),length(dFdy(p)));
     vec3 view=normalize(cameraPosition-vWorld);
-    float grazingDetail=smoothstep(.06,.42,abs(view.y));
-    float detailFade=(1.-smoothstep(.07,.32,pixelFootprint))
-     *(1.-smoothstep(35.,110.,distanceToEye))*mix(.50,1.,grazingDetail);
+    // This fade controls only water-body colour detail. Normal-map filtering
+    // follows its own UV pixel footprint; never erase it by world distance.
+    float bodyDetailFade=1.-smoothstep(.07,.32,pixelFootprint);
     float shoreN=shoreSlope(p.x);
     vec2 shoreFlow=normalize(vec2(-shoreN,1.));
     vec2 shoreTangent=vec2(shoreFlow.y,-shoreFlow.x);
@@ -195,13 +235,13 @@ export function createWater(renderer,scene,time,lighting){
     vec2 flowB=vec2(-.004,.009)*normalTimeB;
     flowB+=vec2(sin(p.x*.052-normalTimeB*.17+2.1),cos(p.y*.068+normalTimeB*.21+1.3))*.013;
     vec2 uvB=detailRotation*p*uSetting_normalScaleB+flowB;
-    vec3 normalA=unpackWaterNormal(texture2D(uNormalA,uvA).rgb);
-    vec3 normalB=unpackWaterNormal(texture2D(uNormalB,uvB).rgb);
+    vec3 normalA=unpackWaterNormal(texture2DGradEXT(uNormalA,uvA,dFdx(uvA),dFdy(uvA)).rgb);
+    vec3 normalB=unpackWaterNormal(texture2DGradEXT(uNormalB,uvB,dFdx(uvB),dFdy(uvB)).rgb);
     normalB.xy=transpose(detailRotation)*normalB.xy;
     float breakup=texture2D(uNoise,p*.018+vec2(uTime*.0015,0.)).r;
     // Add partial derivatives, not blue-channel products (which inflated slope).
-    vec2 detailSlope=(normalA.xy/max(normalA.z,.38)*uSetting_normalStrengthA
-     +normalB.xy/max(normalB.z,.38)*uSetting_normalStrengthB)*detailFade*shoreFade;
+    vec2 detailSlope=(vec2(waterNormalSlope(normalA.x,normalA.z),waterNormalSlope(normalA.y,normalA.z))*uSetting_normalStrengthA
+     +vec2(waterNormalSlope(normalB.x,normalB.z),waterNormalSlope(normalB.y,normalB.z))*uSetting_normalStrengthB)*shoreFade;
     float rings=0.;vec2 interactionSlope=vec2(0.);
     for(int i=0;i<12;i++){
      vec4 e=uEvents[i];float age=uTime-e.z;vec2 q=p-e.xy;float r=length(q),front=r-age*.54;
@@ -209,20 +249,14 @@ export function createWater(renderer,scene,time,lighting){
      float wave=sin(r*24.-age*12.96);vec2 rippleSlope=normalize(q+vec2(.001))*wave*envelope*.20;
      interactionSlope+=rippleSlope;macroSlope+=rippleSlope;rings+=max(wave,0.)*envelope;
     }
-    vec3 macroNormal=normalize(vec3(-macroSlope.x,1.,-macroSlope.y));
     vec3 normal=normalize(vec3(-(macroSlope.x+detailSlope.x),1.,-(macroSlope.y+detailSlope.y)));
     vec3 baseNormal=normalize(vec3(-(baseMacroSlope.x+detailSlope.x),1.,-(baseMacroSlope.y+detailSlope.y)));
     vec3 specNormal=normal;
     float rawSceneDepth=texture2D(uDepth,uv).r;
-    float surfaceDepth=linearDepth(gl_FragCoord.z),sceneDepth=linearDepth(rawSceneDepth);
-    float thickness=max(0.,sceneDepth-surfaceDepth);
-    float bedY=bedHeightAt(p);
-    float shoreDepth=max(0.,vWorld.y-bedY);
-    float surfaceEyeZ=max(-(viewMatrix*vec4(vWorld,1.)).z,.01);
-    float rayContactDepthWS=min(4.,thickness*distanceToEye/surfaceEyeZ);
-    // Track the same moving contact as the water geometry. Its horizontal
-    // distance stays fixed even when the vertical gap flattens during retreat.
-    float stableMeniscusDepth=max(0.,contactDistance);
+    float surfaceDepth=-(viewMatrix*vec4(vWorld,1.)).z;
+    vec3 originalReceiver=receiverWorldPosition(uv,rawSceneDepth);
+    float originalValid=waterCapturedReceiverValid(rawSceneDepth,linearDepth(rawSceneDepth),surfaceDepth,vWorld.y-originalReceiver.y,uNear,uFar);
+    float originalColumn=waterCapturedColumn(vWorld.y,originalReceiver.y,originalValid);
     // Geometry and optical profile must share one real-world width. Pixel
     // derivatives below soften minified views without moving the curve.
     float meniscusWidth=max(uSetting_meniscusWidth,.005);
@@ -251,60 +285,39 @@ export function createWater(renderer,scene,time,lighting){
     meniscusLensSlope*=contactWaterMask*seamMeniscus;
     // Project the normal perturbation into camera space, not world XZ into screen XY.
     vec2 refrSlope=(viewMatrix*vec4(normal-vec3(0.,1.,0.),0.)).xy;
-    float distortionMask=smoothstep(.02,.8,thickness)*exp(-thickness*.045)*shoreFade;
+    float distortionMask=waterDepthRefractionGate(originalColumn)*originalValid;
     vec2 offset=refrSlope*.009*distortionMask;
     vec2 towardShore=normalize(vec2(shoreSlope(p.x),-1.));
-    vec3 meniscusShoreDirection=normalize(vec3(towardShore.x,.20,towardShore.y));
-    vec2 meniscusScreenDirection=(viewMatrix*vec4(meniscusShoreDirection,0.)).xy;
-    meniscusScreenDirection/=max(length(meniscusScreenDirection),.001);
-    // Drive refraction with the curved profile's derivative. This creates the
-    // crisp optical bend from the reference without tinting the whole band.
-    offset+=meniscusScreenDirection*meniscusLensSlope*.0035*uSetting_meniscusRefraction*uSetting_meniscusStrength;
-    offset*=min(1.,(.0040+.0045*max(uSetting_meniscusRefraction-1.,0.)*uSetting_meniscusStrength)/max(length(offset),.00001));
-    vec2 refrUV=clamp(uv+offset,.001,.999);
-    float refrRawDepth=texture2D(uDepth,refrUV).r;
-    if(linearDepth(refrRawDepth)<=surfaceDepth+.02)refrUV=uv;
-    // A sub-pixel opposing channel offset gives the rim restrained dispersion.
-    vec2 dispersion=meniscusScreenDirection*meniscusLensSlope*.00038*uSetting_meniscusRefraction*uSetting_meniscusStrength;
-    vec2 refrUVR=clamp(refrUV+dispersion,.001,.999);
-    vec2 refrUVB=clamp(refrUV-dispersion,.001,.999);
-    vec3 source=vec3(texture2D(uScene,refrUVR).r,texture2D(uScene,refrUV).g,texture2D(uScene,refrUVB).b);
-    // The reference glass reads through a softly compressed background, not
-    // just a contour. Blur across the shore tangent only, preserving the edge.
-    vec2 meniscusScreenTangent=vec2(-meniscusScreenDirection.y,meniscusScreenDirection.x);
-    float lensBlurRadius=.0022*meniscusLensProfile*uSetting_meniscusStrength;
-    vec3 lensBlur=.5*(texture2D(uScene,clamp(refrUV+meniscusScreenTangent*lensBlurRadius,.001,.999)).rgb
-      +texture2D(uScene,clamp(refrUV-meniscusScreenTangent*lensBlurRadius,.001,.999)).rgb);
-    source=mix(source,lensBlur,meniscusLensProfile*.65*uSetting_meniscusStrength);
-    float receiverRawDepth=texture2D(uDepth,refrUV).r;
-    float refrSceneDepth=linearDepth(receiverRawDepth);
-    vec3 receiverWorld=receiverWorldPosition(refrUV,min(receiverRawDepth,.9999));
-    // The colour gradient describes the water column at this world position.
-    // Mixing it with screen depth using a raw Z-buffer threshold created a
-    // straight line across the sea whenever camera distance crossed .995.
-    // Receiver depth remains separate below for fish, reef and sand optics.
-    float waterDepth=shoreDepth;
-    float lowDepthNoise=lowFrequencyDepthNoise(p,uTime);
-    float shallowDepthMask=1.-smoothstep(.45,4.2,waterDepth);
-    float submergedDepthGate=smoothstep(.012,.11,waterDepth);
-    float visualWaterDepth=max(0.,waterDepth+lowDepthNoise*.18*shallowDepthMask*submergedDepthGate);
-    float receiverWaterY=.14+waterSurface(receiverWorld.xz,uTime).z;
-    float receiverSubmersion=max(0.,receiverWaterY-receiverWorld.y);
-    // A depth-map receiver supplies submerged depth, not its distance from
-    // the camera. Cap the grazing-angle stretch so a 1 m deep distant fish
-    // cannot accumulate many metres of fictitious absorption.
-    float angularPath=min(1./max(abs(view.y),.001),1.6);
-    float opticalDepthBase=receiverSubmersion*angularPath;
-    float geometricOpticalDepth=shoreDepth*angularPath;
-    float receiverValid=step(receiverRawDepth,.9999)*step(surfaceDepth+.02,refrSceneDepth);
-    float opticalReceiverBlend=smoothstep(.04,.35,contactDistance)*receiverValid;
-    // Absorption uses the measured surface-to-receiver path only. The depth
-    // noise is an artistic colour variation, not extra metres of water.
-    float opticalDepth=min(24.,max(0.,mix(geometricOpticalDepth,opticalDepthBase,opticalReceiverBlend)));
+    // Project a local world-space bend. Fixed UV shifts stretched the beach
+    // across the contact at distant/overhead views and changed with viewport size.
+    float bendLimit=waterContactRefractionLimit(meniscusWidth,uSetting_meniscusStrength);
+    float bendMetres=clamp(meniscusLensSlope*.025*uSetting_meniscusRefraction*uSetting_meniscusStrength,-bendLimit,bendLimit);
+    vec4 bentClip=uViewProjection*vec4(vWorld+vec3(towardShore.x,0.,towardShore.y)*bendMetres,1.);
+    vec2 bendUV=bentClip.xy/max(bentClip.w,.00001)*.5+.5;
+    if(bentClip.w>0.)offset+=(bendUV-uv)*distortionMask;
+    offset*=min(1.,.004/max(length(offset),.00001));
+    vec2 refrUV=uv+offset;
+    bool refrInside=all(greaterThanEqual(refrUV,vec2(0.)))&&all(lessThanEqual(refrUV,vec2(1.)));
+    float receiverRawDepth=texture2D(uDepth,clamp(refrUV,0.,1.)).r;
+    vec3 receiverWorld=receiverWorldPosition(refrUV,receiverRawDepth);
+    float receiverValid=waterCapturedReceiverValid(receiverRawDepth,linearDepth(receiverRawDepth),surfaceDepth,vWorld.y-receiverWorld.y,uNear,uFar);
+    // Colour, depth and world position fall back together. A UV outside the
+    // image or hitting foreground/dry land must never drag it into the sea.
+    if(!refrInside||receiverValid<.5||originalValid<.5){
+     refrUV=uv;receiverRawDepth=rawSceneDepth;receiverWorld=originalReceiver;receiverValid=originalValid;
+    }
+    vec3 source=texture2D(uScene,refrUV).rgb;
+    source*=receiverValid;
+    float receiverSubmersion=waterCapturedColumn(vWorld.y,receiverWorld.y,receiverValid);
+    float waterDepth=receiverSubmersion;
+    // One captured column drives every optical contribution, including a fish
+    // suspended above the seabed. No coastline or procedural bed substitution.
+    float opticalDepth=waterOpticalPath(waterDepth,view.y);
     // The captured depth is the visible receiver, whether sand, reef or fish.
     // Reconstruct its world position and project the refracted sun onto it
     // before the receiver colour travels back through the absorbing water.
-    vec3 receiverNormal=normalize(cross(dFdx(receiverWorld),dFdy(receiverWorld)));
+    vec3 receiverNormal=cross(dFdx(receiverWorld),dFdy(receiverWorld));
+    receiverNormal/=max(length(receiverNormal),.00001);
     receiverNormal*=dot(receiverNormal,cameraPosition-receiverWorld)<0.?-1.:1.;
     vec3 refractedSun=refract(-uSunDirection,vec3(0.,1.,0.),.7502);
     vec3 receiverProjection=receiverWorld-refractedSun*(receiverSubmersion/max(-refractedSun.y,.08));
@@ -313,10 +326,7 @@ export function createWater(renderer,scene,time,lighting){
     float causticRaw=waterReceiverCaustics(causticPos,receiverBlur);
     float causticAA=max(fwidth(causticRaw),.025);
     float causticFocus=exp(clamp(causticRaw*2.8-1.7,-8.,1.2))/(1.+causticAA*5.);
-    float raisedReceiver=smoothstep(.04,.20,receiverWorld.y-bedHeightAt(receiverWorld.xz));
-    float shallowEntry=smoothstep(.06,.32,receiverSubmersion);
-    float standardEntry=smoothstep(uSetting_causticMinDepth,uSetting_causticFadeInDepth,receiverSubmersion);
-    float causticDepthMask=mix(standardEntry,shallowEntry,raisedReceiver)
+    float causticDepthMask=smoothstep(uSetting_causticMinDepth,uSetting_causticFadeInDepth,receiverSubmersion)
       *(1.-smoothstep(uSetting_causticFadeOutDepth,uSetting_causticDepth,receiverSubmersion))*exp(-receiverSubmersion*.32);
     float causticFacing=mix(.30,1.,smoothstep(-.12,.65,dot(receiverNormal,-refractedSun)));
     float depthEdge=max(abs(dFdx(receiverRawDepth)),abs(dFdy(receiverRawDepth)));
@@ -325,61 +335,58 @@ export function createWater(renderer,scene,time,lighting){
     float causticResolution=1.-smoothstep(.12,.60,causticFootprint);
     float causticBrightness=mix(.35,1.25,smoothstep(-.65,.65,lowFrequencyDepthNoise(receiverProjection.xz,uTime*.35)));
     float causticLight=causticFocus*causticDepthMask*causticFacing*causticContinuity*causticResolution*causticBrightness;
-    float causticGain=min(1.35,causticLight*uSetting_causticStrength*.72)
+    // A soft light accent must leave sand texture and scattered shells readable.
+    float causticGain=min(.32,causticLight*uSetting_causticStrength*.18)
       *smoothstep(.15,.75,contactDistance)*receiverValid;
     source*=1.+causticGain;
-    // Absorption and in-scattering are different optical processes. Mixing
-    // toward waterBody with (1-trans) made similarly coloured fish invisible
-    // while changing the slider barely changed their final colour.
+    // Receiver depth controls both legs of light transport, including fish
+    // suspended above a deep bed. The gradient only supplies scattered light.
     float absorptionStrength=max(uSetting_waterAbsorption,0.);
     // Keep the full 0-10x control useful at ordinary 1-3 m receiver depths.
     // The previous coefficients saturated transmission around 3-4x, so the
     // upper half of the slider appeared to do almost nothing.
-    vec3 absorption=absorptionStrength*vec3(.18,.065,.03);
-    vec3 scattering=vec3(.035,.045,.06);
-    vec3 extinction=absorption+scattering;
-    vec3 trans=exp(-extinction*opticalDepth);
+    vec3 absorption=absorptionStrength*vec3(.28,.065,.025);
+    vec3 scattering=vec3(.035,.085,.10);
+    // Preserve warm shallow receivers; gradually build a cooler water column
+    // offshore instead of pre-tinting the sand into a uniform teal plane.
+    scattering*=mix(1.,2.4,smoothstep(.4,5.,receiverSubmersion));
     vec3 waterBody=uGradientColors[0];
     for(int i=1;i<8;i++){
      if(i>=uGradientCount)break;
-     float blend=clamp((visualWaterDepth-uGradientDepths[i-1])/max(uGradientDepths[i]-uGradientDepths[i-1],.001),0.,1.);
+     float blend=clamp((waterDepth-uGradientDepths[i-1])/max(uGradientDepths[i]-uGradientDepths[i-1],.001),0.,1.);
      waterBody=mix(waterBody,uGradientColors[i],blend);
     }
-    // Only scattering replaces attenuated receiver light. Increasing pure
-    // absorption now darkens the receiver even when it matches the water hue.
-    vec3 inScatter=waterBody*(scattering/extinction)*(1.-trans);
-    vec3 refracted=source*trans+inScatter;
-    // Absorption alone leaves a few centimetres of water looking exactly like
-    // dry sand. A thin, depth-limited surface-scattering coat keeps the bed
-    // visible while making the flooded side read as liquid. Both fades are in
-    // world metres, so camera angle and retreat cannot change the band width.
-    float shallowSurfaceScatter=smoothstep(0.,.85,contactDistance)
-      *(1.-smoothstep(.55,2.6,waterDepth))*.27;
-    refracted=mix(refracted,waterBody,shallowSurfaceScatter);
-    float ndv=clamp(dot(normal,view),0.,1.);
-    // Give sky reflection its own normal; toon sun and refraction keep theirs.
-    vec3 reflectionNormal=normalize(mix(macroNormal,normal,clamp(uSetting_reflectionNormalStrength,0.,1.)));
-    float reflectionNdotV=clamp(dot(reflectionNormal,view),0.,1.);
-    float reflectionBase=clamp(uSetting_reflectionFresnelMin,0.,1.);
-    float fresnel=reflectionBase+(1.-reflectionBase)*pow(1.-reflectionNdotV,max(uSetting_reflectionFresnelPower,.001));
-    float reflectionWeight=clamp(fresnel*max(uSetting_reflectionStrength,0.),0.,1.);
+    float sunPath=waterOpticalPath(waterDepth,uSunDirection.y);
+    vec3 refracted=vec3(
+     waterChannelRadiance(source.r,waterBody.r,absorption.r,scattering.r,opticalDepth,sunPath),
+     waterChannelRadiance(source.g,waterBody.g,absorption.g,scattering.g,opticalDepth,sunPath),
+     waterChannelRadiance(source.b,waterBody.b,absorption.b,scattering.b,opticalDepth,sunPath));
+    // Water-body grading belongs to transmission; never recolour the sky mirror.
+    float waterLuminance=dot(refracted,vec3(.2126,.7152,.0722));
+    refracted=max(vec3(0.),mix(vec3(waterLuminance),refracted,1.17)*vec3(.94,.99,1.075));
+    float meniscusTilt=clamp(meniscusLensSlope*.32,-.56,.86);
+    vec2 glintSlope=normalA.xy*.075*meniscusLensProfile;
+    vec3 meniscusNormal=normalize(vec3(towardShore.x*meniscusTilt+glintSlope.x,1.,
+      towardShore.y*meniscusTilt+glintSlope.y));
+    // Reuse the decoded/composed water normal; retain the shoreline curvature.
+    vec3 reflectionNormal=normalize(mix(normal,meniscusNormal,clamp(meniscusLensProfile*uSetting_meniscusStrength,0.,1.)));
+    float reflectionNdotV=dot(reflectionNormal,view);
+    float reflectionWeight=waterReflectionWeight(reflectionNdotV,uSetting_reflectionFresnelMin,uSetting_reflectionFresnelPower,uSetting_reflectionStrength);
     vec3 reflectedDir=reflect(-view,reflectionNormal);
-    // Lower-radiance blue environment; keep broad reflection below bloom threshold.
-    vec2 skyUV=vec2(atan(reflectedDir.z,reflectedDir.x)/6.2831853+.5,asin(clamp(reflectedDir.y,-1.,1.))/3.14159265+.5);
-    vec3 reflectedSkySample=texture2D(uSky,skyUV).rgb*vec3(.74,.94,1.12);
-    vec3 reflectedSky=mix(vec3(.18,.43,.64),reflectedSkySample,smoothstep(0.,.14,reflectedDir.y));
-    // The sky texture is static, but its reflected sun must follow the actual
-    // directional light when the azimuth/elevation controls are edited.
-    float sunInReflection=max(dot(reflectedDir,uSunDirection),0.);
-    float reflectedSun=pow(sunInReflection,64.)*.20+pow(sunInReflection,512.)*.85;
-    reflectedSky+=uSunRadiance*reflectedSun;
-    float cloud=smoothstep(.76,.90,sin(reflectedDir.x*11.+sin(reflectedDir.z*7.))*sin(reflectedDir.z*8.));
-    cloud*=smoothstep(.05,.34,reflectedDir.y)*(1.-smoothstep(.38,.68,reflectedDir.y));
+    // Reflect the same environment radiance that the sky dome displays.
+    vec3 skyDirection=skyReflectionDirection(reflectedDir);
+    vec3 reflectedSky=skyEnvironmentRadiance(skyDirection,skyReflectionSample(uSky,skyDirection),vWorld.y);
+    if(reflectionWeight>.025){
+     vec4 localReflection=localEnvironmentReflection(vWorld,reflectedDir);
+     reflectedSky=mix(reflectedSky,localReflection.rgb,localReflection.a*clamp(uSetting_reflectionSceneStrength,0.,1.));
+    }
+    // Direct solar glints are handled once by the toon highlight below.
+    reflectedSky*=waterReflectionGain(uSetting_reflectionStrength);
     float crest=clamp(length(macroSlope)*3.0,0.,1.);
-    vec3 color=mix(refracted,reflectedSky,reflectionWeight*smoothstep(0.,.12,waterDepth));
+    vec3 color=refracted;
     color*=.985+(breakup-.5)*.035;
     float broadLight=clamp(.5+macroSlope.x*1.35-macroSlope.y*.95,0.,1.);
-    color*=mix(.975,1.025,mix(.5,broadLight,detailFade));
+    color*=mix(.975,1.025,mix(.5,broadLight,bodyDetailFade));
     float rippleLight=clamp(.5+dot(interactionSlope,vec2(1.25,-.85))*2.2,0.,1.);
     color*=mix(1.,mix(.94,1.07,rippleLight),clamp(length(interactionSlope)*4.5,0.,1.));
     vec3 lightA=uSunDirection;
@@ -389,6 +396,8 @@ export function createWater(renderer,scene,time,lighting){
     float troughShade=smoothstep(.025,.18,-localWaveHeight)
       *(1.-clamp(dot(normal,lightA),0.,1.))*.055;
     color*=1.-troughShade;
+    // Slope lighting shapes transmitted water, not the environment mirror.
+    color=mix(color,reflectedSky,reflectionWeight);
     // RaiderShader_Water: power lobe -> toon threshold, without GGX/BRDF.
     vec3 halfDir=normalize(lightA+view);
     float nh=max(dot(specNormal,halfDir),0.);
@@ -398,7 +407,7 @@ export function createWater(renderer,scene,time,lighting){
       uSetting_specularThreshold+uSetting_specularSoftness+specularAA,rawSpecular);
     // Do not paint deep-water sparkle onto a nearly transparent water film.
     // The separate meniscus catchlight below still traces the contact edge.
-    float specularDepthGate=mix(.20,1.,smoothstep(.055,.36,shoreDepth));
+    float specularDepthGate=mix(.20,1.,smoothstep(.055,.36,waterDepth));
     float wetFade=smoothstep(.03,.72,contactDistance)
       *(.55+.45*smoothstep(.25,3.5,waterDepth))*specularDepthGate;
     float localSpecScale=mix(1.,.48,smoothstep(.10,.42,length(localWaveSlope)));
@@ -423,10 +432,6 @@ export function createWater(renderer,scene,time,lighting){
       *smoothstep(.36,.72,sprayPatch)*.58*uInteractionBreak;
     // Keep the signed inward bend: clamping negative slope to zero used to
     // flatten half the liquid lens and removed its sun-facing highlights.
-    float meniscusTilt=clamp(meniscusLensSlope*.32,-.56,.86);
-    vec2 glintSlope=normalA.xy*.075*meniscusLensProfile;
-    vec3 meniscusNormal=normalize(vec3(towardShore.x*meniscusTilt+glintSlope.x,1.,
-      towardShore.y*meniscusTilt+glintSlope.y));
     float meniscusNdotH=max(dot(meniscusNormal,halfDir),0.);
     float lipGlintRise=smoothstep(0.,max(.10,normalizedAA),normalizedContact);
     float glintReach=clamp(uSetting_meniscusGlintReach,.15,.70);
@@ -468,43 +473,22 @@ export function createWater(renderer,scene,time,lighting){
     float foam=foamTexture*foamBand*uSetting_shoreFoam*foamLife*(1.-smoothstep(.3,1.2,pixelFootprint));
     vec3 undistortedSource=texture2D(uScene,uv).rgb;
     color=mix(color,vec3(.91,.91,.82),clamp(rings*.12,0.,.34));
-    // The opaque sea mesh intersects the beach at zero depth. Fade its complete
-    // lighting result into the same receiver colour across a finite contact
-    // width so the intersection cannot expose a one-pixel material cut.
-    float contactCoverage=smoothstep(0.,.42+fwidth(contactDistance),stableMeniscusDepth);
-    float meniscusWaterCoverage=1.-abs(meniscusLensSlope)*.045*uSetting_meniscusStrength;
-    color=mix(undistortedSource,color,meniscusWaterCoverage);
-
-
-
-    float waterLuminance=dot(color,vec3(.2126,.7152,.0722));
-    color=max(vec3(0.),mix(vec3(waterLuminance),color,1.17)*vec3(.94,.99,1.075));
+    // Only antialias the contact pixel. Water depth already controls physical
+    // transmission; a second half-metre colour fade erased the water surface.
+    float contactCoverage=waterContactCoverage(contactDistance,fwidth(contactDistance));
     // Apply aerial perspective after every water-lighting contribution.  This
     // is deliberately last: no specular, foam or grading may redraw a seam on
     // top of the atmospheric veil at the horizon.
-    vec3 horizonAir=vec3(.54,.70,.73);
-    float distanceHaze=smoothstep(24.,118.,distanceToEye);
-    float grazingHaze=1.-smoothstep(.025,.34,ndv);
-    float aerialHaze=clamp(distanceHaze*(.38+.62*grazingHaze),0.,.965);
-    color=mix(vec3(waterLuminance),color,1.-aerialHaze*.42);
+    // Air transmission shares the adjustable source colour and solar phase.
+    vec3 horizonAir=heightAtmosphereRadiance(-view);
+    float aerialHaze=heightAtmosphereScatter(distanceToEye,cameraPosition.y,vWorld.y,uHeightFogParams.x,uHeightFogParams.y,uHeightFogWeather);
     color=mix(color,horizonAir,aerialHaze);
     // Composite last: grading and haze must not tint exposed sand at zero depth.
     color=mix(undistortedSource,color,contactCoverage);
-    // A broad, almost colourless transmission lift makes the lens body visible
-    // on pale sand and in fog, while retaining the receiver's local values.
-    float glassBody=meniscusLensProfile*.18*uSetting_meniscusStrength*(1.-aerialHaze);
-    vec3 glassBodyColor=max(color,undistortedSource*.98)*vec3(.98,1.025,1.045);
-    color=mix(color,glassBodyColor,glassBody);
-    float lensFresnel=pow(1.-clamp(dot(meniscusNormal,view),0.,1.),2.);
-    float liquidSheen=meniscusLensProfile*(.035+.10*lensFresnel)
-      *uSetting_meniscusStrength*(1.-aerialHaze);
-    color=mix(color,reflectedSky,liquidSheen);
-    // Tint the thin volume rim instead of multiplying toward black. Keeping a
-    // floor from the undistorted receiver makes the contact readable on both
-    // pale sand and already-dark wet sand without producing an ink-like seam.
+    // Curvature already participates in the unified Fresnel. Keep only a
+    // restrained rim shade; never mix bare sand or a second sky layer back in.
     float meniscusShade=clamp(meniscusInnerShadow*uSetting_meniscusShadow*uSetting_meniscusStrength,0.,1.);
-    vec3 meniscusShadeColor=max(color,undistortedSource*.94)*vec3(.90,.97,1.);
-    color=mix(color,meniscusShadeColor,meniscusShade);
+    color*=1.-meniscusShade*.08;
     float rimLighting=.30+.70*meniscusLightFacing;
     float rimBreakup=mix(.38,1.,smoothstep(.20,.78,breakup));
     float glassRim=(meniscusOuterRidge*(.012+.065*rimLighting)+meniscusInnerRidge*.018)
@@ -563,7 +547,7 @@ export function createWater(renderer,scene,time,lighting){
    return layer;
   }
   const runupMaterial=new T.ShaderMaterial({
-   uniforms:{...settingsUniforms,...lighting,uTime:time,uNoise:{value:blueNoise},uSky:material.uniforms.uSky,uWeather:{value:0}},
+   uniforms:{...settingsUniforms,...atmosphereUniforms,...lighting,uTime:time,uNoise:{value:blueNoise},uSky:material.uniforms.uSky,uWeather:{value:0}},
    transparent:true,depthWrite:false,side:T.DoubleSide,
    vertexShader:`
     varying vec3 vRunupWorld;
@@ -577,6 +561,10 @@ export function createWater(renderer,scene,time,lighting){
     uniform float uTime,uWeather;uniform sampler2D uNoise,uSky;varying vec3 vRunupWorld;
     uniform vec3 uSunDirection,uSunRadiance;
     ${shoreGLSL}
+    ${skyPanoramaGLSL}
+    ${skyRadianceGLSL}
+    ${waterOpticsGLSL}
+    ${skyReflectionGLSL}
     void main(){
      vec2 p=vRunupWorld.xz;
      float phase=shoreEventPhase(p.x,uTime);
@@ -603,10 +591,10 @@ export function createWater(renderer,scene,time,lighting){
      float shoreGradient=shoreSlope(p.x);
      // The liquid rises toward dry sand: its outward normal tilts seaward.
      vec3 lipN=normalize(n+normalize(vec3(-shoreGradient,0.,1.))*curve*.52);
-     float fresnel=.025+.975*pow(1.-max(dot(lipN,view),0.),5.);
+     float fresnel=waterReflectionWeight(dot(lipN,view),uSetting_reflectionFresnelMin,uSetting_reflectionFresnelPower,uSetting_reflectionStrength);
      vec3 reflected=reflect(-view,lipN);
-     vec2 skyUV=vec2(atan(reflected.z,reflected.x)/6.2831853+.5,asin(clamp(reflected.y,-1.,1.))/3.14159265+.5);
-     vec3 reflection=texture2D(uSky,skyUV).rgb;
+     vec3 skyDirection=skyReflectionDirection(reflected);
+     vec3 reflection=skyEnvironmentRadiance(skyDirection,skyReflectionSample(uSky,skyDirection),vRunupWorld.y)*waterReflectionGain(uSetting_reflectionStrength);
      float spec=pow(max(dot(lipN,normalize(view+light)),0.),72.);
      float noise=texture2D(uNoise,p*vec2(1.7,3.1)+vec2(uTime*.018,-uTime*.026)).r;
      float alongShore=p.x+shoreGradient*p.y;
@@ -623,6 +611,7 @@ export function createWater(renderer,scene,time,lighting){
      if(alpha<.001)discard;
      vec3 sheetColor=mix(vec3(.10,.34,.44),reflection,.32+.38*fresnel);
      vec3 col=(sheetColor*bodyAlpha+reflection*reflectionAlpha+vec3(.96,.92,.80)*foam+uSunRadiance*highlightAlpha+vec3(.72,.88,.90)*frontAlpha+mix(sheetColor,reflection,.72)*lensAlpha)/max(alpha,.001);
+     col=heightAtmosphereComposite(col,vRunupWorld-cameraPosition,cameraPosition.y,vRunupWorld.y);
      gl_FragColor=vec4(col,alpha*(1.-uWeather*.20));
      #include <tonemapping_fragment>
      #include <colorspace_fragment>
@@ -638,6 +627,7 @@ export function createWater(renderer,scene,time,lighting){
   material.uniforms.uNear.value=camera.near;material.uniforms.uFar.value=camera.far;
   material.uniforms.uInvProjection.value.copy(camera.projectionMatrixInverse);
   material.uniforms.uInvView.value.copy(camera.matrixWorld);
+  material.uniforms.uViewProjection.value.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
   water.visible=false;for(const layer of interactionLayers)layer.mesh.visible=false;
   renderer.toneMapping=T.NoToneMapping;renderer.xr.enabled=false;
   const excluded=[];

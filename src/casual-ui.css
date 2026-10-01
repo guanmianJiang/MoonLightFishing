@@ -538,6 +538,12 @@ body > .render-settings-panel .render-setting-row{display:grid;grid-template-col
 body > .render-settings-panel .render-setting-row > span{min-width:0;line-height:1.35}
 body > .render-settings-panel .render-setting-row input[type=range]{min-width:0;width:100%}
 body > .render-settings-panel .render-setting-row input[type=number]{box-sizing:border-box;width:72px;min-width:0;padding:5px 5px}
+body > .render-settings-panel .atmosphere-setting-row input{min-height:44px}
+body > .render-settings-panel .render-look-row input,body > .render-settings-panel .render-look-color input{min-height:44px}
+body > .render-settings-panel .render-look-row > span small,body > .render-settings-panel .render-look-color > span small{display:block;margin-top:3px;color:#5c796b;font-size:11px;font-weight:400;line-height:1.4}
+body > .render-settings-panel .render-look-actions{display:flex;flex-wrap:wrap;gap:8px}
+body > .render-settings-panel .render-look-actions button{flex:1;min-width:0}
+body > .render-settings-panel .atmosphere-clear-button{min-height:44px;padding:8px 14px;margin:4px 0 8px;border:1px solid #c7d9c3;border-radius:10px;background:#e8f0e2;color:#315d51;font:inherit;touch-action:manipulation}
 body > .render-settings-panel .render-color-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;font-size:12px}
 body > .render-settings-panel .render-color-row select{max-width:190px;min-width:0;padding:6px}
 body > .render-settings-panel > footer{position:static;inset:auto;display:grid;flex:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;box-sizing:border-box;width:100%;max-width:none;min-height:0;margin:10px 0 0;padding:10px 0 0;border:0;border-top:1px solid #dfe8d9;border-radius:0;background:none;box-shadow:none;backdrop-filter:none;transform:none;opacity:1;pointer-events:auto}

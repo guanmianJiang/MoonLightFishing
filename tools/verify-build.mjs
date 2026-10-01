@@ -3,6 +3,7 @@ import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {REAL_AUDIO} from '../src/data/audio-assets.mjs';
 import {BAITS,FISH} from '../src/data/catalog.mjs';
+import {SKY_TEXTURES} from '../src/sky-settings.mjs';
 
 const output=fileURLToPath(new URL('../build/',import.meta.url));
 const html=await readFile(join(output,'index.html'),'utf8');
@@ -15,7 +16,8 @@ if(html.includes('app-final.js?v='))failures.push('页面仍在引用开发入�
 
 for(const path of [
  'assets/Tex_Water_Normal_06.jpg',
- 'assets/sky-toon-04.png',
+ 'assets/sand-albedo.png',
+ 'assets/sand-detail-normal.png',
  'assets/models/beach_terrain.glb',
  'assets/models/specimens',
  'assets/audio/source/ocean-wave-01.flac',
@@ -23,6 +25,13 @@ for(const path of [
  'assets/fonts/noto-serif-sc-ui.woff2',
  'assets/journal-fish-watercolor.webp'
 ])await check(path);
+for(const {path} of SKY_TEXTURES){
+ await check(path.slice(2));
+ try{
+  const bytes=await readFile(join(output,path.slice(2)));
+  if(bytes.length<33||bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a'||bytes.readUInt32BE(16)!==bytes.readUInt32BE(20)*2||bytes.readUInt32BE(16)>2048)failures.push(`天空贴图格式或尺寸不正确 ${path}`);
+ }catch{/* Missing assets already reported by check. */}
+}
 
 for(const url of Object.values(REAL_AUDIO))await check(url.slice(2));
 for(const fish of FISH.filter(item=>!item.object))await check(`assets/models/specimens/${fish.id}.glb`);

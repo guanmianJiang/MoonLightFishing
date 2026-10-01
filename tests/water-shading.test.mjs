@@ -4,15 +4,21 @@ import {readFileSync} from 'node:fs';
 import {coastGeometry,shore,shoreGLSL,terrainY} from '../src/coast.js';
 import {renderSettings,defaultRenderSettings,settingsUniforms} from '../src/render-settings.js';
 import {waterSurfaceGLSL} from '../src/water-surface.js';
+import {waterOpticsGLSL} from '../src/water-optics.mjs';
 
-test('served entry points load the current shoreline modules with cache versions',()=>{
+test('render panel, scene, shore and water share one settings module in development',()=>{
  const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
  const app=readFileSync(new URL('../src/app-final.js',import.meta.url),'utf8');
  const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
- assert.match(html,/app-final\.js\?v=[\w-]+/);
- assert.match(app,/\.\/scene\.js\?v=[\w-]+/);
- assert.match(scene,/\.\/coast\.js\?v=[\w-]+/);
- assert.match(scene,/\.\/water\.js\?v=[\w-]+/);
+ const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
+ const panel=readFileSync(new URL('../src/render-settings-panel.js',import.meta.url),'utf8');
+ assert.match(html,/src="app-final\.js"/);
+ assert.match(app,/from'\.\/scene\.js'/);
+ assert.match(app,/from '\.\/render-settings-panel\.js'/);
+ assert.match(scene,/from '\.\/coast\.js'/);
+ assert.match(scene,/from '\.\/water\.js'/);
+ assert.match(water,/from '\.\/coast\.js'/);
+ for(const source of [app,scene,water,panel])assert.doesNotMatch(source,/from\s*['"][^'"]+\?v=/);
  assert.ok(!scene.includes('scene-final.js'));
 });
 test('moving water contact owns wet depth before scene props are drawn',()=>{
@@ -95,7 +101,7 @@ test('sea mesh resolves the physical meniscus without densifying sand',()=>{
 test('underwater sand extends gently offshore and matches the water bed profile',()=>{
  const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  const coast=readFileSync(new URL('../src/coast.js',import.meta.url),'utf8');
- assert.ok(water.includes('seabedHeight(q)'));
+ assert.ok(!water.includes('bedHeightAt'));
  assert.ok(coast.includes('seabedHeight(vec2(p.x,z))-.14'));
  for(const x of [-16,0,16]){
   const at=d=>terrainY(x,shore(x)+d);
@@ -129,7 +135,7 @@ test('visible beach keeps a resolved shoreline instead of a collapsed replacemen
 test('underwater terrain cannot rise through the thin contact water',()=>{
  const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
  assert.ok(scene.includes('float waterSide=smoothstep(2.,8.,position.z-shore(position.x));'));
- assert.ok(scene.includes('float waterY=.14+waterSurface(position.xz,uTime).z;'));
+ assert.ok(scene.includes('float waterY=waterLevel+waterSurface(position.xz,uTime).z;'));
  assert.ok(scene.includes('float flooded=smoothstep(-.015,.045,shoreContactDistance(position.xz,uTime));'));
  assert.ok(scene.includes('transformed.y=mix(bedY,min(bedY,waterY-.045),flooded);'));
  assert.ok(scene.includes('uniform float uTime;\\nvarying vec3 vGround;'));
@@ -204,68 +210,81 @@ test('sea and film share lighting; meniscus survives the shore composite',()=>{
  assert.ok(water.includes('float meniscusLensSlope=clamp(curve.y*uSetting_meniscusBulge,-2.2,3.2);'));
  assert.ok(water.includes('float contactWaterMask=smoothstep(-contactClipAA,contactClipAA,contactDistance);'));
  assert.ok(water.includes('float meniscusInnerRidge=smoothstep(crown*.55-normalizedAA,crown+normalizedAA,normalizedContact)'));
- assert.ok(water.includes('float waterDepth=shoreDepth;'));
+ assert.ok(water.includes('float waterDepth=receiverSubmersion;'));
  assert.ok(!water.includes('float depthValid=1.-smoothstep(.88,.995,rawSceneDepth);'));
- assert.ok(water.includes('float geometricOpticalDepth=shoreDepth*angularPath;'));
- assert.ok(water.includes('float contactCoverage=smoothstep(0.,.42+fwidth(contactDistance),stableMeniscusDepth);'));
- assert.ok(water.includes('float liquidSheen=meniscusLensProfile*(.035+.10*lensFresnel)'));
+ assert.ok(!water.includes('geometricOpticalDepth'));
+ assert.ok(water.includes('float contactCoverage=waterContactCoverage(contactDistance,fwidth(contactDistance));'));
+ assert.ok(!water.includes('liquidSheen'));
  assert.ok(water.includes('float meniscusTilt=clamp(meniscusLensSlope*.32,-.56,.86);'));
  assert.ok(water.includes('float glintAA=max(fwidth(meniscusNdotH)*1.5,.012);'));
  assert.ok(water.includes('float lipGlintProfile=lipGlintRise*lipGlintFall*contactWaterMask;'));
  assert.ok(water.includes('float glintReach=clamp(uSetting_meniscusGlintReach,.15,.70);'));
  assert.ok(water.includes('uSunRadiance*meniscusCatchlight*uSetting_meniscusHighlightStrength*.62'));
  assert.ok(water.includes('float meniscusCatchlight=lipGlintProfile*(broadGlint*.32+sharpGlint*.78*glintFlecks)'));
- assert.ok(water.includes('vec2 refrUVR=clamp(refrUV+dispersion,.001,.999);'));
- assert.ok(water.includes('source=mix(source,lensBlur,meniscusLensProfile*.65*uSetting_meniscusStrength);'));
- assert.ok(water.includes('float glassBody=meniscusLensProfile*.18*uSetting_meniscusStrength*(1.-aerialHaze);'));
- assert.ok(water.indexOf('color=mix(color,meniscusShadeColor,meniscusShade)')>water.indexOf('color=mix(undistortedSource,color,contactCoverage)'));
+ assert.ok(water.includes('vec3 source=texture2D(uScene,refrUV).rgb;'));
+ assert.ok(!water.includes('lensBlur'));
+ assert.ok(!water.includes('glassBody'));
+ assert.ok(water.indexOf('color*=1.-meniscusShade*.08;')>water.indexOf('color=mix(undistortedSource,color,contactCoverage)'));
  assert.ok(water.includes('float bodyAlpha=0.;'));
  assert.ok(water.includes('float absorptionStrength=max(uSetting_waterAbsorption,0.);'));
- assert.ok(water.includes('vec3 absorption=absorptionStrength*vec3(.18,.065,.03);'));
- assert.ok(water.includes('vec3 refracted=source*trans+inScatter;'));
+ assert.ok(water.includes('vec3 absorption=absorptionStrength*vec3(.28,.065,.025);'));
+ assert.ok(water.includes('waterChannelRadiance(source.r,waterBody.r,absorption.r,scattering.r,opticalDepth,sunPath)'));
 });
-test('shallow flooded sand gets a continuous water coat without full-strength sparkle',()=>{
+test('shallow flooded sand uses continuous optical scattering without a fixed colour coat',()=>{
  const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
- assert.ok(water.includes('float shallowSurfaceScatter=smoothstep(0.,.85,contactDistance)'));
- assert.ok(water.includes('*(1.-smoothstep(.55,2.6,waterDepth))*.27;'));
- assert.ok(water.includes('refracted=mix(refracted,waterBody,shallowSurfaceScatter);'));
- assert.ok(water.includes('float specularDepthGate=mix(.20,1.,smoothstep(.055,.36,shoreDepth));'));
+ assert.ok(!water.includes('shallowSurfaceScatter'));
+ assert.ok(!water.includes('depthWaterScatter'));
+ assert.ok(water.includes('float specularDepthGate=mix(.20,1.,smoothstep(.055,.36,waterDepth));'));
  assert.ok(water.includes('*specularDepthGate;'));
- const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
- const coat=(distance,depth)=>smooth(0,.85,distance)*(1-smooth(.55,2.6,depth))*.27;
- assert.equal(coat(0,.1),0);
- assert.ok(coat(.3,.1)>0&&coat(.3,.1)<coat(.85,.1));
- assert.ok(coat(.85,1)<coat(.85,.1));
- assert.equal(coat(.85,2.6),0);
+ const radiance=scalarGLSL(waterOpticsGLSL,'waterChannelRadiance',['source','body','absorption','scattering','viewPath','sunPath']);
+ assert.equal(radiance(.7,.3,.1,.05,0,0),.7);
+ assert.ok(radiance(.7,.3,.1,.05,.01,.01)>.69);
+ assert.ok(Math.abs(radiance(.7,.3,.1,.05,.55-1e-6,.55)-radiance(.7,.3,.1,.05,.55+1e-6,.55))<1e-6);
 });
 test('water absorption changes underwater receivers even when they match the water hue',()=>{
  const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  const panel=readFileSync(new URL('../src/render-settings-panel.js',import.meta.url),'utf8');
- assert.ok(water.includes('float angularPath=min(1./max(abs(view.y),.001),1.6);'));
- assert.ok(water.includes('float opticalDepthBase=receiverSubmersion*angularPath;'));
- assert.ok(water.includes('float opticalDepth=min(24.,max(0.,mix(geometricOpticalDepth,opticalDepthBase,opticalReceiverBlend)));'));
+ assert.ok(water.includes('float opticalDepth=waterOpticalPath(waterDepth,view.y);'));
+ assert.ok(water.includes('waterCapturedColumn(vWorld.y,receiverWorld.y,receiverValid)'));
+ assert.ok(!water.includes('opticalReceiverBlend'));
  assert.ok(water.includes('float absorptionStrength=max(uSetting_waterAbsorption,0.);'));
- assert.ok(water.includes('vec3 scattering=vec3(.035,.045,.06);'));
- assert.ok(water.includes('vec3 inScatter=waterBody*(scattering/extinction)*(1.-trans);'));
- assert.ok(water.includes('vec3 refracted=source*trans+inScatter;'));
+ assert.ok(water.includes('vec3 scattering=vec3(.035,.085,.10);'));
+ assert.ok(water.includes('float sunPath=waterOpticalPath(waterDepth,uSunDirection.y);'));
+ assert.ok(water.includes('waterChannelRadiance(source.r,waterBody.r,absorption.r,scattering.r,opticalDepth,sunPath)'));
  assert.ok(!water.includes('absorbedWaterBody'));
  assert.ok(panel.includes("['waterAbsorption','水体吸收倍率',0,10,.02]"));
  const saved=renderSettings.waterAbsorption;
  try{for(const value of [0,1,3,10]){renderSettings.waterAbsorption=value;assert.equal(settingsUniforms.uSetting_waterAbsorption.value,value);}}
  finally{renderSettings.waterAbsorption=saved;}
+ const pathFor=scalarGLSL(waterOpticsGLSL,'waterOpticalPath',['depth','airCosine']);
+ const radiance=scalarGLSL(waterOpticsGLSL,'waterChannelRadiance',['source','body','absorption','scattering','viewPath','sunPath']);
  for(const viewY of [.05,.2,.5,1]){
-  const path=Math.min(1/Math.max(viewY,.001),1.6);
-  assert.ok(path>=1&&path<=1.6);
+  const path=pathFor(1,viewY);
+  assert.ok(path>=1&&path<=1.52);
  }
- for(const depth of [.15,1.3,3])for(const [absorption,scattering] of [[.18,.035],[.065,.045],[.03,.06]]){
-  const output=(multiplier)=>{const extinction=absorption*multiplier+scattering,trans=Math.exp(-extinction*depth);return trans+scattering/extinction*(1-trans);};
+ for(const depth of [.15,1.3,3])for(const [absorption,scattering] of [[.28,.035],[.065,.085],[.025,.10]]){
+  const output=multiplier=>radiance(1,1,absorption*multiplier,scattering,pathFor(depth,.4),pathFor(depth,.6));
   assert.ok(output(0)>output(1),'zero absorption must retain more of a same-colour receiver');
   assert.ok(output(1)>output(4)&&output(4)>output(10),'the full slider must darken a same-colour receiver');
  }
- const green=(multiplier)=>{const extinction=.065*multiplier+.045,trans=Math.exp(-extinction*2);return trans+.045/extinction*(1-trans);};
- assert.ok(green(4)-green(10)>.20,'upper slider values should remain visibly distinct at ordinary fish depth');
+ const green=multiplier=>radiance(1,1,.065*multiplier,.085,pathFor(2,.4),pathFor(2,.6));
+ assert.ok(green(4)-green(10)>.10,'upper slider values should remain visibly distinct at ordinary fish depth');
 });
-test('sun angles update the real light, shadow map and reflected highlight',()=>{
+test('water scattering grows continuously with receiver depth while preserving shallow sand',()=>{
+ const source=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
+ const expression=source.match(/scattering\*=([^;]+);/)[1];
+ const smoothstep=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
+ const scale=new Function('receiverSubmersion','mix','smoothstep',`return ${expression};`);
+ const sample=depth=>scale(depth,(a,b,t)=>a+(b-a)*t,smoothstep);
+ assert.equal(sample(0),1);assert.equal(sample(.4),1);assert.equal(sample(5),2.4);assert.equal(sample(24),2.4);
+ let previous=1;
+ for(let depth=0;depth<24;depth+=.02){const value=sample(depth);assert.ok(value>=previous-1e-12&&value<=2.4);previous=value;}
+ for(const join of [.4,5])assert.ok(Math.abs(sample(join-1e-5)-sample(join+1e-5))<1e-7);
+ assert.ok(source.includes('float causticGain=min(.32,causticLight*uSetting_causticStrength*.18)'));
+ assert.ok(source.includes('float sunPath=waterOpticalPath(waterDepth,uSunDirection.y);'));
+});
+
+test('sun angles update the light and shadow map; direct glints are not duplicated in sky reflection',()=>{
  const scene=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8');
  const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  assert.ok(scene.includes('function updateSunDirection(){'));
@@ -274,8 +293,10 @@ test('sun angles update the real light, shadow map and reflected highlight',()=>
  assert.ok(scene.includes('lighting.uSunDirection.value.copy(sun.position).sub(sun.target.position).normalize();'));
  assert.ok(scene.includes('renderer.shadowMap.needsUpdate=true;'));
  assert.ok(scene.includes('renderer.shadowMap.needsUpdate ||= frame%8===0;'));
- assert.ok(water.includes('float sunInReflection=max(dot(reflectedDir,uSunDirection),0.);'));
- assert.ok(water.includes('reflectedSky+=uSunRadiance*reflectedSun;'));
+ assert.ok(water.includes('vec3 lightA=uSunDirection;'));
+ assert.ok(water.includes('vec3 halfDir=normalize(lightA+view);'));
+ assert.ok(water.includes('color+=uSunRadiance*toonSpecular*uSetting_specularStrength'));
+ assert.ok(!water.includes('sunInReflection'));assert.ok(!water.includes('reflectedSun'));
 });
 test('moving contact keeps the meniscus width constant through retreat',()=>{
  let reach=0;
@@ -339,23 +360,23 @@ test('water reconstructs all underwater receivers from captured depth for causti
  const water=readFileSync(new URL('../src/water.js',import.meta.url),'utf8');
  assert.ok(water.includes('uInvProjection*vec4(uv*2.-1.,depth*2.-1.,1.)'));
  assert.ok(water.includes('uInvView*vec4(view.xyz/max(view.w,.00001),1.)'));
- assert.ok(water.includes('receiverWorldPosition(refrUV,min(receiverRawDepth,.9999))'));
+ assert.ok(water.includes('receiverWorldPosition(refrUV,receiverRawDepth)'));
  assert.ok(water.includes('receiverWorld-refractedSun*(receiverSubmersion/max(-refractedSun.y,.08))'));
- assert.ok(water.includes('float opticalDepthBase=receiverSubmersion*angularPath;'));
- assert.ok(water.includes('float opticalReceiverBlend=smoothstep(.04,.35,contactDistance)*receiverValid;'));
- assert.ok(water.includes('float raisedReceiver=smoothstep(.04,.20,receiverWorld.y-bedHeightAt(receiverWorld.xz));'));
- assert.ok(water.includes('float causticDepthMask=mix(standardEntry,shallowEntry,raisedReceiver)'));
+ assert.ok(water.includes('waterCapturedColumn(vWorld.y,receiverWorld.y,receiverValid)'));
+ assert.ok(!water.includes('opticalReceiverBlend'));
+ assert.ok(!water.includes('raisedReceiver'));
+ assert.ok(water.includes('float causticDepthMask=smoothstep(uSetting_causticMinDepth,uSetting_causticFadeInDepth,receiverSubmersion)'));
  assert.ok(water.includes('float causticFacing=mix(.30,1.,smoothstep(-.12,.65,dot(receiverNormal,-refractedSun)));'));
  assert.ok(water.includes('source*=1.+causticGain;'));
- assert.ok(water.includes('vec3 refracted=source*trans+inScatter;'));
+ assert.ok(water.includes('waterChannelRadiance(source.r,waterBody.r,absorption.r,scattering.r,opticalDepth,sunPath)'));
  assert.ok(water.includes('material.uniforms.uInvProjection.value.copy(camera.projectionMatrixInverse)'));
  assert.ok(water.includes('material.uniforms.uInvView.value.copy(camera.matrixWorld)'));
  assert.ok(scene.includes('diffuseColor.rgb*=sand;'));
  assert.ok(!scene.includes('diffuseColor.rgb*=sand*(1.+causticLight'));
  const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
- const nearFishDepth=.31,raised=smooth(.04,.20,.14);
- const entry=(1-raised)*smooth(.25,.8,nearFishDepth)+raised*smooth(.06,.32,nearFishDepth);
- assert.ok(entry>.55,'shallow physical fish should retain visible caustic response');
+ const nearFishDepth=.31;
+ const entry=smooth(.25,.8,nearFishDepth);
+ assert.ok(entry>0&&entry<.05,'fish respects the same configured depth fade as sand');
  assert.ok(smooth(.15,.75,.03)<.01,'moving shoreline contact should not gain a bright caustic edge');
 });
 test('bloom keeps HDR targets until final tone mapping',()=>{

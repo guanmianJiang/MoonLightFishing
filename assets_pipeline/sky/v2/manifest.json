@@ -1,0 +1,109 @@
+{
+  "version": "2026.10-sky-v2",
+  "tool": "built-in image_gen",
+  "conditioning": "horizontal seam 3.5%, smooth longitude flattening at 12% pole caps; no creative repaint",
+  "assets": [
+    {
+      "path": "public/assets/sky-toon-01.png",
+      "source": "assets_pipeline/sky/v2/sky-toon-01-raw.png",
+      "width": 1774,
+      "height": 887,
+      "bytes": 919015,
+      "sha256": "1f93729d234d9bcbc26e3058fb1c836db7d5b661a3659a22c508fe634b3ae764",
+      "horizonRgb": [
+        67.64,
+        167.23,
+        250.32
+      ],
+      "seamMax": 0,
+      "seamSlopeMax": 7,
+      "poleRange": 0,
+      "horizonStepMax": 3
+    },
+    {
+      "path": "public/assets/sky-toon-02.png",
+      "source": "assets_pipeline/sky/v2/sky-toon-02-raw.png",
+      "width": 1774,
+      "height": 887,
+      "bytes": 906587,
+      "sha256": "92722bcdf20b51fbcf7f559284bf9d28c4913a04dbfa218dc2146a7a661edaac",
+      "horizonRgb": [
+        74.55,
+        178.95,
+        253.43
+      ],
+      "seamMax": 0,
+      "seamSlopeMax": 9,
+      "poleRange": 0,
+      "horizonStepMax": 3
+    },
+    {
+      "path": "public/assets/sky-toon-03.png",
+      "source": "assets_pipeline/sky/v2/sky-toon-03-raw.png",
+      "width": 1774,
+      "height": 887,
+      "bytes": 932074,
+      "sha256": "167b6decd14e55e89243f7a4a9c7214c27bcbd505e39597ca726b01d714988d0",
+      "horizonRgb": [
+        91.12,
+        187.17,
+        214.59
+      ],
+      "seamMax": 0,
+      "seamSlopeMax": 8,
+      "poleRange": 0,
+      "horizonStepMax": 3
+    },
+    {
+      "path": "public/assets/sky-toon-04.png",
+      "source": "assets_pipeline/sky/v2/sky-toon-04-raw.png",
+      "width": 1774,
+      "height": 887,
+      "bytes": 955314,
+      "sha256": "0e64c75c9a14a4373612eb5ca836dc6c831cab4659e3e30a35eb8fa349d70436",
+      "horizonRgb": [
+        126.2,
+        200.3,
+        226.5
+      ],
+      "seamMax": 0,
+      "seamSlopeMax": 7,
+      "poleRange": 0,
+      "horizonStepMax": 3
+    },
+    {
+      "path": "public/assets/sky-toon-05.png",
+      "source": "assets_pipeline/sky/v2/sky-toon-05-raw.png",
+      "width": 1774,
+      "height": 887,
+      "bytes": 930198,
+      "sha256": "1c0b6aa39cc107e5cc238044495a33a1cd95e8f9261757efce7b506e91470f65",
+      "horizonRgb": [
+        93.41,
+        204.43,
+        235.08
+      ],
+      "seamMax": 0,
+      "seamSlopeMax": 8,
+      "poleRange": 0,
+      "horizonStepMax": 3
+    },
+    {
+      "path": "public/assets/sky-toon-06.png",
+      "source": "assets_pipeline/sky/v2/sky-toon-06-raw.png",
+      "width": 1774,
+      "height": 887,
+      "bytes": 872972,
+      "sha256": "0e7f8b9bf91651af38ccf0626c206e1a0fc6eae17f6e9e4ea6f8afe5e4d7c166",
+      "horizonRgb": [
+        117.93,
+        203.6,
+        237.99
+      ],
+      "seamMax": 0,
+      "seamSlopeMax": 7,
+      "poleRange": 0,
+      "horizonStepMax": 2
+    }
+  ]
+}
