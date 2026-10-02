@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
 import * as T from '../src/three.module.js';
 import {CAST_AREAS} from '../src/cast-target.mjs';
-import {cameraStage,castNeedsAimCamera,readyWaterGesture,visibleCastRanges,viewTransitionWeight,portraitCloseFraming,cameraSettled,cameraImpulse} from '../src/camera-interaction.mjs';
+import {cameraStage,castNeedsAimCamera,readyWaterGesture,aimCameraFocusPoint,visibleCastRanges,viewTransitionWeight,portraitCloseFraming,cameraSettled,cameraImpulse} from '../src/camera-interaction.mjs';
 
 test('ready water touch waits for a tap or short drag and gives two fingers to pinch',()=>{
  assert.equal(readyWaterGesture(1,0),'wait');
@@ -11,6 +13,27 @@ test('ready water touch waits for a tap or short drag and gives two fingers to p
  assert.equal(readyWaterGesture(2,0),'pinch');
  assert.equal(readyWaterGesture(0,20),'wait');
  assert.equal(readyWaterGesture(1,NaN),'wait');
+});
+
+test('dragging holds the camera on the gesture origin until release',()=>{
+ const next=[4,8],origin=[1,5];
+ assert.equal(aimCameraFocusPoint(next,null),next);
+ assert.equal(aimCameraFocusPoint(next,{dragging:false,originPoint:origin}),next);
+ assert.equal(aimCameraFocusPoint(next,{dragging:true,originPoint:origin}),origin);
+ assert.equal(aimCameraFocusPoint(next,{dragging:true,originPoint:[NaN,5]}),next);
+});
+
+test('actual aim handler waits for drag threshold, uses the frozen camera and yields to pinch',()=>{
+ const source=readFileSync(new URL('../src/scene.js',import.meta.url),'utf8'),start=source.indexOf(" renderer.domElement.addEventListener('pointermove',e=>{"),end=source.indexOf('\n });',start)+5;
+ assert.ok(start>=0&&end>start);
+ let callback,updates=0,zooms=0,lastDrag=null;
+ const frozenView={name:'gesture-camera'},state={aiming:true,spot:'reed',onAimPoint(){updates++}};
+ const context=vm.createContext({renderer:{domElement:{addEventListener(_name,fn){callback=fn}}},getState:()=>state,pointers:new Map([[7,[100,300]]]),aimPointer:{id:7,startX:100,startY:300,startWater:[3,5],originPoint:[4,6],view:frozenView,dragging:false},readyWaterGesture,waterPointAt(_x,_y,view){assert.equal(view,frozenView);return [3.2,5.1]},castAimDragPoint(...args){lastDrag=args;return [4.2,6.1]},acknowledgeAim(){},zoomBy(){zooms++},pinchGap:20});
+ vm.runInContext(source.slice(start,end),context);
+ callback({pointerId:7,clientX:106,clientY:300});assert.equal(updates,0);assert.equal(context.aimPointer.dragging,false);
+ callback({pointerId:7,clientX:108,clientY:300});assert.equal(updates,1);assert.equal(context.aimPointer.dragging,true);
+ assert.deepEqual(lastDrag,['reed',[4,6],[3,5],[3.2,5.1]]);
+ context.pointers.set(8,[130,300]);callback({pointerId:7,clientX:109,clientY:300});assert.equal(updates,1);assert.equal(zooms,1);
 });
 
 test('camera intent gives manual overview priority and follows the fishing action',()=>{
@@ -40,6 +63,7 @@ test('cast range stays visible in close ready view and follows camera mode',()=>
  assert.deepEqual(visibleCastRanges({spot:'reed',keepFishingView:true,aiming:true},spots),['reed']);
  assert.deepEqual(visibleCastRanges({spot:'reed',keepFishingView:true,overview:true},spots),spots);
  assert.deepEqual(visibleCastRanges({spot:'reed',keepFishingView:true,pending:{phase:'cast'}},spots),[]);
+ for(const overview of [true,false])assert.deepEqual(visibleCastRanges({spot:'reed',keepFishingView:true,overview,catchProcessEvent:{action:'release'}},spots),[]);
  assert.deepEqual(visibleCastRanges({spot:'missing',keepFishingView:true},spots),[]);
 });
 

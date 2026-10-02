@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "topics": [
+    {
+      "id": "reed-bait-follow",
+      "title": "轻提时，鱼影会跟着饵走吗？",
+      "conditions": {"spots": ["reed"], "baits": ["grain"]},
+      "events": {"seen": "live_approach", "response": "bait_follow"},
+      "supportDistinctCasts": 2,
+      "copy": {
+        "seen": "浅滩的鱼影真的靠近了麦粒。下次它靠近时，可以轻点浮漂试试。",
+        "hypothesis": "刚才轻提后，鱼影跟着麦粒靠近了。再找一次真实鱼影，看看会不会重复。",
+        "supported": "两次不同的抛竿里，鱼影都跟着轻提的麦粒靠近。你摸清了浅滩的一种回应。",
+        "routeSeen": "刚才浅滩有鱼影靠近。下一竿用麦粒，等鱼影真的出现，再轻点浮漂试试。",
+        "routeHypothesis": "刚才轻提后鱼影跟近了。下一竿仍用麦粒，看看另一尾鱼是否也会回应。",
+        "waterLine": "浅滩有细纹靠向浮漂，等鱼影真的接近再试着轻提。"
+      }
+    }
+  ]
+}

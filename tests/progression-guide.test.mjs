@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {newSave,migrateSave,spotUnlocked,makeCast,finishCast,processCatch} from '../src/engine.mjs';
-import {castPreset} from '../src/cast-target.mjs';
+import {castPreset,castAimChoices} from '../src/cast-target.mjs';
 import {explorationProgress,progressionGuide,castDifficultyHint} from '../src/progression-guide.mjs';
 
 const catches=(spot,count)=>Array.from({length:count},(_,index)=>({id:'carp',spot,weight:.2,length:20,time:index+1}));
@@ -77,7 +77,7 @@ test('near casts offer more time and lighter targets while far casts invite stro
 test('route action switches the spot or previews a zone without committing a cast',()=>{
  const source=readFileSync(new URL('../src/app-final.js',import.meta.url),'utf8');
  const actions=[];let pending=null,aiming=false;
- const context=vm.createContext({state:{get pending(){return pending},spot:'bridge'},get aiming(){return aiming},revealing:false,selectSpot:id=>actions.push(['spot',id]),selectBait:id=>actions.push(['bait',id]),beginCastAim(){aiming=true;return true},setAimPoint:point=>actions.push(['aim',point]),castPreset,update(){}});
+ const context=vm.createContext({state:{get pending(){return pending},spot:'bridge'},get aiming(){return aiming},aimPoint:null,revealing:false,selectSpot:id=>actions.push(['spot',id]),selectBait:id=>actions.push(['bait',id]),beginCastAim(){aiming=true;return true},setAimPoint:point=>actions.push(['aim',point]),castPreset,castAimChoices,update(){}});
  vm.runInContext(source.slice(source.indexOf('function followGuide('),source.indexOf('const setupUI=')),context);
  context.followGuide({kind:'spot',spot:'deep'});
  context.followGuide({kind:'aim',zone:'near'});

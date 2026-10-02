@@ -4,27 +4,27 @@
   "assets": [
     {
       "name": "carp",
-      "triangles": 1036
+      "triangles": 2452
     },
     {
       "name": "minnow",
-      "triangles": 1060
+      "triangles": 2576
     },
     {
       "name": "perch",
-      "triangles": 1132
+      "triangles": 2548
     },
     {
       "name": "catfish",
-      "triangles": 1036
+      "triangles": 2452
     },
     {
       "name": "oldgold",
-      "triangles": 1028
+      "triangles": 2444
     },
     {
       "name": "moon",
-      "triangles": 1044
+      "triangles": 2460
     },
     {
       "name": "shrimp",

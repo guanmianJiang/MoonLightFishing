@@ -42,8 +42,12 @@ test('actual capacity and object fallbacks do not pretend to advance the previou
 
 test('aim guidance follows adjusted and queued states before preparation feedback', () => {
   const feedback = {kind:'bait',name:'麦粒',key:1,expiresAt:100};
-  assert.match(actionCuePresentation({mode:'aim',feedback,now:20}).text,/点水面调整/);
-  assert.match(actionCuePresentation({mode:'aim',aimAdjusted:true}).text,/落点已调整/);
+  const choose=actionCuePresentation({mode:'aim',feedback,now:20});
+  assert.match(choose.text,/近水／中段／远水/);
+  assert.equal(choose.target,'#castZones');
+  const adjusted=actionCuePresentation({mode:'aim',aimAdjusted:true});
+  assert.match(adjusted.text,/落点已选/);
+  assert.equal(adjusted.target,'#cast');
   const queued = actionCuePresentation({mode:'aim',aimAdjusted:true,queued:true});
   assert.equal(queued.kind,'waiting');
   assert.doesNotMatch(queued.text,/点抛竿确认/);
@@ -135,13 +139,15 @@ test('newer feedback replaces the old animation, and missing targets retain the 
 test('real bait selection gives local feedback once while pending and repeat taps are ignored', () => {
   const source=readFileSync(new URL('../src/app-final.js',import.meta.url),'utf8');
   const state=newSave(),feedback=[],saves=[];
-  const context=vm.createContext({state,BAITS,ensureAudio:()=>Promise.resolve(),sound(){},
+  const context=vm.createContext({state,BAITS,catchProcessEvent:null,ensureAudio:()=>Promise.resolve(),sound(){},
     save(){saves.push(state.bait)},renderSetup(){},update(){},selectionNotice(...args){feedback.push(args)}});
   vm.runInContext(source.slice(source.indexOf('function selectBait('),source.indexOf('function followGuide(')),context);
   context.selectBait('worm');context.selectBait('worm');
   assert.equal(feedback.length,1);assert.match(feedback[0][2],/data-bait="worm"/);
   assert.deepEqual(saves,['worm']);
   state.pending={phase:'cast'};context.selectBait('glow');
+  assert.equal(state.bait,'worm');assert.equal(feedback.length,1);
+  state.pending=null;context.catchProcessEvent={action:'release'};context.selectBait('glow');
   assert.equal(state.bait,'worm');assert.equal(feedback.length,1);
 });
 

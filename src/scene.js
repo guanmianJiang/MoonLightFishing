@@ -1,6 +1,6 @@
 import {palmFrondGeometry,installCoastalGarden,weatherCoastalStone} from './coastal-garden.js';
 import {FERRY_ROUTES,gullRoute} from './coastal-motion.js';
-import {installFishingArt,loadSpecimen,specimenIds} from './fishing-art.js';
+import {installFishingArt,loadSpecimen,specimenIds,animateSpecimen,disposeSpecimenAnimation} from './fishing-art.js';
 import {renderSettings,glslNumber,settingsUniforms} from './render-settings.js';
 import {createSkyTextureController,normalizeSkyTexture,skyPanoramaGLSL,skyRadianceGLSL} from './sky-settings.mjs';
 import {WATER_LEVEL,waterSurfaceGLSL} from './water-surface.js';
@@ -14,7 +14,7 @@ import {FishingLine,dynamicTube,updateTube,phaseOf} from './fishing-motion.js';
 import {fishingCue} from './fishing-rhythm.mjs';
 import {sampleAnglerMotion,sampleCastMotion,reelAnimationTime,shouldStandForCatch} from './angler-motion.js';
 import {castFeedback,biteStrike,landingHoldBlend,lostFightRecoil,lostLineEnd,brokenLineReveal} from './angler-feedback.mjs';
-import {castFlight,castLineProfile,CAST_RELEASE_TIME} from './cast-flight.mjs';
+import {castFlight,castLineProfile,castPreviewOpacity,CAST_RELEASE_TIME} from './cast-flight.mjs';
 import {BaitMotion} from './bait-motion.mjs';
 import {fishMouthWorld,alignFishMouth,alignFloatOverMouth,attachHookToMouth} from './fish-attachment.mjs';
 import {fightPerformance,fightSurfacePulse} from './fight-performance.mjs';
@@ -23,19 +23,22 @@ import {isObjectCatch} from './catch-kind.mjs';
 import {fightFishMotion,biteFishPose,turnFishYaw,fightEntryPosition} from './fight-fish-motion.mjs';
 import {landingPose,landingDynamics,landingFishPose} from './landing-motion.mjs';
 import {fishMouthApproach,fishApproachSwim} from './bait-engagement.mjs';
-import {cameraTransitionBlend,castCameraBeat,fightCameraReaction,lostRodCameraCue,landingCameraWeight,fightCameraFov,fightCameraPose,orbitFightCameraPose,orbitCloseCameraPose,reelCameraPose,lureFocusEnvelope,lureInspectionWeight,lureCameraStrength,lureCameraPose,landedFishCameraPose} from './fishing-camera.mjs';
+import {cameraTransitionBlend,castCameraBeat,fightCameraReaction,lostRodCameraCue,landingCameraWeight,fightCameraFov,fightCameraPose,orbitFightCameraPose,orbitCloseCameraPose,reelCameraPose,lureFocusEnvelope,lureInspectionWeight,lureCameraStrength,lureCameraPose,hookWindowCameraActive,hookWindowCameraPose,landedFishCameraPose} from './fishing-camera.mjs';
 import {LURE_CAMERA_TUNING} from './config/fishing-tuning.mjs';
 import {idleLookTarget} from './idle-look.mjs';
 import {solveTwoBoneIK} from './two-bone-ik.mjs';
 import {supportGripTarget} from './rod-grip.mjs';
 import {createComposer} from './postprocessing.js';
 import {introCameraPose} from './camera-intro.js';
-import {cameraStage,portraitCloseFraming,cameraSettled,cameraImpulse,viewTransitionWeight,visibleCastRanges,readyWaterGesture,cameraViewMode,adjustCameraAngles} from './camera-interaction.mjs';
+import {cameraStage,portraitCloseFraming,cameraSettled,cameraImpulse,viewTransitionWeight,visibleCastRanges,readyWaterGesture,aimCameraFocusPoint,cameraViewMode,adjustCameraAngles} from './camera-interaction.mjs';
 import {sharkPatrol,sharkSwimHeight} from './marine-motion.mjs';
-import {CAST_AREAS,castFootprint,castPointFromWaterTouch,readyWaterTarget} from './cast-target.mjs';
+import {CAST_AREAS,castFootprint,castPointFromWaterTouch,castAimDragPoint,readyWaterTarget} from './cast-target.mjs';
 import {readingBobberMotion,nibbleBobberMotion,hookedBobberMotion} from './bobber-motion.mjs';
 import {lureTeaseMotion} from './lure-tease.mjs';
 import {outcomeCameraCue,outcomeShowcaseReady} from './outcome-feedback.mjs';
+import {releaseTrajectory,sampleRelease,processCameraCue,processGesture,releaseContactReady} from './catch-process-feedback.mjs';
+import {splashDroplet,sampleSplashDroplet} from './water-impact-motion.mjs';
+import {createAnglerExpression} from './angler-expression.mjs';
 
 const TAU=Math.PI*2,clamp=T.MathUtils.clamp;
 // Match the unlock sequence: nearby shallows, middle bridge water, then the outer deep water.
@@ -337,10 +340,30 @@ totalEmissiveRadiance+=uSunRadiance*vec3(.88,.76,.54)*(.5*grainDot*grainSpec*gra
  const cueRing=new T.Mesh(new T.RingGeometry(.24,.275,48),new T.MeshBasicMaterial({color:'#bde8dc',transparent:true,opacity:0,depthWrite:false,side:T.DoubleSide}));cueRing.rotation.x=-Math.PI/2;cueRing.renderOrder=10;cueRing.visible=false;scene.add(cueRing);
  const cueCore=new T.Mesh(new T.RingGeometry(.105,.125,40),new T.MeshBasicMaterial({color:'#bde8dc',transparent:true,opacity:0,depthWrite:false,side:T.DoubleSide}));cueCore.rotation.x=-Math.PI/2;cueCore.renderOrder=10;cueCore.visible=false;scene.add(cueCore);
  const idleLure=new T.Group();mesh(new T.SphereGeometry(.045,12,8),mat('#e5bf68',{emissive:'#6b4b20',emissiveIntensity:.08}),idleLure);mesh(new T.ConeGeometry(.024,.11,8),mats.edge,idleLure,[0,-.075,0]);scene.add(idleLure);const idleLineGeo=new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3()]),idleLine=new T.Line(idleLineGeo,new T.LineBasicMaterial({color:'#fff4ce',transparent:true,opacity:.7}));idleLine.renderOrder=8;scene.add(idleLine);
- const fishingArt=installFishingArt({scene,person,idleLure,bobber,caughtHook,terrainY,hatParts,hookParts:[hookLine,bobber.children[5]],upperArms,foreArms,thighs,shins,bodyParts:person.children.filter(o=>!hatParts.includes(o)&&!upperArms.includes(o)&&!foreArms.includes(o)&&!hands.includes(o)&&!thighs.includes(o)&&!shins.includes(o)&&!feet.includes(o))});
- const droplets=[];const dropGeo=new T.SphereGeometry(1,8,6),dropMat=new T.MeshBasicMaterial({color:'#d8eee2',transparent:true,opacity:.8});for(let i=0;i<48;i++){const m=mesh(dropGeo,dropMat.clone(),scene);m.visible=false;m.castShadow=false;droplets.push({m,v:new T.Vector3(),life:0})}
- function splash(pos,strength=.6){waterSystem.splash(pos.x,pos.z,strength);for(let i=0;i<Math.min(24,Math.floor(strength*14));i++){const d=droplets.find(v=>v.life<=0);if(!d)break;const angle=rand()*TAU;d.life=.5+rand()*.3;d.m.visible=true;d.m.position.copy(pos);d.m.position.y=.19;d.m.scale.setScalar(.025+rand()*.025);d.v.set(Math.cos(angle)*strength,.7+rand()*1.1*strength,Math.sin(angle)*strength)}}
+ const expressionDriver=createAnglerExpression(),fishingArt=installFishingArt({scene,person,idleLure,bobber,caughtHook,terrainY,hatParts,hookParts:[hookLine,bobber.children[5]],upperArms,foreArms,thighs,shins,bodyParts:person.children.filter(o=>!hatParts.includes(o)&&!upperArms.includes(o)&&!foreArms.includes(o)&&!hands.includes(o)&&!thighs.includes(o)&&!shins.includes(o)&&!feet.includes(o))});
+ const droplets=[],dropUp=new T.Vector3(0,1,0);const dropGeo=new T.SphereGeometry(1,8,6),dropMat=new T.MeshBasicMaterial({color:'#d8eee2',transparent:true,opacity:.8});for(let i=0;i<48;i++){const m=mesh(dropGeo,dropMat.clone(),scene);m.visible=false;m.castShadow=false;droplets.push({m,v:new T.Vector3(),origin:new T.Vector3(),age:0,plan:null,life:0})}
+ function splash(pos,strength=.6){waterSystem.splash(pos.x,pos.z,strength);for(let i=0;i<Math.min(24,Math.floor(strength*14));i++){const d=droplets.find(v=>v.life<=0);if(!d)break;d.plan=splashDroplet(strength,[rand(),rand(),rand(),rand()]);d.started=lastTime;d.age=0;d.life=d.plan.lifetime;d.origin.set(pos.x,WATER_LEVEL,pos.z);d.m.visible=true;d.m.position.copy(d.origin).add(new T.Vector3(0,d.plan.height,0));d.m.scale.setScalar(d.plan.radius)}}
  let outcomeShowcaseKey=null,approachFish=null,approachKey=null,approachHookRestY=-.25,preparedFish=null,preparedFishKey=null,fightFish=null,fightKey=null,fightEntryAge=1,revealFish=null,revealKey=null,releaseFish=null,releaseKey=null,releaseSplashed=false,fishMotion=null,lastFightDepth=null,lastBreachSoundAt=0;const revealOrigin=new T.Vector3(),revealHold=new T.Vector3(),revealPullDirection=new T.Vector3(),fightEntryOrigin=new T.Vector3();const revealAssets=new Map();
+ let processPlan=null,processPose=null,lastPresentationPose=null,processShotFov=42,processShotZoom=1;
+ const animatedSpecimens=new Set();
+ function animateFish(model,caught,cue,dt){animatedSpecimens.add(model);animateSpecimen(model,caught,cue,dt,swimMotion.matches);}
+ const processOrigin=new T.Vector3(),processVelocity=new T.Vector3(),processSide=new T.Vector3(),processShotPosition=new T.Vector3(),processShotAim=new T.Vector3(),processRotation=new T.Quaternion(),processFallbacks=new Map();
+ function beginCatchProcess(event){
+  cancelIntro();viewTransition=null;processPose=lastPresentationPose;
+  pointers.clear();drag=null;aimPointer=null;readyAimCandidate=null;idleAimActive=false;clickedWaterPoint=null;waterSystem.releaseInteraction();lastWaterHit=null;renderer.domElement.style.cursor='';
+  if(releaseFish&&releaseFish!==revealFish&&releaseFish!==fightFish)releaseFish.visible=false;
+  releaseFish=revealFish?.visible?revealFish:fightFish?.visible?fightFish:null;
+  const restored=!releaseFish;
+  if(!releaseFish&&preparedFish){releaseFish=preparedFish;releaseFish.scale.setScalar(.5);if(!releaseFish.parent)scene.add(releaseFish)}
+  if(!releaseFish){const key=event.id+'|'+event.variation;if(!processFallbacks.has(key)){const model=makeSpecimen(event.id,event.variation);model.scale.setScalar(.5);scene.add(model);processFallbacks.set(key,model)}releaseFish=processFallbacks.get(key);}
+  if(restored){const facing=WATER_SPOTS[event.spot||getState().spot].clone().sub(person.position).setY(0).normalize();releaseFish.position.copy(hands[1].getWorldPosition(new T.Vector3())).addScaledVector(facing,.23);faceVelocity(releaseFish,facing)}
+  releaseKey=event.at;releaseSplashed=false;processOrigin.copy(releaseFish.position);processRotation.copy(releaseFish.quaternion);
+  processShotPosition.copy(camera.position);processShotAim.copy(cameraAim);processShotFov=camera.fov;processShotZoom=camera.zoom;
+  if(restored){const facing=WATER_SPOTS[event.spot||getState().spot].clone().sub(person.position).setY(0).normalize(),side=new T.Vector3(facing.z,0,-facing.x),shot=reelCameraPose(person.position,processOrigin,facing,side,host.clientWidth/host.clientHeight<.8);processShotPosition.copy(shot.position);processShotAim.copy(shot.aim);processShotFov=45;processShotZoom=1;camera.position.copy(shot.position);cameraAim.copy(shot.aim);camera.fov=45;camera.zoom=1;cameraBlend=1;}
+  const destination=WATER_SPOTS[event.spot||getState().spot].clone().lerp(person.position,.56);destination.y=WATER_LEVEL;
+  processSide.set(destination.z-person.position.z,0,person.position.x-destination.x).normalize();
+  processPlan=releaseTrajectory(processOrigin.toArray(),destination.toArray(),event.weight,event.object);
+ }
  function hookWorld(){bobber.updateMatrixWorld(true);return bobber.localToWorld(new T.Vector3(.11+baitOffset.x,-.43,.01+baitOffset.z))}
 
  const marker=new T.Mesh(new T.RingGeometry(.32,.355,48),new T.MeshBasicMaterial({color:'#ffffdf',side:T.DoubleSide,transparent:true,opacity:.8}));marker.rotation.x=-Math.PI/2;marker.position.y=.19;scene.add(marker);marker.renderOrder=5;
@@ -447,7 +470,8 @@ function makeSeagull(){
   const close=origin.clone().addScaledVector(forward,closeDist-anticipate*.48+releaseBeat*.82-hookBeat*.12+reelSide*.65).addScaledVector(right,closeSide-releaseBeat*.28+reelSide*(portrait?1.6:3.0));
   close.y=(portrait?(isAiming?4.65:3.9):isAiming?2.75:bite?2.95:2.85)+anticipate*.12-releaseBeat*.09+hookBeat*.07+reelSide*.45;
   const aim=spot.clone().lerp(origin,portrait?portraitFrame.aimMix:isAiming?.23:.17);aim.y=(bite?.65:isAiming?.20:.13);if(state.pending&&castPhase!=='casting'&&bobber.visible)aim.lerp(bobber.position,.65);
-  if(isAiming&&state.aimPoint){const preview=new T.Vector3(state.aimPoint[0],.12,state.aimPoint[1]);aim.lerp(preview,.24)}
+  const aimFocus=aimCameraFocusPoint(state.aimPoint,aimPointer);
+  if(isAiming&&aimFocus){const preview=new T.Vector3(aimFocus[0],.12,aimFocus[1]);aim.lerp(preview,.24)}
 
   if(stage==='casting'){
    if(bobber.visible)aim.lerp(bobber.position,castBeat.follow*.40);
@@ -458,10 +482,11 @@ function makeSeagull(){
   const shotRight=new T.Vector3(shotForward.z,0,-shotForward.x);
   const fighting=stage==='fight';
   const landedWaiting=stage!=='overview'&&!!state.pending?.landedFromFight&&!state.revealing;
+  const hookWindow=hookWindowCameraActive(stage,castPhase,state.pending);
   const lureCueAt=state.pending?.decisionAt??(state.pending?.readyAt-2200);
   const inspectWeight=stage==='bite'?lureInspectionWeight(castPhase,(Date.now()-state.inspectBiteAt)/1000):0;
   const lureWeight=stage==='bite'&&!fishHook&&['approach','reading','responding','nibble'].includes(castPhase)&&Number.isFinite(lureCueAt)?Math.max(inspectWeight,lureFocusEnvelope((Date.now()-lureCueAt)/1000)):0;
-  actionCameraBlend=cameraTransitionBlend(actionCameraBlend,fighting||lossHold||landedWaiting||fishHook||objectHook||lureWeight>.001,dt);
+  actionCameraBlend=cameraTransitionBlend(actionCameraBlend,fighting||lossHold||landedWaiting||fishHook||objectHook||hookWindow||lureWeight>.001,dt);
   let actionWeight=T.MathUtils.smoothstep(actionCameraBlend,0,1),cameraActionStrength=actionWeight;
   let actionFov=portrait?44:42;
   if(fighting){
@@ -495,6 +520,12 @@ function makeSeagull(){
    if(state.pending?.landedFromFight){const revealWeight=landingCameraWeight(reelAge,true);shot.position.copy(landingShotPosition).lerp(shot.position,revealWeight);shot.aim.copy(landingShotAim).lerp(shot.aim,revealWeight);actionFov=T.MathUtils.lerp(landingShotFov,actionFov,revealWeight)}
    close.lerp(shot.position,actionWeight);aim.lerp(shot.aim,actionWeight);
    lastActionPosition.copy(shot.position);lastActionAim.copy(shot.aim);lastActionFov=actionFov;
+  }else if(hookWindow){
+   lastActionWasLure=false;
+   const shot=hookWindowCameraPose({position:close,aim,fov:portrait?47:40},bobber.position,shotForward,shotRight,portrait);
+   close.lerp(shot.position,actionWeight);aim.lerp(shot.aim,actionWeight);
+   actionFov=shot.fov;
+   lastActionPosition.copy(shot.position);lastActionAim.copy(shot.aim);lastActionFov=actionFov;
   }else if(lureWeight>.001){
    lastActionWasLure=true;
    const shot=lureCameraPose(bobber.position,shotForward,shotRight,portrait);
@@ -509,7 +540,7 @@ function makeSeagull(){
    if(lostFishReel){const cue=lostRodCameraCue(reelAge,state.fightLoss.reason,portrait,lastActionFov),raisedAim=person.position.clone().lerp(lineAnchor,cue.aimFraction);raisedAim.y=Math.max(raisedAim.y,cue.aimFloor);aim.lerp(raisedAim,cue.focus*actionWeight);actionFov=cue.fov}
   }else if(lastActionWasLure)cameraActionStrength=0;
   // Apply close-view control after the lure shot, but keep action shot orbits independent.
-  if((!fighting&&!landedWaiting&&!fishHook&&!objectHook&&!lossHold&&actionWeight<.001)||lastActionWasLure){
+  if((!fighting&&!landedWaiting&&!fishHook&&!objectHook&&!lossHold&&actionWeight<.001)||lastActionWasLure||hookWindow){
    const manual=orbitCloseCameraPose({position:close,aim},closeYaw,closePitch,portrait?{angler:person.position,target:spot,subjects:[person.position,person.position.clone().add(new T.Vector3(0,1.2,0)),spot],aspect,fov:Math.min(camera.fov,isAiming?49:47),zoom:Math.max(camera.zoom,1+(desiredZoom-1)*.65)}:null);close.copy(manual.position);
   }
   if(isAiming){aimTargetPosition.copy(close);aimTargetLook.copy(aim)}
@@ -518,14 +549,25 @@ function makeSeagull(){
   const emotion=outcomeCameraCue(state.outcomeEvent,(Date.now()-state.outcomeEvent?.at)/1000,swimMotion.matches);
   if(!state.overview&&!state.aiming&&emotion.weight>0){const emotionForward=aim.clone().sub(close).setY(0).normalize();close.addScaledVector(emotionForward,emotion.push).addScaledVector(shotRight,emotion.side);close.y+=emotion.lift;actionFov+=emotion.fov;}
  const desired=overview.lerp(close,cameraBlend),look=overviewTarget.clone().lerp(aim,cameraBlend).lerp(focusAim,focusBlend*.7*focusFrame);const focusNod=focusActive&&focusAge<.58?Math.sin(focusAge/.58*Math.PI)*.025:0;desired.y+=focusNod;
+  const processing=state.catchProcessEvent,processAge=processing?(Date.now()-processing.at)/1000:9,handling=processCameraCue(processing,processAge,swimMotion.matches);
+  if(handling.weight&&releaseFish){
+   const follow=releaseFish.position.clone().sub(processOrigin).multiplyScalar(processing.action==='release'?.65:.20),position=processShotPosition.clone(),target=processShotAim.clone().add(follow),framing=T.MathUtils.smoothstep(processAge,0,.26);
+   if(processing.action==='release'){
+    const focus=releaseFish.position.clone();focus.y+=.12;target.lerp(focus,framing*.9);
+    const correction=target.clone().sub(processShotAim);position.addScaledVector(correction,.35);
+    if(!swimMotion.matches)position.addScaledVector(processShotPosition.clone().sub(processShotAim),framing*.42);
+   }
+   const direction=target.clone().sub(position).setY(0).normalize();position.addScaledVector(direction,handling.push).addScaledVector(shotRight,handling.side);position.y+=follow.y*.28;
+   desired.lerp(position,handling.weight);look.lerp(target,handling.weight);
+  }
   let introFov=null;if(introActive){const elapsed=(performance.now()-introStart)/2400,pose=introCameraPose(elapsed,desired.toArray(),look.toArray(),aspect,portrait?44:40);introPosition.fromArray(pose.position);introAim.fromArray(pose.aim);if(pose.done)introActive=false;else{desired.copy(introPosition);look.copy(introAim);introFov=pose.fov}}
   const viewWeight=viewTransition?viewTransitionWeight(performance.now()-viewTransition.start,viewTransition.duration):null;
   if(introFov!==null){camera.position.copy(desired);cameraAim.copy(look);initializedCamera=true}else if(!initializedCamera){camera.position.copy(desired);cameraAim.copy(look);initializedCamera=true}else if(viewTransition){viewArcSide.set(viewTransition.position.z-desired.z,0,desired.x-viewTransition.position.x).normalize();viewEndOffset.copy(desired).sub(look).setY(0);if(viewArcSide.dot(viewEndOffset)<0)viewArcSide.negate();const arc=Math.min(viewTransition.targetBlend?4:1.5,Math.abs(viewTransition.position.y-desired.y)*.09)*Math.sin(Math.PI*viewWeight);camera.position.copy(viewTransition.position).lerp(desired,viewWeight).addScaledVector(viewArcSide,arc);camera.position.y+=arc*.12;cameraAim.copy(viewTransition.aim).lerp(look,viewWeight)}else{const cameraSpeed=stage==='landing'?7.5:fishFeature>.01?6.5:actionWeight>.01?4.2:active?6:focusActive?3.8:5,aimSpeed=lossHold?16:stage==='landing'?8:fishFeature>.01?7.5:actionWeight>.01?5.2:active?7:focusActive?4.2:8;camera.position.lerp(desired,1-Math.exp(-dt*cameraSpeed));cameraAim.lerp(look,1-Math.exp(-dt*aimSpeed));}
   const baseZoom=1+(zoom-1)*(1-cameraBlend*.35);
   const actionZoom=fighting||lossHold||landedWaiting?fightZoom:fishHook&&state.pending?.landedFromFight?T.MathUtils.lerp(landingShotZoom,1,landingCameraWeight(reelAge,true)):1;
-  const targetZoom=T.MathUtils.lerp(baseZoom,actionZoom,cameraActionStrength);camera.zoom=viewTransition?T.MathUtils.lerp(viewTransition.zoom,targetZoom,viewWeight):T.MathUtils.damp(camera.zoom,targetZoom,6,dt);
+  const targetZoom=T.MathUtils.lerp(T.MathUtils.lerp(baseZoom,actionZoom,cameraActionStrength),processShotZoom,handling.weight);camera.zoom=viewTransition?T.MathUtils.lerp(viewTransition.zoom,targetZoom,viewWeight):T.MathUtils.damp(camera.zoom,targetZoom,6,dt);
   const baseFov=T.MathUtils.lerp(portrait?44:40,portrait?(isAiming?49:47):bite?40:42,cameraBlend)+anticipate*1.35-releaseBeat*2.25+hookBeat*.35-strikeWeight*2.2+(!state.overview&&!state.aiming?emotion.fov:0);
-  const targetFov=T.MathUtils.lerp(baseFov,actionFov,cameraActionStrength);
+  const targetFov=T.MathUtils.lerp(T.MathUtils.lerp(baseFov,actionFov,cameraActionStrength),processShotFov,handling.weight);
   camera.fov=introFov??(viewTransition?T.MathUtils.lerp(viewTransition.fov,targetFov,viewWeight):T.MathUtils.damp(camera.fov,targetFov,lossHold?16:4.3,dt));
   camera.lookAt(cameraAim);camera.updateProjectionMatrix();camera.updateMatrixWorld();
   if(viewTransition&&viewWeight>=1)viewTransition=null;
@@ -555,19 +597,23 @@ function makeSeagull(){
   if(!force&&selectionPulsePoint&&Math.hypot(point[0]-selectionPulsePoint[0],point[1]-selectionPulsePoint[1])<.45)return;
   selectionPulseAt=now;selectionPulsePoint=[...point];selectionPulse.position.set(point[0],.225,point[1]);waterSystem.splash(point[0],point[1],force?.16:.09);
  }
- function waterPointAt(clientX,clientY){
+ function waterPointAt(clientX,clientY,viewCamera=camera){
   const bounds=renderer.domElement.getBoundingClientRect();
   ndc.set((clientX-bounds.left)/bounds.width*2-1,-(clientY-bounds.top)/bounds.height*2+1);
-  ray.setFromCamera(ndc,camera);
+  ray.setFromCamera(ndc,viewCamera);
   if(!ray.ray.intersectPlane(plane,intersection))return null;
   return [intersection.x,intersection.z];
  }
- function previewAimAt(clientX,clientY,announce=false){
-  const water=waterPointAt(clientX,clientY);
+ function selectAimWater(water,announce=false){
   if(!water)return null;
   const point=castPointFromWaterTouch(getState().spot,...water);
   if(point){getState().onAimPoint?.(point);acknowledgeAim(point,announce)}
   return point;
+ }
+ function startAimPointer(e){
+  const view=camera.clone();view.updateMatrixWorld(true);
+  const selected=castSpot(getState());
+  aimPointer={id:e.pointerId,startX:e.clientX,startY:e.clientY,startWater:waterPointAt(e.clientX,e.clientY,view),originPoint:[selected.x,selected.z],view,dragging:false};
  }
  function orbitBy(deltaYaw,deltaPitch){
   cancelIntro();
@@ -590,7 +636,14 @@ function makeSeagull(){
   else desiredZoom=clamp(desiredZoom+delta,.75,1.65);
  }
  renderer.domElement.addEventListener('pointerdown',e=>{
-  if(getState().aiming){if(e.button!==0||aimPointer!==null)return;previewAimAt(e.clientX,e.clientY,true);aimPointer=e.pointerId;renderer.domElement.setPointerCapture(e.pointerId);return}
+  if(getState().catchProcessEvent)return;
+  if(getState().aiming){
+   if(e.button!==0)return;
+   pointers.set(e.pointerId,[e.clientX,e.clientY]);renderer.domElement.setPointerCapture(e.pointerId);
+   if(pointers.size===1)startAimPointer(e);
+   else{aimPointer=null;const [a,b]=[...pointers.values()];pinchGap=Math.hypot(a[0]-b[0],a[1]-b[1])}
+   return;
+  }
   if(e.button===0&&!e.shiftKey&&pointers.size===0){const interaction=getState(),water=waterPointAt(e.clientX,e.clientY),point=water&&readyWaterTarget(interaction,...water);if(point&&interaction.onReadyWaterTap){idleAimActive=false;readyAimCandidate={id:e.pointerId,x:e.clientX,y:e.clientY,point};pointers.set(e.pointerId,[e.clientX,e.clientY]);renderer.domElement.setPointerCapture(e.pointerId);return}}
   idleAimActive=false;
   cancelIntro();pointers.set(e.pointerId,[e.clientX,e.clientY]);
@@ -608,8 +661,22 @@ function makeSeagull(){
   renderer.domElement.setPointerCapture(e.pointerId);
  });
  renderer.domElement.addEventListener('pointermove',e=>{
-  if(getState().aiming){if(aimPointer===e.pointerId)previewAimAt(e.clientX,e.clientY);return}
-  if(readyAimCandidate?.id===e.pointerId){pointers.set(e.pointerId,[e.clientX,e.clientY]);if(readyWaterGesture(pointers.size,Math.hypot(e.clientX-readyAimCandidate.x,e.clientY-readyAimCandidate.y))==='select'){const point=readyAimCandidate.point;readyAimCandidate=null;pointers.delete(e.pointerId);if(getState().onReadyWaterTap?.(point)){aimPointer=e.pointerId;previewAimAt(e.clientX,e.clientY,true)}}return}
+  if(getState().catchProcessEvent)return;
+  if(getState().aiming){
+   if(pointers.has(e.pointerId))pointers.set(e.pointerId,[e.clientX,e.clientY]);
+   if(pointers.size>=2){const [a,b]=[...pointers.values()],gap=Math.hypot(a[0]-b[0],a[1]-b[1]);zoomBy((gap-pinchGap)*.004);pinchGap=gap;return}
+   if(aimPointer?.id===e.pointerId){
+    const travel=Math.hypot(e.clientX-aimPointer.startX,e.clientY-aimPointer.startY);
+    if(readyWaterGesture(1,travel)==='select')aimPointer.dragging=true;
+    if(aimPointer.dragging&&aimPointer.startWater){
+     const water=waterPointAt(e.clientX,e.clientY,aimPointer.view);
+     const point=castAimDragPoint(getState().spot,aimPointer.originPoint,aimPointer.startWater,water);
+     if(point){getState().onAimPoint?.(point);acknowledgeAim(point)}
+    }
+   }
+   return;
+  }
+  if(readyAimCandidate?.id===e.pointerId){pointers.set(e.pointerId,[e.clientX,e.clientY]);if(readyWaterGesture(pointers.size,Math.hypot(e.clientX-readyAimCandidate.x,e.clientY-readyAimCandidate.y))==='select'){const point=readyAimCandidate.point;readyAimCandidate=null;pointers.delete(e.pointerId);if(getState().onReadyWaterTap?.(point)){pointers.set(e.pointerId,[e.clientX,e.clientY]);startAimPointer(e);aimPointer.dragging=true}}return}
   if(e.pointerType==='mouse'&&!drag){
    const s=getState(),bounds=renderer.domElement.getBoundingClientRect();
    ndc.set((e.clientX-bounds.left)/bounds.width*2-1,-(e.clientY-bounds.top)/bounds.height*2+1);
@@ -637,9 +704,12 @@ function makeSeagull(){
  });
  renderer.domElement.addEventListener('pointerleave',()=>{waterSystem.releaseInteraction();lastWaterHit=null;idleAimActive=false;renderer.domElement.style.cursor=''});
  renderer.domElement.addEventListener('pointerup',e=>{
-  if(aimPointer===e.pointerId){aimPointer=null;return}
+  if(getState().catchProcessEvent){pointers.delete(e.pointerId);drag=null;return}
+  if(getState().aiming){
+   if(aimPointer?.id===e.pointerId&&pointers.size===1&&!aimPointer.dragging)selectAimWater(aimPointer.startWater,true);
+   pointers.delete(e.pointerId);aimPointer=null;return;
+  }
   if(readyAimCandidate?.id===e.pointerId){const point=readyAimCandidate.point;readyAimCandidate=null;pointers.delete(e.pointerId);if(getState().onReadyWaterTap?.(point))acknowledgeAim(point,true);return}
-  if(getState().aiming)return;
   pointers.delete(e.pointerId);
   if(drag?.waveGesture){waterSystem.releaseInteraction();lastWaterHit=null;drag=null;renderer.domElement.style.cursor='';return}
   const interaction=getState();
@@ -662,7 +732,10 @@ function makeSeagull(){
   }
   drag=null;renderer.domElement.style.cursor='';
  });
- renderer.domElement.addEventListener('pointercancel',e=>{if(aimPointer===e.pointerId){aimPointer=null;return}if(readyAimCandidate?.id===e.pointerId){readyAimCandidate=null;pointers.delete(e.pointerId);return}if(getState().aiming)return;pointers.delete(e.pointerId);waterSystem.releaseInteraction();lastWaterHit=null;drag=null;renderer.domElement.style.cursor=''});renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();cancelIntro();zoomBy(-e.deltaY*.001)},{passive:false});
+ renderer.domElement.addEventListener('pointercancel',e=>{if(getState().aiming){pointers.delete(e.pointerId);aimPointer=null;return}if(readyAimCandidate?.id===e.pointerId){readyAimCandidate=null;pointers.delete(e.pointerId);return}pointers.delete(e.pointerId);waterSystem.releaseInteraction();lastWaterHit=null;drag=null;renderer.domElement.style.cursor=''});renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();if(getState().catchProcessEvent)return;cancelIntro();zoomBy(-e.deltaY*.001)},{passive:false});
+ function abandonPointers(){pointers.clear();aimPointer=null;readyAimCandidate=null;drag=null;waterSystem.releaseInteraction();lastWaterHit=null}
+ const onVisibilityChange=()=>{if(document.hidden)abandonPointers()};
+ window.addEventListener('blur',abandonPointers);document.addEventListener('visibilitychange',onVisibilityChange);
  const screenPos=(id)=>{const p=WATER_SPOTS[id].clone().project(camera);return{x:(p.x*.5+.5)*host.clientWidth,y:(-.5*p.y+.5)*host.clientHeight,z:p.z}},labelScreen=new Map();
 
  let stopped=false;function tick(ms){if(stopped)return;const t=ms*.001,dt=Math.min(.033,Math.max(.001,t-lastTime||.016));lastTime=t;time.value=previewTime??t;waterSystem.updateInteraction(dt);
@@ -699,7 +772,7 @@ function makeSeagull(){
    if(t>ferry.userData.hornNext){ferry.userData.hornNext=t+90+Math.random()*60;const camPos=camera.position.clone();const dist=ferry.position.distanceTo(camPos);const pan=clamp((ferry.position.x-camPos.x)/30,-1,1);const vol=clamp(1-dist/40,.04,.18);window.__shipHorn?.(pan,vol)}
   }
 
-  const state=getState(),p=state.pending,spot=castSpot(state),phase=phaseOf(p),ready=phase==='hooked'&&!p?.landedFromFight,activeFight=p?.fight?.status==='active'?p.fight:null,fightPose=activeFight?fightPerformance(activeFight,t):null;
+  const state=getState(),processing=state.catchProcessEvent,processingAge=processing?(Date.now()-processing.at)/1000:9,handlingPose=processGesture(processing,processingAge,processPlan?.flightTime,swimMotion.matches),p=state.pending,spot=castSpot(state),phase=phaseOf(p),ready=phase==='hooked'&&!p?.landedFromFight,activeFight=p?.fight?.status==='active'?p.fight:null,fightPose=activeFight?fightPerformance(activeFight,t):null;
   const shownRanges=visibleCastRanges(state,Object.keys(castRanges));
   for(const [id,range] of Object.entries(castRanges)){
    const visible=shownRanges.includes(id);
@@ -707,20 +780,20 @@ function makeSeagull(){
    range.fill.visible=range.edge.visible=visible;
    if(visible){range.fill.material.opacity=active?(state.aiming?.065:.038):.012;range.edge.material.opacity=active?(state.aiming?.62:.45)+Math.sin(t*1.3)*.045:.18}
   }
-  const selectionAge=(ms-selectionPulseAt)/1000;selectionPulse.visible=state.aiming&&selectionAge>=0&&selectionAge<.7;if(selectionPulse.visible){selectionPulse.scale.setScalar(1+selectionAge*2.5);selectionPulse.material.opacity=.68*(1-selectionAge/.7)}
-  if(p||state.aiming||clickedWaterSpot!==state.spot)clickedWaterPoint=null;
+  const selectionAge=(ms-selectionPulseAt)/1000;selectionPulse.visible=!processing&&state.aiming&&selectionAge>=0&&selectionAge<.7;if(selectionPulse.visible){selectionPulse.scale.setScalar(1+selectionAge*2.5);selectionPulse.material.opacity=.68*(1-selectionAge/.7)}
+  if(p||processing||state.aiming||clickedWaterSpot!==state.spot)clickedWaterPoint=null;
   reelPose=T.MathUtils.damp(reelPose,activeFight?.held?1:0,9,dt);
   gestureSide=T.MathUtils.damp(gestureSide,activeFight?(state.fightGesture?.side||0):0,15,dt);
   gestureLift=T.MathUtils.damp(gestureLift,activeFight?(state.fightGesture?.lift||0):0,15,dt);
   gestureLower=T.MathUtils.damp(gestureLower,activeFight?(state.fightGesture?.lower||0):0,15,dt);
-  const focusRingAge=clickedWaterPoint?(ms-clickedWaterAt)/1000:9;focusRing.visible=focusRingAge>=0&&focusRingAge<1.2;if(focusRing.visible){focusRing.position.set(clickedWaterPoint.x,.21,clickedWaterPoint.z);focusRing.scale.setScalar(1+focusRingAge*3);focusRing.material.opacity=.7*(1-focusRingAge/1.2)}
+  const focusRingAge=clickedWaterPoint?(ms-clickedWaterAt)/1000:9;focusRing.visible=!processing&&focusRingAge>=0&&focusRingAge<1.2;if(focusRing.visible){focusRing.position.set(clickedWaterPoint.x,.21,clickedWaterPoint.z);focusRing.scale.setScalar(1+focusRingAge*3);focusRing.material.opacity=.7*(1-focusRingAge/1.2)}
   if(p?.start!==lastCast){lastCast=p?.start;landed=false;castReleased=false;fightSurfaceTracker=null;lastFightRodAngle=1.2;lastFightRodAngularVelocity=0;lastFightPose=null;lastLossAt=0;lastBrokenLossAt=0;lossRecoilStart=null;physics.ready=false;baitMotion.reset();baitOffset.x=baitOffset.z=0;lastPhase='idle';castOrigin.copy(castTip);}
   const lossEvent=state.revealing&&p?.start===state.fightLoss?.castStart?state.fightLoss:null;
   if(lossEvent&&lastLossAt!==lossEvent.at){lastLossAt=lossEvent.at;lossRecoilStart={at:Date.now(),bend,bendVelocity,angle:lastRodAngle,angleVelocity:lastFightRodAngularVelocity,reason:lossEvent.reason,bobber:bobber.position.clone(),tip:lineAnchor.clone(),pose:lastFightPose}}
   const brokenLine=lossEvent?.reason==='line-break',lossAge=lossEvent&&lossRecoilStart?Math.max(0,(Date.now()-lossRecoilStart.at)/1000):Infinity;
   const lossRecoil=lossRecoilStart&&lossAge<.62?lostFightRecoil(lossAge,lossRecoilStart.bend,lossRecoilStart.angle,.82,lossRecoilStart.reason,lossRecoilStart.bendVelocity,lossRecoilStart.angleVelocity):null;
   if(p?.catch&&specimenIds.has(p.catch.id)&&preparedFishKey!==p.start){const key=p.start;preparedFishKey=key;preparedFish=null;loadSpecimen(p.catch.id).then(asset=>{if(preparedFishKey===key)preparedFish=asset})}
-  const standingForFish=lossRecoil?.active||shouldStandForCatch(p?.catch,{fighting:!!activeFight,landedFromFight:!!p?.landedFromFight, revealing:!!state.revealing,showingResult:!!document.querySelector('#result[open]')});
+  const standingForFish=lossRecoil?.active||shouldStandForCatch(p?.catch||state.catchProcessEvent,{fighting:!!activeFight,landedFromFight:!!p?.landedFromFight, revealing:!!state.revealing||!!state.catchProcessEvent,showingResult:!!document.querySelector('#result[open]')});
   standBlend=T.MathUtils.damp(standBlend,standingForFish?1:0,standingForFish?3.7:2.5,dt);
   const standMotion=standingForFish?sampleAnglerMotion('stand_up',standBlend*1.05):sampleAnglerMotion('sit_down',(1-standBlend)*1.15);
   const seatedForward=spot.clone().sub(new T.Vector3(-1.2,.73,.35));seatedForward.y=0;seatedForward.normalize();
@@ -731,7 +804,7 @@ function makeSeagull(){
   for(let i=0;i<2;i++){const side=i===0?-1:1,hip=new T.Vector3(side*.15,.29,.02),knee=new T.Vector3(side*.21,.12,.35).lerp(new T.Vector3(side*.18,-.16,.08),standMotion.action),ankle=new T.Vector3(side*.22,-.18,.49).lerp(new T.Vector3(side*.20,-.67,.13),standMotion.action);placeRod(thighs[i],hip,knee);thighs[i].scale.x=thighs[i].scale.z=.105;placeRod(shins[i],knee,ankle);shins[i].scale.x=shins[i].scale.z=.085;feet[i].position.set(ankle.x,ankle.y-.01,ankle.z+.09);}
   const facingPoint=spot;
   const forward=facingPoint.clone().sub(person.position);forward.y=0;forward.normalize();
-  const lookEnabled=idleAimActive&&!p&&!state.aiming&&!state.overview&&!drag&&!document.querySelector('dialog[open]')&&!swimMotion.matches;
+  const lookEnabled=idleAimActive&&!processing&&!p&&!state.aiming&&!state.overview&&!drag&&!document.querySelector('dialog[open]')&&!swimMotion.matches;
   const lookPoint=lookEnabled?idleAimPoint:!p&&!state.aiming&&clickedWaterPoint?clickedWaterPoint:null;
   const baseFacing=Math.atan2(forward.x,forward.z),lookFacing=lookPoint?Math.atan2(lookPoint.x-person.position.x,lookPoint.z-person.position.z):baseFacing;
   const desiredFacing=baseFacing+Math.atan2(Math.sin(lookFacing-baseFacing),Math.cos(lookFacing-baseFacing))*.40,facingDelta=Math.atan2(Math.sin(desiredFacing-person.rotation.y),Math.cos(desiredFacing-person.rotation.y));
@@ -741,25 +814,26 @@ function makeSeagull(){
   idleTorsoYaw=T.MathUtils.damp(idleTorsoYaw,look.torsoYaw,lookRate,dt);
   idleHeadYaw=T.MathUtils.damp(idleHeadYaw,look.headYaw,lookRate*1.15,dt);
   idlePitch=T.MathUtils.damp(idlePitch,look.pitch,lookRate,dt);
-  const age=p?(Date.now()-p.start)/1000:0,castU=clamp(age/1.85,0,1),isCast=!!p&&age<1.85,reelAge=state.revealing?(Date.now()-state.revealStart)/1000:0,reelRaw=state.revealing?clamp(reelAge/(p?.catch?3.2:2.2),0,1):0,hookU=state.revealing?clamp(reelAge/.20,0,1):0,hookEase=1-Math.pow(1-hookU,4),hookKick=state.revealing&&reelAge<.30?Math.sin(reelAge/.30*Math.PI):0,reelBeat=state.revealing&&reelAge>.24&&!p?.landedFromFight&&!isObjectCatch(p?.catch)?Math.sin((reelAge-.24)*TAU*1.25)*(1-reelRaw)*.11:0,fight=ready&&!isObjectCatch(p?.catch)&&!state.revealing&&!activeFight?1:0,fightWave=Math.sin(t*4.7)+Math.sin(t*8.3+1.7)*.48+Math.sin(t*13.1)*.2,surge=Math.pow(Math.max(0,Math.sin(t*1.17+.8)),8),tug=fight*(fightWave*.035+surge*.082),releaseAge=state.lastRelease?(Date.now()-state.lastRelease.at)/1000:9,releaseGesture=releaseAge<1.7?Math.sin(clamp(releaseAge/1.7,0,1)*Math.PI):0,biteJolt=ready&&!isObjectCatch(p?.catch)&&!state.revealing?biteStrike((Date.now()-p.readyAt)/1000):0;
+  const age=p?(Date.now()-p.start)/1000:0,castU=clamp(age/1.85,0,1),isCast=!!p&&age<1.85,reelAge=state.revealing?(Date.now()-state.revealStart)/1000:0,reelRaw=state.revealing?clamp(reelAge/(p?.catch?3.2:2.2),0,1):0,hookU=state.revealing?clamp(reelAge/.20,0,1):0,hookEase=1-Math.pow(1-hookU,4),hookKick=state.revealing&&reelAge<.30?Math.sin(reelAge/.30*Math.PI):0,reelBeat=state.revealing&&reelAge>.24&&!p?.landedFromFight&&!isObjectCatch(p?.catch)?Math.sin((reelAge-.24)*TAU*1.25)*(1-reelRaw)*.11:0,fight=ready&&!isObjectCatch(p?.catch)&&!state.revealing&&!activeFight?1:0,fightWave=Math.sin(t*4.7)+Math.sin(t*8.3+1.7)*.48+Math.sin(t*13.1)*.2,surge=Math.pow(Math.max(0,Math.sin(t*1.17+.8)),8),tug=fight*(fightWave*.035+surge*.082),biteJolt=ready&&!isObjectCatch(p?.catch)&&!state.revealing?biteStrike((Date.now()-p.readyAt)/1000):0;
   const castDistance=Math.hypot(spot.x-person.position.x,spot.z-person.position.z);
   const castResponse=isCast?castFeedback(age-CAST_RELEASE_TIME,castDistance):null,whip=castResponse?.recoil||0;
   const castMotion=isCast?sampleCastMotion(age,castDistance):null;
   const reelMotion=state.revealing?sampleAnglerMotion('reel',reelAnimationTime(reelAge,!!p?.landedFromFight)):null;
   const landing=reelMotion&&p?.catch&&!isObjectCatch(p.catch)&&!p.landedFromFight?landingDynamics(reelAge,p.catch.weight):null;
   const actionTorsoYaw=castMotion?.torsoYaw??reelMotion?.torsoYaw??0,torsoAimYaw=idleTorsoYaw+actionTorsoYaw+gestureSide*.32;
-  const catchLook=state.revealing&&reelAge>.10?catchEndpoint:activeFight?bobber.position:null;
+  const catchLook=processing&&releaseFish?releaseFish.position:state.revealing&&reelAge>.10?catchEndpoint:activeFight?bobber.position:null;
   const headPose=idleLookTarget(person.position,bodyForward,catchLook,spot);
   actionHeadYaw=T.MathUtils.damp(actionHeadYaw,catchLook?clamp(headPose.torsoYaw+headPose.headYaw-actionTorsoYaw,-.38,.38):-actionTorsoYaw*.28,5,dt);
   actionHeadPitch=T.MathUtils.damp(actionHeadPitch,catchLook?headPose.pitch:0,5,dt);
   fishingArt.setIdleLook(torsoAimYaw,idleHeadYaw+actionHeadYaw,idlePitch+actionHeadPitch);
+  fishingArt.setExpression(expressionDriver.update({...state,phase},Date.now(),dt,swimMotion.matches));
   const action=castMotion?.action??0;
   person.position.y+=castMotion?.rootLift??reelMotion?.rootLift??0;
   person.rotation.x=T.MathUtils.damp(person.rotation.x,castMotion?.lean??reelMotion?.lean??standMotion.lean,12,dt);
   const shoulders=[new T.Vector3(-.23,.70,.02),new T.Vector3(.23,.70,.02)],elbows=[new T.Vector3(-.31,.53,.20+action*.12),new T.Vector3(.31,.52,.23+action*.11)],handLocal=[new T.Vector3(-.13,.44,.42+action*.23),new T.Vector3(.13,.43,.45+action*.24)];
   if(castMotion){for(const hand of handLocal){hand.x+=castMotion.gripSide;hand.y+=castMotion.handLift+castMotion.gripSide*.35;hand.z+=castMotion.handBack+castMotion.gripSide*.45}handLocal[1].y+=castMotion.offHandLift;handLocal[1].z+=castMotion.offHandBack;}
   if(standBlend>.001){for(const hand of handLocal){hand.y+=standMotion.handLift;hand.z+=standMotion.handBack}for(const elbow of elbows){elbow.y+=standMotion.handLift*.65;elbow.z+=standMotion.handBack*.55}}
-  handLocal[0].y+=fight*.18+tug+idleBreath*.8+releaseGesture*.13;handLocal[0].z-=fight*.13-releaseGesture*.18;handLocal[1].y+=fight*.075-tug*.35+idleBreath*.5+releaseGesture*.10;handLocal[1].z+=fight*.035+releaseGesture*.15;elbows[0].y+=fight*.105+releaseGesture*.06;elbows[0].z-=fight*.08-releaseGesture*.10;elbows[1].x+=fight*.045;elbows[1].z+=fight*.035+releaseGesture*.08;
+  handLocal[0].y+=fight*.18+tug+idleBreath*.8;handLocal[0].z-=fight*.13;handLocal[1].y+=fight*.075-tug*.35+idleBreath*.5;handLocal[1].z+=fight*.035;elbows[0].y+=fight*.105;elbows[0].z-=fight*.08;elbows[1].x+=fight*.045;elbows[1].z+=fight*.035;
   handLocal[0].y+=whip*.09+biteJolt*.14+(castResponse?.followThrough||0)*.10;handLocal[0].z-=whip*.11+biteJolt*.10+(castResponse?.followThrough||0)*.13;handLocal[1].y+=whip*.04+biteJolt*.06;elbows[0].y+=biteJolt*.07;person.rotation.x+=whip*.025-biteJolt*.045-(castResponse?.followThrough||0)*.045;
   if(fightPose){
    const {resistance,brace,surge,lift,payout,give,recoil,shock}=fightPose,pull=reelPose*fightPose.reel,beat=fightPose.crank*pull,back=-beat;
@@ -788,21 +862,32 @@ function makeSeagull(){
    if(lossRecoilStart.pose){const hold=1-T.MathUtils.smoothstep(lossAge,0,.16);for(let i=0;i<2;i++){handLocal[i].lerp(lossRecoilStart.pose.hands[i],hold);elbows[i].lerp(lossRecoilStart.pose.elbows[i],hold)}}
    const kick=lossRecoil.kick;handLocal[0].y+=kick*.28;handLocal[0].z-=kick*.19;handLocal[1].y+=kick*.16;elbows[0].y+=kick*.15;elbows[1].y+=kick*.07;person.rotation.x-=kick*.09
   }
-  let angle=castMotion?.rodAngle??(.68+idleBreath*1.4);if(!p&&!state.aiming)angle+=idlePitch*.50;if(state.aiming&&!p)angle=.75+Math.sin(t*1.8)*.018;if(ready&&!state.revealing)angle=1.00+tug*1.35;if(fightPose)angle=T.MathUtils.lerp(.73,1.17,reelPose*fightPose.reel)+fightPose.resistance*.29+fightPose.crank*reelPose*fightPose.reel*.10+fightPose.recoil*.09+fightPose.lift*.45-fightPose.payout*.10+standMotion.action*.13+gestureLift*.34-gestureLower*.27;if(reelMotion)angle=p?.catch&&!isObjectCatch(p.catch)?reelMotion.rodAngle+reelBeat*.72:T.MathUtils.lerp(.73,.98,reelRaw)+reelBeat*.16;if(reelMotion&&p?.landedFromFight&&p.catch)angle=T.MathUtils.lerp(lastFightRodAngle,Math.max(angle,1.64),landingHoldBlend(reelAge));if(landing)angle+=landing.strain*.25-landing.recoil*.13;if(releaseGesture)angle+=releaseGesture*.16;angle+=whip*.20+biteJolt*.13;if(lossRecoil)angle=lossRecoil.angle;
+  let angle=castMotion?.rodAngle??(.68+idleBreath*1.4);if(!p&&!state.aiming)angle+=idlePitch*.50;if(state.aiming&&!p)angle=.75+Math.sin(t*1.8)*.018;if(ready&&!state.revealing)angle=1.00+tug*1.35;if(fightPose)angle=T.MathUtils.lerp(.73,1.17,reelPose*fightPose.reel)+fightPose.resistance*.29+fightPose.crank*reelPose*fightPose.reel*.10+fightPose.recoil*.09+fightPose.lift*.45-fightPose.payout*.10+standMotion.action*.13+gestureLift*.34-gestureLower*.27;if(reelMotion)angle=p?.catch&&!isObjectCatch(p.catch)?reelMotion.rodAngle+reelBeat*.72:T.MathUtils.lerp(.73,.98,reelRaw)+reelBeat*.16;if(reelMotion&&p?.landedFromFight&&p.catch)angle=T.MathUtils.lerp(lastFightRodAngle,Math.max(angle,1.64),landingHoldBlend(reelAge));if(landing)angle+=landing.strain*.25-landing.recoil*.13;angle+=whip*.20+biteJolt*.13;if(lossRecoil)angle=lossRecoil.angle;
   if(phase==='responding'&&p?.reactedAt){const actionAge=(Date.now()-p.reactedAt)/1000,actionPulse=Math.sin(Math.PI*clamp(actionAge/.62,0,1));if(p.tactic==='tease')angle+=actionPulse*.30;else if(p.tactic==='shorten')angle+=actionPulse*.10}
   if(Number.isFinite(p?.teaseAt)&&['approach','reading','nibble'].includes(phase))angle+=lureTeaseMotion(Date.now()-p.teaseAt).lift*1.5;
+  if(processing&&processPose){
+   angle=T.MathUtils.lerp(angle,processPose.angle,handlingPose.hold);person.rotation.x=T.MathUtils.lerp(person.rotation.x,processPose.lean,handlingPose.hold);
+  }
   const elbowPoles=elbows.map(elbow=>elbow.clone());
   for(const shoulder of shoulders)shoulder.sub(idlePivot).applyAxisAngle(idleYawAxis,torsoAimYaw).add(idlePivot);
   for(const pole of elbowPoles)pole.sub(idlePivot).applyAxisAngle(idleYawAxis,torsoAimYaw).add(idlePivot);
   for(const hand of handLocal){hand.sub(idlePivot).applyAxisAngle(idleYawAxis,torsoAimYaw).add(idlePivot);hand.y+=idlePitch*.14}
+  if(processing&&processPose){
+   for(let i=0;i<2;i++){handLocal[i].lerp(processPose.hands[i],handlingPose.hold);elbowPoles[i].lerp(processPose.elbows[i],handlingPose.hold)}
+   handLocal[1].z+=handlingPose.reach*.17;handLocal[1].y-=handlingPose.reach*.06+handlingPose.lower;elbowPoles[1].z+=handlingPose.reach*.10;elbowPoles[1].y-=handlingPose.lower*.60;
+  }
   const armUpper=.34,armLower=.38,rodAxisLocal=new T.Vector3(0,Math.sin(angle),Math.cos(angle)).applyAxisAngle(idleYawAxis,torsoAimYaw);
   const primary=solveTwoBoneIK(shoulders[0],handLocal[0],elbowPoles[0],armUpper,armLower);
   elbows[0].set(primary.elbow.x,primary.elbow.y,primary.elbow.z);handLocal[0].set(primary.hand.x,primary.hand.y,primary.hand.z);
   const support=supportGripTarget(handLocal[0],shoulders[1],rodAxisLocal,armUpper+armLower-.005);
-  const offHandBlend=clamp((fightPose?.reel||0)*reelPose*.92+(state.revealing&&!p?.landedFromFight?clamp((reelAge-.18)/.20,0,1)*(1-clamp((reelAge-2.55)/.55,0,1))*.85:0),0,1);
+  const offHandBlend=clamp(handlingPose.offHand+(fightPose?.reel||0)*reelPose*.92+(state.revealing&&!p?.landedFromFight?clamp((reelAge-.18)/.20,0,1)*(1-clamp((reelAge-2.55)/.55,0,1))*.85:0),0,1);
   handLocal[1].lerp(new T.Vector3(support.x,support.y,support.z),1-offHandBlend);
   const secondary=solveTwoBoneIK(shoulders[1],handLocal[1],elbowPoles[1],armUpper,armLower);
   elbows[1].set(secondary.elbow.x,secondary.elbow.y,secondary.elbow.z);handLocal[1].set(secondary.hand.x,secondary.hand.y,secondary.hand.z);
+  if(!processing){
+   lastPresentationPose||={hands:[new T.Vector3(),new T.Vector3()],elbows:[new T.Vector3(),new T.Vector3()]};
+   for(let i=0;i<2;i++){lastPresentationPose.hands[i].copy(handLocal[i]);lastPresentationPose.elbows[i].copy(elbows[i])}lastPresentationPose.angle=angle;lastPresentationPose.lean=person.rotation.x;
+  }
   for(let i=0;i<2;i++){placeRod(upperArms[i],shoulders[i],elbows[i]);upperArms[i].scale.x=upperArms[i].scale.z=.092;placeRod(foreArms[i],elbows[i],handLocal[i]);foreArms[i].scale.x=foreArms[i].scale.z=.062;hands[i].position.copy(handLocal[i]);hands[i].quaternion.setFromUnitVectors(new T.Vector3(0,1,0),rodAxisLocal)}
   person.updateMatrixWorld(true);const start=handLocal[0].clone().applyMatrix4(person.matrixWorld);
   const tension=lossEvent ? .025 : (fightPose?.10+(activeFight.tension*1.9+activeFight.load*.42+activeFight.surge*.20)*fightPose.taut+fightPose.lift*.48+fightPose.shock*.30:state.revealing?(p?.catch?.72:.18)+hookKick*(p?.catch?1.15:.22)+hookEase*(p?.catch?.18:.03)+Math.max(0,reelBeat)*(p?.catch?.85:.18)+(landing?landing.strain*.85+Math.abs(landing.recoil)*.35:0):ready?.65+Math.max(0,tug)*2.2:.055)+biteJolt*.50+Math.abs(whip)*.26+(activeFight?0:bobber.visible?physics.tension*.40:0);
@@ -816,12 +901,14 @@ function makeSeagull(){
   const pull=state.revealing&&p?.catch?(lastReel?catchEndpoint:spot).clone().sub(tip).normalize():brokenLine&&lossRecoilStart?lossRecoilStart.bobber.clone().sub(tip).normalize():bobber.visible?bobber.position.clone().sub(tip).normalize():new T.Vector3(0,-1,0);
   for(let i=0;i<rodPoints.length;i++){const u=i/(rodPoints.length-1),flex=u*u;rodPoints[i].copy(start).lerp(tip,u).addScaledVector(pull,bend*(activeFight||lossRecoil?.active?1.45:state.revealing?1.3:1.0)*flex*flex).addScaledVector(rodForward,-Math.sin(angle)*rodLag*flex);rodPoints[i].y+=Math.cos(angle)*rodLag*flex+Math.sin(u*Math.PI)*.045}updateTube(rodGeo,rodPoints,.035,.14);lineAnchor.copy(rodPoints[rodPoints.length-1]);tip.copy(lineAnchor);
   fishingArt.update(p?.bait||state.bait||'grain',!p?.liftedAt&&!activeFight,!!activeFight||!!p?.landedFromFight);
-  idleLure.visible=!p;idleLine.visible=!p;if(!p){const sway=state.aiming?.035:.065;idleLure.position.copy(tip).add(new T.Vector3(Math.sin(t*1.7)*sway,-.34+Math.sin(t*1.35)*.025,Math.cos(t*1.4)*sway));idleLure.rotation.z=Math.sin(t*1.7)*.16;const idlePos=idleLineGeo.attributes.position;idlePos.setXYZ(0,tip.x,tip.y,tip.z);idlePos.setXYZ(1,idleLure.position.x,idleLure.position.y,idleLure.position.z);idlePos.needsUpdate=true;idleLineGeo.computeBoundingSphere()}
-  bobber.visible=!!p&&p.phase==='cast'&&(!state.revealing||!p.catch)&&!brokenLine;fishingLine.visible=!!p&&(p.phase==='cast'||state.revealing);lineBorder.visible=fishingLine.visible;caughtHook.visible=!!p?.catch&&(!!activeFight||!!state.revealing||!!p.landedFromFight);marker.visible=!p;marker.position.copy(spot);marker.position.y=.215;markerCore.visible=state.aiming&&!p;markerCore.position.set(spot.x,.22,spot.z);const focusAge=state.focusPulseAt?Math.max(0,(Date.now()-state.focusPulseAt)/1000):9,focusFlash=state.focusSpot===state.spot&&focusAge<.9?Math.max(0,1-focusAge/.9):0;marker.scale.setScalar((state.aiming?1.35:1)+Math.sin(t*3)*.08+focusFlash*(.34+.18*Math.sin(t*12)));marker.material.opacity=state.aiming?.98:.62+focusFlash*.30;marker.material.color.set(state.aiming&&state.aimPoint?'#fff1b4':focusFlash>.05?'#f5d58d':'#ffffdf');
+  idleLure.visible=!p&&!processing;idleLine.visible=idleLure.visible;if(idleLure.visible){const sway=state.aiming?.035:.065;idleLure.position.copy(tip).add(new T.Vector3(Math.sin(t*1.7)*sway,-.34+Math.sin(t*1.35)*.025,Math.cos(t*1.4)*sway));idleLure.rotation.z=Math.sin(t*1.7)*.16;const idlePos=idleLineGeo.attributes.position;idlePos.setXYZ(0,tip.x,tip.y,tip.z);idlePos.setXYZ(1,idleLure.position.x,idleLure.position.y,idleLure.position.z);idlePos.needsUpdate=true;idleLineGeo.computeBoundingSphere()}
+  bobber.visible=!!p&&p.phase==='cast'&&(!state.revealing||!p.catch)&&!brokenLine;fishingLine.visible=!!p&&(p.phase==='cast'||state.revealing);lineBorder.visible=fishingLine.visible;caughtHook.visible=!!p?.catch&&(!!activeFight||!!state.revealing||!!p.landedFromFight);marker.visible=!p&&!processing;marker.position.copy(spot);marker.position.y=.215;markerCore.visible=state.aiming&&!p&&!processing;markerCore.position.set(spot.x,.22,spot.z);const focusAge=state.focusPulseAt?Math.max(0,(Date.now()-state.focusPulseAt)/1000):9,focusFlash=state.focusSpot===state.spot&&focusAge<.9?Math.max(0,1-focusAge/.9):0;marker.scale.setScalar(((state.aiming||phase==='casting')?1.35:1)+Math.sin(t*3)*.08+focusFlash*(.34+.18*Math.sin(t*12)));marker.material.opacity=(state.aiming||phase==='casting')?.98:.62+focusFlash*.30;markerCore.material.opacity=.92;marker.material.color.set((state.aiming||phase==='casting')&&state.aimPoint?'#fff1b4':focusFlash>.05?'#f5d58d':'#ffffdf');
   if(fishingLine.visible){const released=age>=CAST_RELEASE_TIME;
    if(released&&!castReleased){castReleased=true;if(age<2.5)state.onCastRelease?.()}
    if(!released){bobber.position.copy(tip).add(new T.Vector3(0,-.30,0));castOrigin.copy(bobber.position);bobber.rotation.z=-.22*Math.sin(clamp(age/CAST_RELEASE_TIME,0,1)*Math.PI)}
    const trajectory=released?castFlight(age,castOrigin,new T.Vector3(spot.x,.205,spot.z)):null,flight=trajectory?.u??0;
+   const previewAlpha=castPreviewOpacity(phase,released?trajectory?.u:null);
+   if(previewAlpha>0&&!processing){marker.visible=true;markerCore.visible=true;marker.material.opacity=.98*previewAlpha;markerCore.material.opacity=.92*previewAlpha}
    if(trajectory&&!trajectory.landed)state.onCastFlight?.(Math.hypot(trajectory.velocity.x,trajectory.velocity.y,trajectory.velocity.z),flight);
    if(trajectory&&!trajectory.landed){bobber.position.set(trajectory.position.x,trajectory.position.y,trajectory.position.z);bobber.rotation.z=clamp(-Math.atan2(trajectory.velocity.y,Math.hypot(trajectory.velocity.x,trajectory.velocity.z))*.55,-.48,.48)}
    else if(trajectory){bobber.position.set(spot.x,.205+.018*Math.sin(t*2.1),spot.z);bobber.rotation.z=Math.sin(t*1.6)*.05}
@@ -853,7 +940,7 @@ function makeSeagull(){
     fightFish.rotation.x=T.MathUtils.damp(fightFish.rotation.x,fishMotion.roll,11,dt);
     fightFish.rotation.z=T.MathUtils.damp(fightFish.rotation.z,fishMotion.pitch,11,dt);
     setFishImmersion(fightFish,clamp((-fishMotion.position.y-.04)/.65,0,1));
-    if(fightFish.userData.tail)fightFish.userData.tail.rotation.y=fishMotion.tail;
+    animateFish(fightFish,p.catch,{stage:'fight',effort:fishMotion.struggle*.65+fishMotion.pull*.35,surge:activeFight.surge},dt);
     alignFloatOverMouth(bobber,fightFish);
    }else if(fishMotion){bobber.position.x=fishMotion.position.x;bobber.position.z=fishMotion.position.z}
    if(phase==='empty'){bobber.rotation.z=.26+Math.sin(t*1.2)*.04;bobber.position.y=.205+Math.sin(t*1.25)*.01;}
@@ -884,7 +971,7 @@ function makeSeagull(){
    approachFish.rotation.z=firstApproach?pose.pitch:T.MathUtils.damp(approachFish.rotation.z,pose.pitch,12,dt);
    alignFishMouth(approachFish,new T.Vector3(mouthGoal.x,mouthGoal.y,mouthGoal.z));
    setFishImmersion(approachFish,clamp((-approachFish.position.y-.04)/.65,0,1));
-   if(approachFish.userData.tail)approachFish.userData.tail.rotation.y=pose.tail;
+   animateFish(approachFish,p.catch,{stage:hooked?'hooked':'approach',hookAge:biteAge},dt);
    if((reading&&frame%(signal==='dart'?28:65)===0)||(phase==='nibble'&&frame%60===0)||(hooked&&frame%95===0))waterSystem.splash(approachFish.position.x,approachFish.position.z,hooked?.13:signal==='broad'?.16:.08);
   }else if(approachFish)approachFish.visible=false;
   if(p?.landedFromFight&&!state.revealing&&!fightFish&&p.catch&&!isObjectCatch(p.catch)){
@@ -913,7 +1000,7 @@ function makeSeagull(){
     if(!shared&&specimenIds.has(p.catch.id)){
      if(!revealAssets.has(p.catch.id))revealAssets.set(p.catch.id,loadSpecimen(p.catch.id));
      const fallback=revealFish,key=p.start;
-     revealAssets.get(p.catch.id).then(asset=>{if(!asset||revealKey!==key||revealFish!==fallback)return;asset.position.copy(fallback.position);asset.quaternion.copy(fallback.quaternion);asset.scale.copy(fallback.scale);scene.remove(fallback);revealFish=asset;scene.add(asset)});
+     revealAssets.get(p.catch.id).then(asset=>{if(!asset||revealKey!==key||revealFish!==fallback)return;asset.position.copy(fallback.position);asset.quaternion.copy(fallback.quaternion);asset.scale.copy(fallback.scale);asset.userData.fishAnimation=fallback.userData.fishAnimation;scene.remove(fallback);revealFish=asset;scene.add(asset)});
     }
    }
    revealFish.visible=true;
@@ -924,15 +1011,34 @@ function makeSeagull(){
    const bodyFight=new T.Quaternion().setFromEuler(new T.Euler(Math.sin(t*11.7)*.10*resistance+(hanging?.struggle||0)*.14,Math.sin(t*8.9+1.2)*.16*resistance,Math.sin(t*17)*.09*(hanging?.airborne||0)*resistance));
    targetRotation.multiply(bodyFight);revealFish.quaternion.slerp(targetRotation,1-Math.exp(-dt*14));alignFishMouth(revealFish,catchEndpoint);
    setFishImmersion(revealFish,clamp((-revealFish.position.y-.04)/.65,0,1));
-   if(revealFish.userData.tail)revealFish.userData.tail.rotation.y=hanging?hanging.tail:Math.sin(t*21)*(.28+resistance*.42);
+   animateFish(revealFish,p.catch,{stage:reelAge>2?'held':'landing',effort:Math.exp(-Math.max(0,reelAge-.35)*1.2)},dt);
    if(outcomeShowcaseReady(p,state.revealing,reelAge,catchEndpoint.y)&&outcomeShowcaseKey!==p.start){outcomeShowcaseKey=p.start;state.onOutcomeShowcase?.()}
   }else if(revealFish)revealFish.visible=false;
   // The fish and landing endpoint must be updated before the camera follows
   // them; otherwise the first reveal frame looks at the previous catch.
+  const process=state.catchProcessEvent,processAge=process?(Date.now()-process.at)/1000:9;
+  if(process&&releaseFish&&releaseKey===process.at){
+   releaseFish.visible=true;
+   if(process.action==='release'){
+    const motion=sampleRelease(processPlan,processAge);releaseFish.position.fromArray(motion.position);processVelocity.fromArray(motion.velocity);
+    if(process.object){releaseFish.quaternion.copy(processRotation);releaseFish.rotateZ(Math.min(processAge,processPlan.flightTime)*1.6)}
+    else{const heading=processVelocity.clone().normalize(),rotation=new T.Quaternion().setFromUnitVectors(new T.Vector3(-1,0,0),heading);if(motion.phase==='air')releaseFish.quaternion.copy(processRotation).slerp(rotation,T.MathUtils.smoothstep(processAge,0,.16));else releaseFish.quaternion.slerp(rotation,1-Math.exp(-dt*12));}
+    setFishImmersion(releaseFish,motion.immersion);releaseFish.visible=motion.visible;
+    if(!process.object)animateFish(releaseFish,process,{stage:motion.phase==='swim'?'swim':'release'},dt);
+    if(process.object&&releaseFish.userData.tail)releaseFish.userData.tail.rotation.y=0;
+    if(motion.phase!=='air'&&!releaseSplashed){const contact=releaseContactReady(processPlan,processAge,releaseSplashed,document.hidden);releaseSplashed=true;if(contact){splash(new T.Vector3().fromArray(processPlan.end),motion.impactStrength);state.onReleaseLand?.(process)}}
+   }else{
+    const u=clamp(processAge/process.duration,0,1),settle=T.MathUtils.smoothstep(u,.30,.90),side=process.action==='basket'?-.45:.32;
+    releaseFish.position.copy(processOrigin);releaseFish.quaternion.copy(processRotation);
+    if(process.action==='study'){releaseFish.position.y+=Math.sin(u*Math.PI)*.10;releaseFish.rotateZ(Math.sin(u*Math.PI)*.08);releaseFish.visible=u<.91}
+    else{releaseFish.position.addScaledVector(processSide,side*settle);releaseFish.position.y-=settle*.9;releaseFish.rotateZ(settle*(process.action==='basket'?-.25:.18));releaseFish.visible=u<.82}
+    setFishImmersion(releaseFish,0);if(!process.object)animateFish(releaseFish,process,{stage:'held'},dt);
+   }
+  }else if(releaseFish)releaseFish.visible=false;
   cameraUpdate(state,dt);
+  for(const model of animatedSpecimens)if(![approachFish,preparedFish,fightFish,revealFish,releaseFish].includes(model)){disposeSpecimenAnimation(model);animatedSpecimens.delete(model);}
   const auraEl=document.querySelector('#rhythmAura');if(auraEl&&!auraEl.hidden&&bobber.visible){const bp=bobber.position.clone().project(camera),rr=renderer.domElement.getBoundingClientRect();auraEl.style.left=clamp((bp.x*.5+.5)*rr.width,32,rr.width-32)+'px';auraEl.style.top=clamp((-bp.y*.5+.5)*rr.height,32,rr.height-32)+'px'}
-  if(state.lastRelease&&releaseAge<2.05){if(releaseKey!==state.lastRelease.at){if(releaseFish)scene.remove(releaseFish);releaseFish=makeSpecimen(state.lastRelease.id,state.lastRelease.variation);releaseFish.scale.setScalar(.42);scene.add(releaseFish);releaseKey=state.lastRelease.at;releaseSplashed=false}const u=clamp(releaseAge/1.55,0,1),ease=u*u*(3-2*u),releaseStart=person.position.clone().add(new T.Vector3(0,1.05,.25).applyAxisAngle(new T.Vector3(0,1,0),person.rotation.y)),releaseEnd=WATER_SPOTS[state.lastRelease.spot||state.spot].clone().lerp(person.position,.56);releaseEnd.y=.12;releaseFish.visible=u<1;releaseFish.position.lerpVectors(releaseStart,releaseEnd,ease);releaseFish.position.y+=Math.sin(u*Math.PI)*1.35;const releaseVelocity=releaseEnd.clone().sub(releaseStart);releaseVelocity.y=(1-2*u)*2.7;faceVelocity(releaseFish,releaseVelocity);releaseFish.rotation.z=Math.sin(u*Math.PI)*.28+Math.sin(t*15)*.05*(1-u);if(releaseFish.userData.tail)releaseFish.userData.tail.rotation.y=Math.sin(t*18)*.38*(1-u);if(u>.91&&!releaseSplashed){splash(releaseEnd,.72);state.onReleaseLand?.();releaseSplashed=true}}else if(releaseFish)releaseFish.visible=false;
-  droplets.forEach(d=>{if(d.life<=0)return;d.life-=dt;d.v.y-=3.5*dt;d.m.position.addScaledVector(d.v,dt);d.m.material.opacity=clamp(d.life*2,0,.8);d.m.visible=d.life>0&&d.m.position.y>.14});
+  droplets.forEach(d=>{if(d.life<=0)return;d.age=Math.max(0,t-d.started);const motion=sampleSplashDroplet(d.plan,d.age);d.life=Math.max(0,d.plan.lifetime-d.age);d.m.visible=motion.visible;if(!motion.visible)return;d.m.position.fromArray(motion.position).add(d.origin);d.v.fromArray(motion.velocity);if(d.v.lengthSq()>.00001)d.m.quaternion.setFromUnitVectors(dropUp,d.v.normalize());d.m.scale.set(d.plan.radius,d.plan.radius*motion.stretch,d.plan.radius);d.m.material.opacity=.8*clamp(d.life/.06,0,1)});
   boat.rotation.z=Math.sin(t*.8)*.018;boat.position.y=WATER_LEVEL+.2+Math.sin(t*.9)*.026;plants.forEach((p,i)=>{p.rotation.z=Math.sin(t*.9+i)*.04});
   if(seagullFlocks.length<1&&t>nextFlockAt){nextFlockAt=t+16+rand()*18;const route=gullRoute(rand),{dir,fromX,startY,startZ,exitZ,dur}=route,count=3+Math.floor(rand()*4),members=[];for(let mi=0;mi<count;mi++){const gull=makeSeagull();gull.visible=false;scene.add(gull);const row=Math.ceil(mi/2),side=mi===0?0:(mi%2?1:-1);members.push({gull,row,side,jitterX:(rand()-.5)*.20,jitterZ:(rand()-.5)*.22,jitterY:(rand()-.5)*.18,cycle:2.8+rand()*1.7,burst:.9+rand()*.35,flaps:2+Math.floor(rand()*2),phaseOffset:rand()*2.5,cried:false,cryAt:.22+rand()*.46})}seagullFlocks.push({members,fromX,dir,startY,startZ,exitZ,dur,t0:t,bend:route.bend,lift:route.lift,wavePhase:route.wavePhase})}
   for(let fi=seagullFlocks.length-1;fi>=0;fi--){const f=seagullFlocks[fi];const age=t-f.t0;if(age<0){f.members.forEach(m=>m.gull.visible=false);continue}const u=age/f.dur;if(u>1){f.members.forEach(m=>scene.remove(m.gull));seagullFlocks.splice(fi,1);continue}
@@ -946,21 +1052,21 @@ function makeSeagull(){
  }
  cameraUpdate(getState(),.016);requestAnimationFrame(tick);
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();stopped=true;document.querySelector('#renderError').hidden=false});
- return {renderer,scene,camera,setShadingMode,setSkyTexture:skyController.select,setWaterNormal:waterSystem.setNormalPreset,setWaterNormalTexture:waterSystem.setNormalTexture,setInteractionRadius:waterSystem.setInteractionRadius,setPreviewTime(value){previewTime=value;},cancelIntro,prepareCast(){cancelIntro();aimReturnPose={yaw,pitch,closeYaw,closePitch,desiredZoom};clickedWaterPoint=null;focusBlend=0;closeYaw=closePitch=0;transitionView(1,cameraBlend>.9?380:760)},cancelCastAim(){if(aimReturnPose){({yaw,pitch,closeYaw,closePitch,desiredZoom}=aimReturnPose);aimReturnPose=null}const s=getState();transitionView(s.overview||!s.keepFishingView?0:1)},commitCastAim(){aimReturnPose=null},isAimReady(){return getState().aiming&&!viewTransition&&cameraSettled(camera.position,cameraAim,aimTargetPosition,aimTargetLook,cameraBlend)},finishAimTransition(){viewTransition=null;camera.position.copy(aimTargetPosition);cameraAim.copy(aimTargetLook);camera.lookAt(cameraAim);cameraBlend=1},reset(){cancelIntro();clickedWaterPoint=null;yaw=.16;pitch=1.02;closeYaw=closePitch=0;desiredZoom=1;transitionView(getState().keepFishingView?1:0)},topView(){cancelIntro();clickedWaterPoint=null;transitionView(0)},nearView(){cancelIntro();clickedWaterPoint=null;transitionView(1)},orbit:orbitBy,resetViewAngles,zoom(delta){cancelIntro();zoomBy(delta)},resetFightView(){fightViewYaw=fightViewPitch=0;desiredFightZoom=1},waitingRipple(){const state=getState(),spot=castSpot(state),side=new T.Vector3(Math.sin(time.value*.73)*.75,0,Math.cos(time.value*.61)*.55);waterSystem.splash(spot.x+side.x,spot.z+side.z,.16)},tacticResponse(success,id){const state=getState(),spot=castSpot(state);if(id==='tease'){waterSystem.splash(spot.x,spot.z,success?.28:.15);waterSystem.splash(spot.x+.12,spot.z-.08,.16)}else if(id==='shorten')waterSystem.splash(spot.x,spot.z,success?.25:.12)},setWeather(id){sun.intensity=id==='rain'?1.45:id==='mist'?2.05:2.65;hemi.intensity=id==='mist'?2.05:1.85;lighting.uSunRadiance.value.copy(sun.color).multiplyScalar(sun.intensity);atmosphere.setWeather(id);waterSystem.setWeather(id);postFX.setWeather(id);},getStats(){return{triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries}},dispose(){stopped=true;atmosphere.dispose();seabedDetails.dispose();sandAlbedo.dispose();sandNormal.dispose();ground.geometry.dispose();groundMat.dispose();skyController.dispose(texture=>texture.dispose());sky.geometry.dispose();skyMat.dispose();for(const [object,entry] of wireMeshes){object.material=entry.material;entry.overlay?.removeFromParent();if(entry.wireOnly!==wireOnlyMaterial)entry.wireOnly.dispose();if(entry.wireOverlay!==wireOverlayMaterial)entry.wireOverlay.dispose()}wireOnlyMaterial.dispose();wireOverlayMaterial.dispose();waterSystem.dispose();postFX.dispose()}};
+ return {renderer,scene,camera,setShadingMode,setSkyTexture:skyController.select,setWaterNormal:waterSystem.setNormalPreset,setWaterNormalTexture:waterSystem.setNormalTexture,setInteractionRadius:waterSystem.setInteractionRadius,setPreviewTime(value){previewTime=value;},cancelIntro,beginCatchProcess,prepareCast(){cancelIntro();aimReturnPose={yaw,pitch,closeYaw,closePitch,desiredZoom};clickedWaterPoint=null;focusBlend=0;closeYaw=closePitch=0;transitionView(1,cameraBlend>.9?380:760)},cancelCastAim(){pointers.clear();aimPointer=null;if(aimReturnPose){({yaw,pitch,closeYaw,closePitch,desiredZoom}=aimReturnPose);aimReturnPose=null}const s=getState();transitionView(s.overview||!s.keepFishingView?0:1)},commitCastAim(){pointers.clear();aimPointer=null;aimReturnPose=null},isAimReady(){return getState().aiming&&!viewTransition&&cameraSettled(camera.position,cameraAim,aimTargetPosition,aimTargetLook,cameraBlend)},finishAimTransition(){viewTransition=null;camera.position.copy(aimTargetPosition);cameraAim.copy(aimTargetLook);camera.lookAt(cameraAim);cameraBlend=1},reset(){cancelIntro();clickedWaterPoint=null;yaw=.16;pitch=1.02;closeYaw=closePitch=0;desiredZoom=1;transitionView(getState().keepFishingView?1:0)},topView(){cancelIntro();clickedWaterPoint=null;transitionView(0)},nearView(){cancelIntro();clickedWaterPoint=null;transitionView(1)},orbit:orbitBy,resetViewAngles,zoom(delta){cancelIntro();zoomBy(delta)},resetFightView(){fightViewYaw=fightViewPitch=0;desiredFightZoom=1},waitingRipple(){const state=getState(),spot=castSpot(state),side=new T.Vector3(Math.sin(time.value*.73)*.75,0,Math.cos(time.value*.61)*.55);waterSystem.splash(spot.x+side.x,spot.z+side.z,.16)},tacticResponse(success,id){const state=getState(),spot=castSpot(state);if(id==='tease'){waterSystem.splash(spot.x,spot.z,success?.28:.15);waterSystem.splash(spot.x+.12,spot.z-.08,.16)}else if(id==='shorten')waterSystem.splash(spot.x,spot.z,success?.25:.12)},setWeather(id){sun.intensity=id==='rain'?1.45:id==='mist'?2.05:2.65;hemi.intensity=id==='mist'?2.05:1.85;lighting.uSunRadiance.value.copy(sun.color).multiplyScalar(sun.intensity);atmosphere.setWeather(id);waterSystem.setWeather(id);postFX.setWeather(id);},getStats(){return{triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries}},dispose(){stopped=true;window.removeEventListener('blur',abandonPointers);document.removeEventListener('visibilitychange',onVisibilityChange);for(const model of animatedSpecimens)disposeSpecimenAnimation(model);animatedSpecimens.clear();fishingArt.dispose();atmosphere.dispose();seabedDetails.dispose();sandAlbedo.dispose();sandNormal.dispose();ground.geometry.dispose();groundMat.dispose();skyController.dispose(texture=>texture.dispose());sky.geometry.dispose();skyMat.dispose();for(const [object,entry] of wireMeshes){object.material=entry.material;entry.overlay?.removeFromParent();if(entry.wireOnly!==wireOnlyMaterial)entry.wireOnly.dispose();if(entry.wireOverlay!==wireOverlayMaterial)entry.wireOverlay.dispose()}wireOnlyMaterial.dispose();wireOverlayMaterial.dispose();waterSystem.dispose();postFX.dispose()}};
 }
 
 export function createSpecimenViewer(host){
  const renderer=new T.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(320,210,false);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;host.append(renderer.domElement);
  const scene=new T.Scene(),camera=new T.PerspectiveCamera(34,320/210,.1,20);camera.position.set(-.5,.58,3.45);camera.lookAt(0,0,0);scene.add(new T.HemisphereLight('#fffbea','#a0bdaf',1.9));const light=new T.DirectionalLight('#fff2d8',2.6);light.position.set(-3,4,4);scene.add(light);
- let model=null,visible=false,request=0,viewerFrame=0;const cache=new Map(),assets=new Map();
+ let model=null,visible=false,request=0,viewerFrame=0,lastFrame=0,viewerId=null;const cache=new Map(),assets=new Map();
  function set(id,variation=''){
-  const token=++request;if(model)scene.remove(model);const key=id+'|'+variation;
+  viewerId=id;const token=++request;if(model)scene.remove(model);const key=id+'|'+variation;
   if(!cache.has(key))cache.set(key,makeSpecimen(id,variation));model=cache.get(key);model.rotation.y=.18;scene.add(model);renderer.render(scene,camera);
   if(specimenIds.has(id)){
    if(!assets.has(id))assets.set(id,loadSpecimen(id));
    assets.get(id).then(asset=>{if(!asset||token!==request)return;scene.remove(model);model=asset;model.rotation.y=.18;scene.add(model);renderer.render(scene,camera)});
   }
  }
- function frame(t){if(!visible){viewerFrame=0;return}if(model){model.rotation.y=.18+Math.sin(t*.0006)*.18;model.position.y=Math.sin(t*.0015)*.035;if(model.userData.tail)model.userData.tail.rotation.y=Math.sin(t*.003)*.12;renderer.render(scene,camera)}viewerFrame=requestAnimationFrame(frame)}
- return{set,show(v){visible=v;if(v&&!viewerFrame)viewerFrame=requestAnimationFrame(frame);else if(!v&&viewerFrame){cancelAnimationFrame(viewerFrame);viewerFrame=0}},thumbnail(id){return specimenIds.has(id)?'./assets/models/specimens/'+id+'.png?v=art4':(set(id),renderer.domElement.toDataURL('image/png'))},renderer};
+ function frame(t){if(!visible){viewerFrame=0;lastFrame=0;return}const dt=lastFrame?Math.min(.1,(t-lastFrame)/1000):0;lastFrame=t;if(model){model.rotation.y=.18+Math.sin(t*.0006)*.18;model.position.y=Math.sin(t*.0015)*.035;animateSpecimen(model,{id:viewerId,weight:1},{stage:'viewer'},dt,matchMedia('(prefers-reduced-motion: reduce)').matches);renderer.render(scene,camera)}viewerFrame=requestAnimationFrame(frame)}
+ return{set,show(v){visible=v;if(v&&!viewerFrame)viewerFrame=requestAnimationFrame(frame);else if(!v&&viewerFrame){cancelAnimationFrame(viewerFrame);viewerFrame=0;lastFrame=0}},thumbnail(id){return specimenIds.has(id)?'./assets/models/specimens/'+id+'.png?v=art5':(set(id),renderer.domElement.toDataURL('image/png'))},renderer};
 }

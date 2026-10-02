@@ -8,6 +8,7 @@ import {isObjectCatch} from '../src/catch-kind.mjs';
 import {uiIcon} from '../src/ui/icons.mjs';
 import {catchRevealPresentation} from '../src/ui/catch-reveal.mjs';
 import {FISH} from '../src/data/catalog.mjs';
+import {catchProcessFeedback} from '../src/catch-process-feedback.mjs';
 import {createOutcomeDirector} from '../src/outcome-feedback.mjs';
 
 const source=readFileSync(new URL('../src/app-final.js',import.meta.url),'utf8');
@@ -21,15 +22,16 @@ function setup(castsLeft=4, caught=null){
  const nodes=new Map();
  const $=id=>{if(!nodes.has(id))nodes.set(id,{open:id==='#result',textContent:'',addEventListener(type,fn){this[type]=fn},close(){this.open=false}});return nodes.get(id)};
  let summaries=0,resets=0;const notices=[];
- const context=vm.createContext({state,$,FISH,processCatch,settleEmptyCast,aiming:false,overview:false,keepFishingView:false,world:{reset(){resets++}},sound(){},toast(...args){notices.push(args)},save(){},viewer:null,renderSetup(){},update(){},showTripEnd(){summaries++}});
+ const timers=[];const context=vm.createContext({state,$,FISH,processCatch,settleEmptyCast,catchProcessFeedback,catchProcessEvent:null,catchProcessTimer:null,lastRelease:null,outcomeEvent:null,Date,setTimeout(fn,ms){timers.push({fn,ms});return timers.length},clearTimeout(){},ensureAudio:()=>Promise.resolve(),aiming:false,overview:false,keepFishingView:false,world:{reset(){resets++}},sound(){},toast(...args){notices.push(args)},save(){},viewer:null,renderSetup(){},update(){},showTripEnd(){summaries++}});
  vm.runInContext(source.slice(source.indexOf('function settleEmptyResult('),source.indexOf('function finishReel(')),context);
- vm.runInContext(source.slice(source.indexOf('function handleProcess('),source.indexOf("$('#nextTrip').onclick")),context);
- return {state,$,context,notices,summaries:()=>summaries,resets:()=>resets};
+ vm.runInContext(source.slice(source.indexOf('function finishCatchProcess('),source.indexOf("$('#nextTrip').onclick")),context);
+ context.completeProcess=()=>timers.at(-1)?.fn();
+ return {state,$,context,notices,timers,summaries:()=>summaries,resets:()=>resets};
 }
 
 test('a normal processed catch produces one notice and no duplicate central message',()=>{
  const {state,$,context,notices}=setup(4,{id:'minnow',weight:.1,length:10,time:1000});
- $('#story').textContent='old message';context.handleProcess('study');
+ $('#story').textContent='old message';context.handleProcess('study');context.completeProcess();
  assert.equal(notices.length,1);assert.equal(notices[0][2],'reward');
  assert.equal($('#story').textContent,'');assert.equal($('#observation').textContent,notices[0][0]);
  assert.equal(state.pending,null);
@@ -38,15 +40,15 @@ test('a normal processed catch produces one notice and no duplicate central mess
 
 test('tracked release has one tracking notice rather than a second generic result',()=>{
  const {state,$,context,notices}=setup(4,{id:'minnow',weight:.1,length:10,time:1000});
- context.handleProcess('release');
+ context.handleProcess('release');context.completeProcess();
  assert.equal(notices.length,1);assert.match(notices[0][0],/追踪/);
  assert.equal($('#story').textContent,'');assert.equal(state.tracked.length,1);
 });
 
 test('an event result keeps one event notice and a rejected action keeps its pending catch',()=>{
  const {state,$,context,notices}=setup(4,{id:'perch',weight:.8,length:22,time:1000});
- state.trip.rule={id:'predator',name:'捕食鱼活跃',triggers:0};context.handleProcess('keep');
- assert.deepEqual(notices[0],['水域事件：捕食鱼活跃',false,'reward']);
+ state.trip.rule={id:'predator',name:'捕食鱼活跃',triggers:0};context.handleProcess('keep');context.completeProcess();
+ assert.deepEqual(notices[0],['水域事件：捕食鱼活跃',false,'reward','水域有了变化']);
  assert.equal(notices.length,1);assert.equal($('#story').textContent,'');
  const blocked=setup(4,{id:'minnow',weight:.1,length:10,time:1000});
  blocked.state.collection=Array.from({length:20},()=>({id:'minnow'}));
@@ -90,7 +92,7 @@ test('caught specimen still requires an explicit decision and returns near water
  context.revealing=true;
  $('#result').cancel({preventDefault(){prevented=true}});
  assert.ok(prevented);assert.ok(state.pending);
- $('#processActions').click({target:{closest:()=>({dataset:{process:'study'}})}});
+ $('#processActions').click({target:{closest:()=>({dataset:{process:'study'}})}});context.completeProcess();
  assert.equal($('#result').open,false);
  assert.equal(state.pending,null);
  assert.equal(context.revealing,false);
@@ -153,4 +155,28 @@ test('restoring an open catch result waits quietly for the player decision',()=>
  assert.equal(audioCount,0,'a restored result is consumed silently and cannot replay its audio');
  assert.equal($('#result').dataset.reveal,'true','a real opening can play one short reveal');
  context.showResult();assert.equal(audioCount,0,'a repeated render cannot replay the catch sound');
+});
+
+ test('handling saves once immediately and postpones notices and final-trip review until the motion ends',()=>{
+ const {state,context,notices,timers,summaries,resets,$}=setup(1,{id:'minnow',weight:.1,length:10,time:1000});
+ let saves=0,starts=0;context.save=()=>saves++;context.world.beginCatchProcess=event=>{starts++;assert.equal(state.pending.catch.id,event.id)};
+ context.handleProcess('release');assert.equal(state.pending,null);assert.equal(state.trip.castsLeft,0);assert.equal(saves,1);assert.equal(starts,1);
+ assert.equal(notices.length,0);assert.equal(summaries(),0);assert.equal(resets(),0);assert.equal($('#result').open,false);assert.equal(timers[0].ms,1850);
+ context.handleProcess('study');assert.equal(saves,1);assert.equal(timers.length,1);assert.equal(state.tracked.length,1);
+ context.completeProcess();assert.equal(notices.length,1);assert.equal(summaries(),1);assert.equal(resets(),1);assert.equal(context.catchProcessEvent,null);
+ context.completeProcess();assert.equal(notices.length,1);assert.equal(summaries(),1);
+ });
+ test('capacity rejection starts no handling motion or deferred completion',()=>{
+ const {state,context,timers}=setup(1,{id:'minnow',weight:.1,length:10,time:1000});state.collection=Array.from({length:20},()=>({id:'minnow'}));
+ context.handleProcess('keep');assert.equal(timers.length,0);assert.equal(context.catchProcessEvent,null);assert.equal(state.trip.castsLeft,1);
+ });
+
+test('backgrounding concludes the durable settlement and ignores the old completion timer',()=>{
+ const {state,context,notices,summaries}=setup(1,{id:'minnow',weight:.1,length:10,time:1000});
+ context.document={hidden:true,addEventListener(type,callback){this.callback=callback}};
+ context.handleProcess('release');const start=source.indexOf("document.addEventListener('visibilitychange',()=>{if(document.hidden&&catchProcessEvent");
+ assert.ok(start>=0,'the processing visibility handler must exist');
+ vm.runInContext(source.slice(start,source.indexOf(');if(world)',start)+2),context);
+ context.document.callback();assert.equal(context.catchProcessEvent,null);assert.equal(state.pending,null);assert.equal(summaries(),1);
+ context.completeProcess();assert.equal(notices.length,1);assert.equal(summaries(),1);
 });

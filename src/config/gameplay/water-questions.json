@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "questions": [
+    {
+      "id": "shoal-near-fish",
+      "ruleId": "shoal",
+      "spot": "reed",
+      "bait": "worm",
+      "zone": "near",
+      "targetFish": ["minnow"],
+      "title": "浅滩近水会有白条吗？",
+      "detail": "本轮浅滩鱼群集中。换蚯蚓投近水，看看白条是否仍会出现。",
+      "actionLabel": "换蚯蚓试近水",
+      "waterLine": "这一竿换了蚯蚓试浅滩近水。等真实鱼影靠近，再看浮漂。",
+      "copy": {
+        "matched": "这竿钓到{fish}，符合刚才的判断；还值得再看几竿。",
+        "other": "这竿钓到{fish}。浅滩也有别的来客，下次可以再比较。",
+        "unresolved": "这竿没有带上岸可辨认的活体，浅滩问题还没答案。"
+      }
+    },
+    {
+      "id": "bottom-shrimp",
+      "ruleId": "bottom",
+      "spot": "reed",
+      "bait": "glow",
+      "zone": "near",
+      "targetFish": ["shrimp"],
+      "title": "底层动静会引来河虾吗？",
+      "detail": "本轮底层水体翻动。用夜光虫投近水，看看底层会有什么回应。",
+      "actionLabel": "试试夜光虫近水",
+      "waterLine": "这一竿在试底层水情。先看水下有没有靠近的影子。",
+      "copy": {
+        "matched": "这竿钓到{fish}，符合刚才的判断；还不能说每次都会如此。",
+        "other": "这竿钓到{fish}。底层问题还可以换一竿再看。",
+        "unresolved": "这竿没有带上岸可辨认的活体，底层问题还没答案。"
+      }
+    },
+    {
+      "id": "predator-outer-bay",
+      "ruleId": "predator",
+      "spot": "bridge",
+      "bait": "worm",
+      "zone": "far",
+      "targetFish": ["perch"],
+      "title": "外湾远水能等到红鳍鲈吗？",
+      "detail": "本轮捕食鱼活跃。用蚯蚓投外湾远水，留意红鳍鲈的鱼口。",
+      "actionLabel": "试试外湾远水",
+      "waterLine": "这一竿在试外湾远水。留意鱼线受力，别把远处波纹当鱼口。",
+      "copy": {
+        "matched": "这竿钓到{fish}，符合刚才的判断；外湾仍有别的可能。",
+        "other": "这竿钓到{fish}。捕食鱼这次没有上岸，还可以再观察。",
+        "unresolved": "这竿没有带上岸可辨认的活体，捕食鱼问题还没答案。"
+      }
+    }
+  ]
+}

@@ -26,9 +26,19 @@ eye=mat('Eye',(.008,.012,.011),.25); fin_silver=mat('Silver_fin',(.43,.66,.64),.
 def surface(name,verts,faces,material):
  me=bpy.data.meshes.new(name);me.from_pydata(verts,[],faces);me.update();ob=bpy.data.objects.new(name,me);bpy.context.collection.objects.link(ob);ob.data.materials.append(material);return ob
 
+PROFILE=[(.52,.02),(.43,.44),(.20,.82),(-.08,1),(-.31,.73),(-.47,.20)]
+def body_radius(x):
+ for i in range(len(PROFILE)-1):
+  xa,a=PROFILE[i];xb,b=PROFILE[i+1]
+  if xa>=x>=xb:
+   t=(xa-x)/(xa-xb);p=PROFILE[max(0,i-1)][1];q=PROFILE[min(len(PROFILE)-1,i+2)][1]
+   r=.5*((2*a)+(-p+b)*t+(2*p-5*a+4*b-q)*t*t+(-p+3*a-3*b+q)*t*t*t)
+   return max(min(a,b),min(max(a,b),r))
+ return PROFILE[0][1] if x>PROFILE[0][0] else PROFILE[-1][1]
+
 def body(name,length,height,width,material,belly_mat,head=.43):
- rings=[(.52,.02),(.43,.44),(.20,.82),(-.08,1),(-.31,.73),(-.47,.20)]
- verts=[];faces=[];sides=10
+ rings=[(.52-i*.99/31,body_radius(.52-i*.99/31)) for i in range(32)]
+ verts=[];faces=[];sides=24
  for x,r in rings:
   for j in range(sides):
    a=j*math.tau/sides;verts.append((x*length,math.cos(a)*width*r,math.sin(a)*height*r*(1.08 if x>head else 1)))
@@ -37,6 +47,7 @@ def body(name,length,height,width,material,belly_mat,head=.43):
  faces.extend([tuple(reversed(range(sides))),tuple(range((len(rings)-1)*sides,len(rings)*sides))])
  ob=surface(name,verts,faces,material);ob.data.materials.append(belly_mat)
  for f in ob.data.polygons:
+  f.use_smooth=True
   if sum(ob.data.vertices[v].co.z for v in f.vertices)/len(f.vertices)<-.04:f.material_index=1
  return ob
 
@@ -82,7 +93,13 @@ def fish(spec):
     o=surface('Perch_bar',points,[(j*2,j*2+1,j*2+3,j*2+2) for j in range(6)],dark);o.parent=root
  if name=='minnow':
   for side in [-1,1]:
-   bpy.ops.mesh.primitive_cube_add(size=1,location=(0,side*W*1.01,0));o=bpy.context.object;o.name='Lateral_stripe';o.dimensions=(L*.72,.008,H*.075);o.data.materials.append(blue);o.parent=root
+   points=[]
+   for j in range(32):
+    x=.33-j*.70/31;r=body_radius(x);z=H*.035
+    y=side*W*r*math.sqrt(max(0,1-(z/max(.01,H*r))**2))*1.012
+    points.extend([(L*x,y,-z),(L*x,y,z)])
+   o=surface('Lateral_stripe',points,[(j*2,j*2+1,j*2+3,j*2+2) for j in range(31)],blue);o.parent=root
+   for face in o.data.polygons:face.use_smooth=True
  if name=='catfish':
   for side in [-1,1]:
    for dz in [-.08,.04]:
@@ -135,6 +152,8 @@ for name,objects in assets.items():
   if o.type=='MESH':
    import bmesh
    bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free()
+   if o.name.startswith(('Eye','Iris','Gill','Shell_segment')):
+    for face in o.data.polygons:face.use_smooth=True
  if not BLOCK:bpy.ops.export_scene.gltf(filepath=os.path.join(WEB,name+'.glb'),export_format='GLB',use_selection=True,export_apply=True)
  mouth_anchor.name=name+'_MouthAnchor'
  triangles=0

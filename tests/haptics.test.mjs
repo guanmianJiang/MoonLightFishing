@@ -2,6 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fightHapticSample,fightHapticEvent,createHaptics} from '../src/haptics.mjs';
 
+test('release water contact has one brief weight-dependent vibration and obeys visibility',()=>{
+ let now=100,visible=true;const calls=[],h=createHaptics(p=>{calls.push(p);return true},()=>now,()=>visible);
+ assert.equal(h.emit('release-water'),true);assert.equal(h.emit('release-water'),false);now+=400;
+ assert.equal(h.emit('release-heavy'),true);assert.deepEqual(calls,[12,[20,22,8]]);
+ now+=400;visible=false;assert.equal(h.emit('release-heavy'),false);
+});
+
 const base={status:'active',lossReason:null,tension:.3,load:.3,slack:0,spoolVelocity:-1,reelTurns:1.8,surge:0,warningAge:0,overload:0,held:true};
 
 test('touch feedback follows transmitted line force, not a loose fish animation',()=>{

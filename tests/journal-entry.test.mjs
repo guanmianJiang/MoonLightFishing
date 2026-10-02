@@ -10,7 +10,7 @@ function setup(pending=null) {
     if(!nodes.has(id))nodes.set(id,{open:false,showModal(){calls.push('modal');this.open=true},close(){this.open=false},focus(){calls.push(id)}});
     return nodes.get(id);
   };
-  const context=vm.createContext({state,$,tab:'basket',renderBook(){calls.push('render')},toast(message){calls.push(message)}});
+  const context=vm.createContext({state,$,catchProcessEvent:null,tab:'basket',renderBook(){calls.push('render')},toast(message){calls.push(message)}});
   vm.runInContext(source.slice(source.indexOf('function showBook('),source.indexOf("$('#journal').onclick=")),context);
   return {context,$,state,calls};
 }
@@ -42,4 +42,10 @@ test('an active fight rejects the journal without releasing the fish or changing
   assert.equal(state.pending,pending);
   assert.equal(context.tab,'basket');
   assert.deepEqual(calls,['先完成这次收线。']);
+});
+
+test('a short catch handling motion finishes before another journal page can cover it',()=>{
+ const {context,$,calls}=setup();context.catchProcessEvent={action:'release'};
+ context.showBook();assert.equal($('#book').open,false);assert.equal(calls.length,0);
+ context.catchProcessEvent=null;context.showBook();assert.equal($('#book').open,true);
 });

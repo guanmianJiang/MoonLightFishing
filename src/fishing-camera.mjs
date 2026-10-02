@@ -1,5 +1,6 @@
 import {LURE_CAMERA_TUNING} from './config/fishing-tuning.mjs';
 import {cameraImpulse,adjustCameraAngles} from './camera-interaction.mjs';
+import {isObjectCatch} from './catch-kind.mjs';
 
 // Camera targets for the fight and landing shots. The fight camera sits to
 // the angler's right, abreast of the line, so both ends stay readable.
@@ -147,6 +148,24 @@ export function lureCameraPose(bobber,forward,right,portrait){
   .addScaledVector(right,portrait?.72:1.15);
  position.y=portrait?1.25:1.12;
  return {position,aim};
+}
+
+export function hookWindowCameraActive(stage,phase,pending){
+ return stage==='bite'&&phase==='hooked'&&!!pending?.catch&&!isObjectCatch(pending.catch)&&pending?.fight?.status!=='active'&&!pending.landedFromFight;
+}
+
+// The fish has the hook: make the float readable while keeping the angler
+// and line in the waiting frame. The scene handles the temporal transition.
+export function hookWindowCameraPose(waitingShot,bobber,forward,right,portrait){
+ const base={position:waitingShot.position.clone(),aim:waitingShot.aim.clone(),fov:Number.isFinite(waitingShot.fov)?waitingShot.fov:portrait?47:40};
+ const valid=vector=>vector?.isVector3&&[vector.x,vector.y,vector.z].every(Number.isFinite);
+ if(!valid(bobber)||!valid(forward)||!valid(right))return base;
+ const close=lureCameraPose(bobber,forward,right,portrait),mix=portrait?LURE_CAMERA_TUNING.hookPortraitMix:LURE_CAMERA_TUNING.hookLandscapeMix;
+ return {
+  position:base.position.lerp(close.position,mix),
+  aim:base.aim.lerp(close.aim,mix),
+  fov:portrait?LURE_CAMERA_TUNING.hookPortraitFov:LURE_CAMERA_TUNING.hookLandscapeFov
+ };
 }
 
 export function landedFishCameraPose(angler,fishBody,forward,right,portrait){

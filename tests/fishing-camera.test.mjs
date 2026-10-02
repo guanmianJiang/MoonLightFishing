@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from '../src/three.module.js';
-import {cameraTransitionBlend,castCameraBeat,fightCameraReaction,lostRodCameraCue,landingCameraWeight,fightCameraFov,fightCameraPose,orbitFightCameraPose,reelCameraPose,lureFocusEnvelope,lureInspectionWeight,lureCameraStrength,lureCameraPose,landedFishCameraPose} from '../src/fishing-camera.mjs';
+import {cameraTransitionBlend,castCameraBeat,fightCameraReaction,lostRodCameraCue,landingCameraWeight,fightCameraFov,fightCameraPose,orbitFightCameraPose,reelCameraPose,lureFocusEnvelope,lureInspectionWeight,lureCameraStrength,lureCameraPose,hookWindowCameraActive,hookWindowCameraPose,landedFishCameraPose} from '../src/fishing-camera.mjs';
+import {portraitCloseFraming} from '../src/camera-interaction.mjs';
+import {CAST_AREAS,openingCastPoint} from '../src/cast-target.mjs';
 
 const spots=[[-1.5,3.4],[2,8],[5,12]];
 const angler=new T.Vector3(-1.2,.5,.35);
@@ -177,6 +179,58 @@ test('portrait bait camera keeps a wide enough share of the waiting composition'
  assert.ok(lureCameraStrength(1,true,3)<.11);
  assert.ok(lureCameraStrength(1,true,1)>lureCameraStrength(1,true,2));
  assert.ok(lureCameraStrength(lureFocusEnvelope(-.6),true,3)<.04);
+});
+
+test('hook camera begins only after a live fish takes the bait',()=>{
+ const fish={catch:{id:'carp'}};
+ assert.equal(hookWindowCameraActive('bite','hooked',fish),true);
+ for(const phase of ['approach','reading','responding','nibble','waiting','casting'])assert.equal(hookWindowCameraActive('bite',phase,fish),false);
+ for(const stage of ['overview','fight','landing','survey'])assert.equal(hookWindowCameraActive(stage,'hooked',fish),false);
+ for(const pending of [null,{}, {catch:{id:'bottle'}},{catch:{id:'bell'}},{catch:{id:'carp'},fight:{status:'active'}},{catch:{id:'carp'},landedFromFight:true}])assert.equal(hookWindowCameraActive('bite','hooked',pending),false);
+});
+
+test('hook shot enlarges the real float while retaining player and float in portrait',()=>{
+ const first=openingCastPoint(),targets=[first,...Object.values(CAST_AREAS)];
+ const origin=new T.Vector3(-1.25,1.35,.1);
+ for(const [width,height] of [[390,844],[320,568],[800,450]])for(const [x,z] of targets){
+  const aspect=width/height,portrait=aspect<.8,spot=new T.Vector3(x,.12,z),bobber=new T.Vector3(x,.13,z);
+  const forward=spot.clone().sub(origin).setY(0).normalize(),right=new T.Vector3(forward.z,0,-forward.x);
+  const range=Math.max(0,Math.min(1,(spot.distanceTo(origin)-3.4)/8.4)),frame=portraitCloseFraming(range,false);
+  const waiting={
+   position:origin.clone().addScaledVector(forward,portrait?-7.7:-6.9).addScaledVector(right,portrait?frame.side:3.8),
+   aim:spot.clone().lerp(origin,portrait?frame.aimMix:.17),
+   fov:portrait?47:40
+  };
+  waiting.position.y=portrait?3.9:2.95;waiting.aim.y=.65;waiting.aim.lerp(bobber,.65);
+  const player=origin.clone().add(new T.Vector3(0,.45,0));
+  const shot=hookWindowCameraPose(waiting,bobber,forward,right,portrait);
+  const floatView=projected(shot,bobber,aspect,shot.fov),personView=projected(shot,player,aspect,shot.fov);
+  assert.ok(Math.abs(floatView.x)<.91&&Math.abs(floatView.y)<.86&&floatView.z>-1&&floatView.z<1,JSON.stringify({width,height,x,z,floatView}));
+  if(x===first[0]&&z===first[1])assert.ok(Math.abs(personView.x)<.91&&Math.abs(personView.y)<.86&&personView.z>-1&&personView.z<1,JSON.stringify({width,height,x,z,personView}));
+  const apparent=(distance,fov)=>1/(distance*Math.tan(fov*Math.PI/360));
+  const sizeGain=apparent(shot.position.distanceTo(bobber),shot.fov)/apparent(waiting.position.distanceTo(bobber),waiting.fov);
+  assert.ok(sizeGain>(portrait?1.23:1.18),JSON.stringify({width,height,x,z,sizeGain}));
+  assert.ok(shot.position.distanceTo(waiting.position)<waiting.position.distanceTo(bobber)*.36,{width,height,x,z});
+ }
+});
+
+test('hook shot has safe fallbacks and frame rate independent entry',()=>{
+ const waiting={position:new T.Vector3(0,4,-8),aim:new T.Vector3(0,.2,2),fov:47};
+ const direction=new T.Vector3(0,0,1),right=new T.Vector3(1,0,0),bobber=new T.Vector3(0,.1,5);
+ const invalid=hookWindowCameraPose(waiting,new T.Vector3(NaN,0,0),direction,right,true);
+ assert.ok(invalid.position.equals(waiting.position)&&invalid.aim.equals(waiting.aim));
+ assert.equal(invalid.fov,47);
+ const shot=hookWindowCameraPose(waiting,bobber,direction,right,true);
+ assert.ok(waiting.position.equals(new T.Vector3(0,4,-8))&&waiting.aim.equals(new T.Vector3(0,.2,2)),'the waiting composition must remain immutable');
+ let blend=0,previous=waiting.position.clone();
+ for(let frame=0;frame<90;frame++){
+  blend=cameraTransitionBlend(blend,true,1/60);
+  const position=waiting.position.clone().lerp(shot.position,blend*blend*(3-2*blend));
+  assert.ok(position.distanceTo(previous)<.2,JSON.stringify({frame,step:position.distanceTo(previous)}));previous=position;
+ }
+ assert.ok(previous.distanceTo(shot.position)<.06);
+ const batched=cameraTransitionBlend(0,true,.5),stepped=Array.from({length:30}).reduce(value=>cameraTransitionBlend(value,true,1/60),0);
+ assert.ok(Math.abs(batched-stepped)<1e-12);
 });
 
 test('a valid bait tap gives one short camera response only while the fish is approaching or reading',()=>{

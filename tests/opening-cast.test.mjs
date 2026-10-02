@@ -13,7 +13,7 @@ test('a fresh first cast starts with water curiosity and common shallow fish',()
  assert.equal(guide.action.kind,'aim');
  assert.deepEqual(guide.action.point,openingCastPoint());
  assert.equal(castZone('reed',guide.action.point),'near');
- assert.ok(guide.action.point[0]<castPreset('reed','near')[0]);
+ assert.ok(Math.abs(guide.action.point[0]-castPreset('reed','near')[0])>.8);
  assert.match(guide.title,/浅滩/);
  for(let roll=0;roll<=1;roll+=.05){
   const cast=makeCast(save,1000,()=>roll,castPreset('reed','near'));

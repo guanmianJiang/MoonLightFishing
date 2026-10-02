@@ -2,6 +2,15 @@
 // float keeps its momentum through the apex and arrives at the chosen point.
 export const CAST_RELEASE_TIME=.78;
 
+export function castPreviewOpacity(stage,flightProgress=null){
+ if(stage==='aim')return 1;
+ if(stage!=='casting')return 0;
+ if(flightProgress===null)return 1;
+ if(!Number.isFinite(flightProgress)||flightProgress<0)return 0;
+ const t=Math.max(0,Math.min(1,(flightProgress-.42)/.58));
+ return 1-t*t*(3-2*t);
+}
+
 export function castLineProfile(progress,distance){
  const u=Math.max(0,Math.min(1,Number.isFinite(progress)?progress:0));
  const effort=Math.max(0,Math.min(1,((Number.isFinite(distance)?distance:2.5)-2.5)/10));

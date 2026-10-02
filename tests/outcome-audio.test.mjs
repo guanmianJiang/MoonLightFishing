@@ -34,7 +34,7 @@ function harness(t,file=false){
  class Media{
   paused=true;duration=9;plays=0;pauses=0;
   constructor(url){this.url=url;media.push(this)}play(){this.paused=false;this.plays++;return Promise.resolve()}
-  pause(){this.paused=true;this.pauses++}cloneNode(){return new Media(this.url)}
+  pause(){this.paused=true;this.pauses++}cloneNode(){const media=new Media(this.url);if(fail.deferEffect)media.play=()=>{media.paused=false;media.plays++;return new Promise((resolve,reject)=>{fail.finishEffect=resolve;fail.rejectEffect=reject})};return media}
  }
  globalThis.window={AudioContext};globalThis.document={hidden:false,addEventListener:(type,fn)=>listeners.set(type,fn)};
  globalThis.localStorage={getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)};globalThis.location={protocol:file?'file:':'http:'};globalThis.Audio=Media;
@@ -43,6 +43,18 @@ function harness(t,file=false){
  const button={setAttribute(){},textContent:''},system=createAudioSystem({button});
  return {system,nodes,media,timers,listeners,contexts,storage,button,fail};
 }
+
+test('handling has distinct audible scores and release contact plays only at the scene event',async t=>{
+ const h=harness(t);await h.system.ensureAudio(true);await new Promise(resolve=>setImmediate(resolve));
+ const score=event=>{const from=h.nodes.length;h.system.sound('process',event);return h.nodes.slice(from).filter(n=>n.kind==='oscillator'||n.kind==='source')};
+ const release=score({action:'release',weight:.1});assert.equal(release.length,1);assert.equal(release[0].starts[0][1],.20,'release avoids the silent source lead-in');
+ const signatures=['study','keep','basket'].map(action=>score({action}).filter(n=>n.kind==='oscillator').map(n=>Math.round(n.frequency.value)));
+ assert.equal(new Set(signatures.map(s=>JSON.stringify(s))).size,3);
+ const from=h.nodes.length;h.system.sound('releaseLand',{weight:.1,object:false});const live=h.nodes.slice(from).filter(n=>n.kind==='oscillator'||n.kind==='source');
+ assert.equal(live.length,8);assert.equal(live[0].starts[0][1],.12,'contact water clip starts after its silent lead-in');
+ const objectFrom=h.nodes.length;h.system.sound('releaseLand',{weight:1,object:true});assert.equal(h.nodes.slice(objectFrom).filter(n=>n.kind==='oscillator').length,0);
+ await h.system.toggle();assert.ok(live.every(n=>n.stops.some(args=>args.length===0)));const muted=h.nodes.length;h.system.sound('process',{action:'study'});h.system.sound('releaseLand',{weight:2});assert.equal(h.nodes.length,muted);
+});
 
 test('actual audio system schedules one score and cancels every voice on mute/background',async t=>{
  const h=harness(t);await h.system.ensureAudio(true);await new Promise(resolve=>setImmediate(resolve));
@@ -146,4 +158,18 @@ test('HTML audio fallback discards delayed outcome clips after mute and resume',
  await h.system.toggle();assert.ok(immediate.every(m=>m.pauses>0));
  await h.system.ensureAudio(true);for(const fn of h.timers)fn();
  assert.equal(h.media.filter(m=>m.plays>0&&!m.loop).length,1,'the delayed whoosh must not start after unmuting');
+});
+
+test('a cold HTML short clip counts its duration after playback starts and intentional cancellation stays quiet',async t=>{
+ const h=harness(t,true);await h.system.ensureAudio(true);h.fail.deferEffect=true;
+ const timerCount=h.timers.length;
+ h.system.sound('process',{action:'study'});const immediate=h.media.filter(m=>m.plays>0&&!m.loop);
+ assert.equal(immediate.length,1);const first=immediate[0];assert.equal(first.pauses,0);
+ assert.equal(h.timers.length-timerCount,2,'only the startup deadline and delayed second click are scheduled');
+ h.fail.finishEffect();
+ await new Promise(r=>setImmediate(r));assert.equal(first.pauses,0,'loading must not consume the short click duration');
+ assert.equal(h.timers.length-timerCount,3,'clip duration starts after play resolves');
+ await h.system.toggle();assert.ok(first.pauses>0);assert.equal(h.system.getStatus().lastError,null);
+ await h.system.ensureAudio(true);h.system.sound('process',{action:'study'});await h.system.toggle();h.fail.rejectEffect(new Error('cancelled while loading'));
+ await new Promise(r=>setImmediate(r));assert.equal(h.system.getStatus().lastError,null,'an intentional stop is not a playback failure');
 });

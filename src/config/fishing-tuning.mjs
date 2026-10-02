@@ -56,6 +56,10 @@ export const LURE_CAMERA_TUNING=Object.freeze({
  landscapeMaxMix:.72,
  portraitFov:41,
  landscapeFov:38,
+ hookPortraitMix:.35,
+ hookLandscapeMix:.22,
+ hookPortraitFov:43,
+ hookLandscapeFov:39,
  focusStartDistance:3,
  focusFullDistance:.8,
  distantMix:.18

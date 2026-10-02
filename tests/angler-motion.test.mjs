@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {GLTFLoader} from '../src/vendor/loaders/GLTFLoader.js';
 import {Box3,Vector3} from '../src/three.module.js';
 import {sampleAnglerMotion,sampleCastMotion,castEffort,reelAnimationTime,isLargeCatch,shouldStandForCatch} from '../src/angler-motion.js';
-import {castFlight,castLineProfile,CAST_RELEASE_TIME} from '../src/cast-flight.mjs';
+import {castFlight,castLineProfile,castPreviewOpacity,CAST_RELEASE_TIME} from '../src/cast-flight.mjs';
 
 test('Blender cast releases after the backswing and returns to rest continuously',()=>{
  const backswing=sampleAnglerMotion('cast',.63),release=sampleAnglerMotion('cast',CAST_RELEASE_TIME),rest=sampleAnglerMotion('cast',1.85);
@@ -63,6 +63,17 @@ test('cast flight has momentum, gravity and distance-scaled timing',()=>{
   assert.ok(Math.abs(end.position.x-target.x)<1e-9&&Math.abs(end.position.y-target.y)<1e-9);
   assert.ok(CAST_RELEASE_TIME+launch.duration<=1.85);
  }
+});
+
+test('the chosen target stays through windup and hands off to the landing splash',()=>{
+ assert.equal(castPreviewOpacity('aim'),1);
+ assert.equal(castPreviewOpacity('casting'),1);
+ assert.equal(castPreviewOpacity('casting',0),1);
+ assert.equal(castPreviewOpacity('casting',.42),1);
+ assert.ok(castPreviewOpacity('casting',.7)>0&&castPreviewOpacity('casting',.7)<1);
+ assert.equal(castPreviewOpacity('casting',1),0);
+ for(const input of [-1,NaN,Infinity])assert.equal(castPreviewOpacity('casting',input),0);
+ assert.equal(castPreviewOpacity('waiting',.5),0);
 });
 
 test('line pays out during flight and settles at splashdown with distance-scaled slack',()=>{

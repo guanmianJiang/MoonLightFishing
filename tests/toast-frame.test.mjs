@@ -40,3 +40,8 @@ test('notification text remains plain text for markup-like messages',()=>{
  const toast=game.children[0];assert.equal(toast.children[1].children[1].textContent,message);
  assert.equal(toast.innerHTML,undefined);
 });
+
+test('handling result notifications carry their actual action title',()=>{
+ const {context,game}=setup();context.toast('已把旧漂流瓶放回原位置。',false,'reward','已放回原处');
+ assert.equal(game.children[0].children[1].children[0].textContent,'已放回原处');
+});

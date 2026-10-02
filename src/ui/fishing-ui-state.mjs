@@ -2,8 +2,9 @@ import {BAITS} from '../data/catalog.mjs';
 
 // Presentation only: no timers, random outcomes or saved state are changed here.
 export function fishingUILayout(input = {}) {
-  const {phase, aiming, pending, revealing} = input || {};
-  const mode = phase === 'result' || pending?.phase === 'result' ? 'result'
+  const {phase, aiming, pending, revealing, processing} = input || {};
+  const mode = processing ? 'processing'
+    : phase === 'result' || pending?.phase === 'result' ? 'result'
     : revealing ? 'landing'
     : phase === 'fighting' || pending?.fight?.status === 'active' ? 'fight'
     : pending && phase === 'hooked' ? 'strike'

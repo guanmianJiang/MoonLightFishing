@@ -1,6 +1,9 @@
 import * as T from './three.module.js';
 import {GLTFLoader} from './vendor/loaders/GLTFLoader.js';
 import {assetAnchorLocal,alignAssetAnchorLocal,mountBaitAtAnchor} from './fish-attachment.mjs';
+import {createAnglerFaceRig} from './angler-face-rig.mjs';
+import {createFishAnimation} from './fish-animation.mjs';
+import {createFishBodyRig} from './fish-body-rig.mjs';
 
 const loader=new GLTFLoader(),cache=new Map(),BAIT_GAME_SCALE=.72;
 export const specimenIds=new Set(['carp','minnow','perch','catfish','oldgold','moon','shrimp']);
@@ -10,7 +13,7 @@ function load(path){
 }
 export async function loadSpecimen(id){
  if(!specimenIds.has(id))return null;
- const source=await load(`./assets/models/specimens/${id}.glb?v=art5`);if(!source)return null;
+ const source=await load(`./assets/models/specimens/${id}.glb?v=art6`);if(!source)return null;
  const model=source.clone(true),wrapper=new T.Group(),bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());
  // Runtime fish face -X; Blender specimens face +X. Normalize all catches to 1.8m.
  model.position.sub(center);wrapper.add(model);wrapper.rotation.y=Math.PI;
@@ -19,13 +22,21 @@ export async function loadSpecimen(id){
  const mouth=assetAnchorLocal(root,'MouthAnchor');
  if(!mouth){console.warn('Fishing specimen has no MouthAnchor',id);return null;}
  root.userData.tail=model.getObjectByName(id+'_Tail');
+ root.userData.fishRigRoot=model;
  root.userData.mouthLocal=mouth;
  return root;
 }
+export function animateSpecimen(model,caught,cue,dt,reduced=false){
+ if(!model||caught?.object||model.userData.object||['bottle','bell'].includes(caught?.id))return;
+ model.userData.fishAnimation??=createFishAnimation(caught);
+ model.userData.fishBodyRig??=createFishBodyRig(model.userData.fishRigRoot||model,{id:caught?.id,headDirection:model.userData.fishRigRoot?1:-1});
+ model.userData.fishBodyRig.apply(model.userData.fishAnimation.update(cue,dt,reduced));
+}
+export function disposeSpecimenAnimation(model){if(!model)return;model.userData.fishBodyRig?.dispose();delete model.userData.fishBodyRig;delete model.userData.fishAnimation;}
 function prepare(model){model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return model;}
 export function installFishingArt({scene,person,idleLure,bobber,caughtHook,terrainY,hatParts,hookParts,bodyParts,upperArms,foreArms,thighs,shins}){
  const path=n=>`./assets/models/fishing-details/${n}.glb?v=art7`;
- let torsoPivot=null,headPivot=null,hatModel=null;
+ let torsoPivot=null,headPivot=null,hatModel=null,faceRig=null,expression={},disposed=false;
  for(const [name,x,z,rotation,y] of [['tackle_box',-1.65,-1.6,-.12,.735],['bait_bucket',-.60,-1.05,.2,.735],['field_stool',-3.55,-5.35,.15,null]]){
   load(path(name)).then(source=>{if(!source)return;const m=prepare(source.clone(true));m.position.set(x,y??terrainY(x,z),z);m.rotation.y=rotation;scene.add(m)});
  }
@@ -44,13 +55,14 @@ export function installFishingArt({scene,person,idleLure,bobber,caughtHook,terra
  for(const side of [-1,1])part([.042,.34,.04],[side*.135,.60,-.185],trim);
  const oldWardrobe=person.children.slice(wardrobeStart);
  load('./assets/models/angler-gull/angler_body.glb?v=7').then(source=>{
-  if(!source)return;const replacement=prepare(source.clone(true)),upperMeshes=[];
+  if(!source||disposed)return;const replacement=prepare(source.clone(true)),upperMeshes=[];
   replacement.traverse(o=>{if(!o.isMesh)return;if(/^(Trouser_|Bent_knee|Rolled_cuff|Boot)/.test(o.name))o.visible=false;else upperMeshes.push(o)});
   person.add(replacement);
   torsoPivot=new T.Group();torsoPivot.name='IdleTorsoPivot';torsoPivot.position.set(0,.55,0);replacement.add(torsoPivot);
   headPivot=new T.Group();headPivot.name='IdleHeadPivot';headPivot.position.set(0,.40,0);torsoPivot.add(headPivot);
   for(const part of upperMeshes){const isHead=/^(Head|Hair_cap|Ear|Inner_ear|Sideburn|Eye_white|Eye|Eye_highlight|Brow|Cheek|Nose|Smile)/.test(part.name);(isHead?headPivot:torsoPivot).attach(part)}
   if(hatModel)headPivot.attach(hatModel);
+  faceRig=createAnglerFaceRig(headPivot);faceRig.apply(expression);
   [...bodyParts,...oldWardrobe].forEach(o=>o.visible=false);
  });
  for(const [name,limbs] of [['upper_sleeve',upperArms],['forearm',foreArms],['trouser_thigh',thighs],['trouser_shin',shins]]){
@@ -70,5 +82,5 @@ export function installFishingArt({scene,person,idleLure,bobber,caughtHook,terra
   spare.position.copy(onFish?mouthTarget:baitTarget);spare.visible=(baitOnFloat||onFish)&&!castModels.has(id);
  }
  for(const id of ['grain','worm','glow'])load(path('bait_'+id)).then(source=>{if(!source)return;const idle=prepare(source.clone(true));idle.scale.setScalar(BAIT_GAME_SCALE);idleLure.add(idle);idleModels.set(id,idle);const cast=prepare(source.clone(true));cast.scale.setScalar(BAIT_GAME_SCALE);cast.userData.hookLocal=assetAnchorLocal(cast,'HookAnchor');if(!cast.userData.hookLocal){console.warn('Fishing bait has no HookAnchor',id);return}bobber.add(cast);castModels.set(id,cast);update(active,baitOnFloat,onFish)});
- return {update,setBaitMotion(x=0,z=0){baitTarget.set(.11+x,-.43,.01+z);if(!onFish){for(const model of castModels.values())alignAssetAnchorLocal(model,model.userData.hookLocal,baitTarget);hookParts[1].position.copy(baitTarget)}},setIdleLook(torsoYaw=0,headYaw=0,pitch=0){if(torsoPivot){torsoPivot.rotation.y=torsoYaw;torsoPivot.rotation.x=-pitch*.22}if(headPivot){headPivot.rotation.y=headYaw;headPivot.rotation.x=-pitch*.78}}};
+ return {update,setExpression(cue){expression=cue||{};faceRig?.apply(expression)},dispose(){disposed=true;faceRig?.dispose();faceRig=null},setBaitMotion(x=0,z=0){baitTarget.set(.11+x,-.43,.01+z);if(!onFish){for(const model of castModels.values())alignAssetAnchorLocal(model,model.userData.hookLocal,baitTarget);hookParts[1].position.copy(baitTarget)}},setIdleLook(torsoYaw=0,headYaw=0,pitch=0){if(torsoPivot){torsoPivot.rotation.y=torsoYaw;torsoPivot.rotation.x=-pitch*.22}if(headPivot){headPivot.rotation.y=headYaw;headPivot.rotation.x=-pitch*.78}}};
 }

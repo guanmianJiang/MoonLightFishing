@@ -1,0 +1,8 @@
+[
+  {
+    "level": "error",
+    "message": "TypeError: Cannot read properties of undefined (reading 'name')\n    at _p (http://127.0.0.1:53999/bundles/index-CmAKDrXn.js:937:95455)\n    at http://127.0.0.1:53999/bundles/index-CmAKDrXn.js:937:110937",
+    "timestamp": "2026-10-02T10:33:35.398Z",
+    "url": "http://127.0.0.1:53999/bundles/index-CmAKDrXn.js"
+  }
+]

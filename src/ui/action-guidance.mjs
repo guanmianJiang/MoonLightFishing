@@ -14,13 +14,13 @@ export function catchActionCue(action, goal) {
   return {text: copy[followsGoal ? 1 : 0], followsGoal};
 }
 
-export function actionCuePresentation({mode, opening = false, trailReady = false, aimAdjusted = false,
+export function actionCuePresentation({mode, opening = false, trailReady = false, recovery = null, aimAdjusted = false,
   queued = false, feedback, now = 0} = {}) {
   if (mode === 'aim') {
     if (queued) return {key: 'aim:queued', text: '正在准备抛竿…', target: '#cast', kind: 'waiting', announce: true};
     return {key: `aim:${aimAdjusted ? 'adjusted' : 'choose'}`,
-      text: aimAdjusted ? '落点已调整 · 点抛竿确认' : '点水面调整落点 · 再点抛竿',
-      target: '#cast', kind: 'next', announce: true};
+      text: aimAdjusted ? '落点已选 · 点抛竿确认' : '选近水／中段／远水，或点水面微调',
+      target: aimAdjusted ? '#cast' : '#castZones', kind: 'next', announce: true};
   }
   if (mode !== 'prepare') return null;
   if (Number.isFinite(now) && now >= 0 && Number.isFinite(feedback?.expiresAt) && feedback.expiresAt > 0 && now < feedback.expiresAt) {
@@ -29,6 +29,7 @@ export function actionCuePresentation({mode, opening = false, trailReady = false
         : feedback.kind === 'cancel' ? '已取消选点 · 可以重新选择' : '';
     if (text) return {key: `feedback:${feedback.key}`, text, target: feedback.target || '#cast', kind: 'confirmed', announce: true};
   }
+  if (typeof recovery?.cue === 'string' && recovery.cue) return {key: 'prepare:first-miss', text: recovery.cue, target: '#cast', kind: 'next', announce: false};
   if (trailReady) return {key: 'prepare:trail', text: '同钓点、同鱼饵 · 再选落点追鱼影', target: '#cast', kind: 'next', announce: false};
   if (opening) return {key: 'prepare:first', text: '先选一处水面 · 再确认抛竿', target: '#cast', kind: 'next', announce: false};
   return null;

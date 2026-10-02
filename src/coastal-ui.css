@@ -55,6 +55,12 @@
 #game .route-card__difficulty { color: #7d745a; font-size: 11px; }
 #game .route-card .route-card__primary { min-height: 44px; margin-top: 8px; padding: 10px 12px; border: 1px solid #d2debd; border-radius: 12px; background: #e8edda; color: #3b6a50; font-size: 13px; }
 #game .route-card .route-card__journal { min-height: 44px; padding: 10px 0; margin-top: 0; font-size: 12px; color: #637663; }
+#game .route-card__water-question { margin-top: 8px; padding-top: 7px; border-top: 1px solid #d5dfcb; }
+#game .route-card__question-kicker { display: block; color: #687b68; font-size: 10px; font-weight: 700; }
+#game .route-card .route-card__question { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; padding: 7px 2px; color: #315c54; text-align: left; font-size: 12px; line-height: 1.3; }
+#game .route-card__water-question p { margin: 0 0 4px; color: #60766c; font-size: 10px; line-height: 1.4; }
+#game:has(.route-card__details[open]) > footer { z-index: 9; }
+@media (max-width: 780px) and (max-height: 650px) { #game .route-card__body { max-height: min(240px,38dvh); } }
 #game .footer-top { display: none; }
 #game .toolbar { display: flex; padding: 8px; gap: 8px; min-height: 78px; border: 0; border-radius: 0; background: none; box-shadow: none; }
 #game .toolbar .bait-group-label, #game .toolbar .separator { display: none; }
@@ -452,6 +458,11 @@ body:has(#book:modal)::before { display: none; }
   #game.fighting #fight .fight-beat-icon, #game.fighting #fight #fightRigLine, #game.fighting #fight #fightRigWake { animation: none; }
 }
 
+/* Keep the water action unobstructed until the chosen handling motion finishes. */
+#game[data-ui-mode="processing"] :is(footer,.toolbar,.camera-controls,#spots,#tripDetails,#actionCue,#biteReadout,#fightControl) { display: none !important; }
+#game[data-ui-mode="processing"] #landingCue { max-width: min(310px,calc(100vw - 36px)); }
+#game[data-ui-mode="processing"] #landingCueText { white-space: normal; line-height: 1.4; }
+
 /* Distinct action, choice and tool surfaces; the rod keeps the central sky. */
 #game .hud-tools > button { border-radius: 15px; border: 1px solid #edf3d7 !important; background: linear-gradient(155deg,#edf2dff5,#c1d7c5f5); color: #355c4b; box-shadow: inset 0 1px 1px #fffceccc,inset 0 -2px 2px #719c8130,0 2px 0 #7b9d7d66,0 4px 8px #37523a20; }
 #game .hud-tools #sound[aria-pressed="true"] { background: linear-gradient(145deg,#dce8bf,#aec898); box-shadow: inset 0 1px 1px #f9fbdc,inset 0 -2px 2px #6c925b33,0 2px 0 #718f6266,0 4px 8px #37523a20; }
@@ -660,6 +671,18 @@ body:has(#book:modal)::before { display: none; }
 #game.fighting #fight #fightOutlook[data-state] > div { justify-content: flex-start; line-height: 1.3; }
 #game.fighting #fight #fightTravel { display: block; position: static; flex: none; min-width: 0; width: auto; max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: #537558; font: 650 10px/1.3 var(--sans); text-shadow: none; white-space: nowrap; }
 #game.fighting #fight #fightTravel, #game.fighting #fight #fightRig, #game.fighting #fight .fight-message, #game.fighting #fight .fight-status-footer { pointer-events: none; }
+
+/* Large distance choices make cast aiming usable without precise water taps. */
+#game .cast-zones[hidden] { display: none !important; }
+#game[data-ui-mode="aim"] .cast-zones { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; margin-bottom: 9px; pointer-events: auto; }
+#game[data-ui-mode="aim"] .cast-zones button { min-width: 0; min-height: 48px; padding: 7px 2px; border: 1px solid #d5e4ce; border-radius: 16px; background: #deead9ed; color: #476955; font: 750 13px/1.2 var(--sans); touch-action: manipulation; box-shadow: 0 2px 5px #244a3425; }
+#game[data-ui-mode="aim"] .cast-zones button[aria-pressed="true"] { border-color: #fbe1a9; background: linear-gradient(165deg,#f8e2b5,#e9bf89); color: #51432e; box-shadow: inset 0 1px 1px #fff5d5,0 3px 0 #ac895e; }
+#game[data-ui-mode="aim"] .cast-zones button:active:not(:disabled) { transform: translateY(2px); }
+#game[data-ui-mode="aim"] .cast-zones button:disabled { opacity: .62; }
+@media (max-height: 650px) {
+  #game[data-ui-mode="aim"] .cast-zones { margin-bottom: 6px; }
+  #game[data-ui-mode="aim"] .cast-zones button { min-height: 44px; }
+}
 @media (max-width: 350px), (max-height: 650px) {
  #game.fighting #fight .fight-summary { gap: 2px; padding: 6px 8px; border-radius: 17px; }
  #game.fighting #fight #fightRig { height: 38px; }

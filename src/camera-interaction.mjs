@@ -18,8 +18,13 @@ export function readyWaterGesture(pointerCount,travelPx){
  return pointerCount===1&&Number.isFinite(travelPx)&&travelPx>7?'select':'wait';
 }
 
+export function aimCameraFocusPoint(selected,gesture){
+ const anchor=gesture?.dragging?gesture.originPoint:null;
+ return Array.isArray(anchor)&&anchor.length===2&&anchor.every(Number.isFinite)?anchor:selected;
+}
+
 export function visibleCastRanges(state,spotIds){
- if(!state||state.pending||!Array.isArray(spotIds))return [];
+ if(!state||state.pending||state.catchProcessEvent||!Array.isArray(spotIds))return [];
  if(state.overview||!state.keepFishingView&&!state.aiming)return [...spotIds];
  return spotIds.includes(state.spot)?[state.spot]:[];
 }

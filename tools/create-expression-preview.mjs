@@ -1,0 +1,16 @@
+// Disposable visual review of the shipped GLB and the actual expression modules.
+import {writeFile} from 'node:fs/promises';
+await writeFile('src/__angler-expression-preview.html',`<!doctype html><html lang="zh-CN"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>角色表情检查</title>
+<style>body{margin:0;background:#c8dbd1;font:15px sans-serif;color:#315c54}canvas{display:block}header{position:absolute;top:16px;left:16px;right:16px;background:#ecf1dcdd;padding:12px;border-radius:18px}nav{position:absolute;bottom:18px;left:12px;right:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}button{padding:12px 2px;border:0;border-radius:12px;background:#eaf0d9;color:#315c54;font:inherit}button[aria-pressed=true]{background:#346e62;color:white}p{margin:6px 0 0;font-size:12px}</style>
+<header><strong id="mood">放松等待</strong><p>正式角色模型 · 表情细节检查</p></header><nav id="choices"></nav>
+<script type="module">
+import * as T from './three.module.js';import {GLTFLoader} from './vendor/loaders/GLTFLoader.js';import {createAnglerFaceRig} from './angler-face-rig.mjs';import {createAnglerExpression} from './angler-expression.mjs';
+const scene=new T.Scene();scene.background=new T.Color('#a7c6bd');const renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.toneMapping=T.ACESFilmicToneMapping;document.body.prepend(renderer.domElement);
+const camera=new T.PerspectiveCamera(32,1,.01,20);camera.position.set(.16,1.04,1.23);camera.lookAt(0,1.02,.02);scene.add(new T.HemisphereLight('#ffefd8','#7a9d91',2));const sun=new T.DirectionalLight('#fff0d1',2.3);sun.position.set(-2,4,3);scene.add(sun);
+const {scene:model}=await new GLTFLoader().loadAsync('./assets/models/angler-gull/angler_body.glb?v=7');scene.add(model);const rig=createAnglerFaceRig(model),driver=createAnglerExpression(),caught={id:'carp',weight:2},pending={start:0,readyAt:1000,phase:'cast',catch:caught};
+const poses=[['放松等待',{},1000],['咬钩惊喜',{pending,phase:'hooked'},1100],['用力收线',{pending:{...pending,fight:{status:'active',tension:1.2,load:1,slack:0}}},1200],['上鱼笑意',{pending,revealing:true,outcomeEvent:{kind:'first',at:1000}},1100],['挂物好奇',{pending:{...pending,catch:{id:'bottle'}},revealing:true},1100],['断线惊讶',{outcomeEvent:{kind:'line-break',at:1000}},1100],['脱钩遗憾',{outcomeEvent:{kind:'escaped',at:1000}},1800],['放流温柔',{catchProcessEvent:{action:'release'}},1100],['轻轻眨眼',{},4400]];let selected=0,last=0;
+for(const [i,[label]] of poses.entries()){const button=document.createElement('button');button.textContent=label;button.dataset.pose=i;button.onclick=()=>{selected=i;document.querySelector('#mood').textContent=label;mark()};document.querySelector('#choices').append(button)}
+function mark(){document.querySelectorAll('[data-pose]').forEach((b,i)=>b.setAttribute('aria-pressed',i===selected))}mark();
+function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+function frame(ms){const dt=Math.min(.033,(ms-last)/1000||.016);last=ms;const [,context,now]=poses[selected];rig.apply(driver.update(context,now,dt));renderer.render(scene,camera);requestAnimationFrame(frame)}requestAnimationFrame(frame);
+</script></html>`);

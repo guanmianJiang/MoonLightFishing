@@ -27,9 +27,19 @@ export function castPreset(spot,zone='middle'){
  return [+(center[0]+forward[0]*offset).toFixed(3),+(center[1]+forward[1]*offset).toFixed(3)];
 }
 
+// Touch-sized shortcuts share the same reachable points as water aiming.
+export function castAimChoices(spot,point){
+ if(!CAST_AREAS[spot])return {active:null,choices:[]};
+ const selected=Array.isArray(point)?castPointFromWorld(spot,point[0],point[1]):null;
+ return {
+  active:castZone(spot,selected||castPreset(spot)),
+  choices:Object.entries(CAST_ZONES).map(([id,copy])=>({id,name:copy.name,hint:copy.hint,point:spot==='reed'&&id==='near'?openingCastPoint():castPreset(spot,id)})).filter(choice=>castPointFromWorld(spot,...choice.point))
+ };
+}
+
 export function openingCastPoint(){
  const near=castPreset('reed','near');
- const point=[+(near[0]-3.1).toFixed(3),+(near[1]+.25).toFixed(3)];
+ const point=[+(near[0]+1.2).toFixed(3),+(near[1]+.2).toFixed(3)];
  return castPointFromWorld('reed',...point)?point:near;
 }
 
@@ -73,6 +83,17 @@ export function castPointFromWaterTouch(spot,x,z){
   scale*=.72;
  }
  return castPointFromWorld(spot,...center)?[...center]:null;
+}
+
+// A drag moves the existing target by the finger's world-space delta. The
+// touched water can be elsewhere, keeping the reticle out from under a thumb.
+export function castAimDragPoint(spot,selected,startWater,currentWater){
+ if(!Array.isArray(selected)||!castPointFromWorld(spot,...selected))return null;
+ for(const touch of [startWater,currentWater])if(!Array.isArray(touch)||touch.length!==2||!touch.every(Number.isFinite)||touch[1]<=shore(touch[0])+WATER_MARGIN)return null;
+ let dx=currentWater[0]-startWater[0],dz=currentWater[1]-startWater[1];
+ const length=Math.hypot(dx,dz),scale=length>CAST_RADIUS*1.25?CAST_RADIUS*1.25/length:1;
+ dx*=scale;dz*=scale;
+ return castPointFromWaterTouch(spot,selected[0]+dx,selected[1]+dz);
 }
 
 export function readyWaterTarget(state,x,z){

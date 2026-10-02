@@ -2,6 +2,9 @@ import {FISH,SPOTS,BAITS} from './data/catalog.mjs';
 import {normalizeWaterTrail} from './water-trail.mjs';
 import {explorationProgress} from './progression-guide.mjs';
 import {castWeightTable} from './cast-weights.mjs';
+import {discoveryThread} from './discovery-notes.mjs';
+import {firstBiteRecovery} from './first-bite-recovery.mjs';
+import {waterQuestionWaitingLine} from './water-question.mjs';
 
 const fishName=id=>FISH.find(f=>f.id===id&&!f.object)?.name;
 const spotName=id=>SPOTS.find(s=>s.id===id)?.name;
@@ -16,8 +19,10 @@ export function nextCastThread(save,weatherId=null){
  const trailEligible=trail&&trailSpot&&progress>=trailSpot.unlock&&(!weatherId||castWeightTable({...save,spot:trail.spot,bait:trail.bait},weatherId)[trail.fishId]>0);
  if(trailEligible){
   const name=fishName(trail.fishId);
-  return {kind:'trail',title:`刚才的${name}可能还在`,detail:`回到${spotName(trail.spot)}，继续用${baitName(trail.bait)}。下一竿可能追到那道鱼影。`,waterLine:'刚才鱼影离开的方向又有轻微水纹，先看浮漂是否真的被带动。',action:actionFor(save,trail.spot,trail.bait)};
+  return {kind:'trail',title:`刚才的${name}可能还在`,detail:firstBiteRecovery(save)?.detail||`回到${spotName(trail.spot)}，继续用${baitName(trail.bait)}。下一竿可能追到那道鱼影。`,waterLine:'刚才鱼影离开的方向又有轻微水纹，先看浮漂是否真的被带动。',action:actionFor(save,trail.spot,trail.bait)};
  }
+ const discovery=discoveryThread(save);
+ if(discovery)return discovery;
  if(progress>=3&&save.spot==='reed'&&!log.some(c=>c?.spot==='bridge'))return {kind:'new-water',title:'栈桥外湾已经能去了',detail:'浅滩的记录指向木桩旁。下一竿可以去外湾看看水纹与鱼线。',waterLine:'木桩旁有一道慢水纹，浮漂仍在原处。',action:{kind:'spot',spot:'bridge',label:'前往栈桥外湾'}};
  if(progress>=7&&save.spot!=='deep'&&!log.some(c=>c?.spot==='deep'))return {kind:'new-water',title:'深水有新的动静',detail:'外湾的记录已足够辨认深水方向。下一竿可以去外海观察。',waterLine:'远水有一层缓浪，先看鱼线是否跟着变化。',action:{kind:'spot',spot:'deep',label:'前往外海深水'}};
  const tracked=Array.isArray(save.tracked)?save.tracked.filter(item=>fishName(item?.id)&&spotName(item?.spot)).sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0))[0]:null;
@@ -30,6 +35,8 @@ export function nextCastThread(save,weatherId=null){
 }
 
 export function waitingWaterLine(save,pending){
+ const questionLine=waterQuestionWaitingLine(pending);
+ if(questionLine)return questionLine;
  if(pending?.followedTrail)return '刚才鱼影离开的方向又有轻微水纹，先看浮漂是否真的被带动。';
  const thread=nextCastThread(save,pending?.weather?.id);
  return thread?.waterLine||null;

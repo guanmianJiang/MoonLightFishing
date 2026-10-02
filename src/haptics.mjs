@@ -33,6 +33,8 @@ const cues={
  invalid:{pattern:7,priority:0,cooldown:180},
  cast:{pattern:12,priority:2,cooldown:250},
  splash:{pattern:9,priority:1,cooldown:180},
+ 'release-water':{pattern:12,priority:2,cooldown:300},
+ 'release-heavy':{pattern:[20,22,8],priority:3,cooldown:300},
  object:{pattern:11,priority:2,cooldown:280},
  bite:{pattern:[18,32,23],priority:4,cooldown:350},
  hook:{pattern:[23,25,14],priority:5,cooldown:320},
