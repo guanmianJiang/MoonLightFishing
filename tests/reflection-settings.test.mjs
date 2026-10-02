@@ -21,7 +21,7 @@ test('Fresnel power actually changes mid angles; normal-incidence water reflecta
  }
  assert.ok(Math.abs(reflection(.4,0,5,1)-.096573696)<1e-10);
  assert.ok(reflection(.4,.2,5,1)>reflection(.4,0,5,1));
- assert.equal(reflection(-.01,0,5,1),0);assert.equal(reflection(0,0,5,1),1);
+ assert.equal(reflection(-.01,0,5,1),1);assert.equal(reflection(0,0,5,1),1);
  for(const power of [.1,5,24])for(let c=0;c<=1;c+=.002){const f=reflection(c,0,power,1);assert.ok(f>=.0204&&f<=1)}
 });
 

@@ -58,6 +58,9 @@ test('reflection has water Fresnel at normal view and becomes dominant at grazin
  assert.ok(reflection(.4,0,5,1)>.09);
  assert.ok(reflection(.15,0,5,1)>.45);
  assert.equal(reflection(0,0,5,1),1);
+ assert.equal(reflection(-.001,0,5,1),1);
+ assert.equal(reflection(-.4,0,5,1),1);
+ assert.equal(reflection(-.4,0,5,0),0);
  assert.equal(reflection(.1,0,5,0),0);
  assert.equal(reflection(.1,0,5,-1),0);
  assert.equal(reflection(.1,2,.1,2),1);
@@ -81,6 +84,7 @@ test('reflection reuses capture, keeps its bounded trace and shares sky radiance
  assert.ok(scene.includes('${skyRadianceGLSL}'));
  assert.ok(skyRadianceGLSL.includes('heightAtmosphereMean'));
  assert.ok(!water.includes('vec3(.74,.94,1.12)'));
+ assert.ok(water.includes('waterReflectionWeight(reflectionNdotV'));
  assert.ok(water.includes('color=mix(color,reflectedSky,reflectionWeight);'));
  assert.ok(!water.includes('liquidSheen'));
  assert.ok(validReflectionSetting('reflectionSceneStrength',defaultRenderSettings.reflectionSceneStrength));

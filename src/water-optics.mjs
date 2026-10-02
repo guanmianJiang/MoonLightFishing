@@ -14,7 +14,8 @@ export const waterOpticsGLSL=`
   return source*illumination*transmission+body*(scattering/extinction)*(1.-transmission);
  }
  float waterReflectionWeight(float cosine,float base,float power,float strength){
-  if(cosine<0.)return 0.;
+  // Fine normals can tip past the view at the horizon. They are still
+  // grazing water, not a hole in the environment reflection.
   float c=clamp(cosine,0.,1.);
   float f0=.0204+.9796*clamp(base,0.,1.);
   float fresnel=f0+(1.-f0)*pow(1.-c,max(power,.001));
