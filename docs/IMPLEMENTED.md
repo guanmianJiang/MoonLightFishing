@@ -218,9 +218,11 @@
 | --- | --- | --- | --- | --- | --- |
 | 水域履历与本轮路线 | 将真实上岸、失手、沉水物、平静竿归入钓点，跨轮保存有界事实；在地图、手记和收竿页串起地点与竿数，提供不冒充发现的下一步建议 | P0 | `spot-chronicle`、`trip-summary`、`engine`、`spot-content.json`、手记/准备态/收竿界面 | `tests/spot-chronicle.test.mjs` 新增 8 项，覆盖结算、跨轮、旧档、重复/非法事件、三钓点与触控前往；构建、全量测试及 320×568/390×844 浏览器画幅见 `docs/validation/spot-chronicle-2026-10-02/report.md`。第 4/8/20 竿自发继续意愿、真实手机触控与低端帧率待试玩验证 | `2026.10-spot-chronicle-v1` |
 | 钓点选择到落点预览 | 地图选点即给该地真实经历或首次试法；手记/准备卡一按设置对应饵和合法落点，进入可取消瞄准，仍须二次确认抛竿；移除选点时冒充亲见的鱼讯 | P1 | `spot-chronicle`、`ui/trip-route`、`ui/book-markup`、既有两段式抛竿与响应式布局 | 履历模块增至 12 项，覆盖四类结果、旧数据退回、锁定/未决状态和不自动抛竿；320×568、390×844 浏览器核对选点、建议、落点与取消，详见 `docs/validation/spot-chronicle-2026-10-02/v2-report.md`。真实手机触控与玩家是否理解建议仍待试玩 | `2026.10-spot-flow-v2` |
+| 地图钓点选择标记 | 三片水在点选前可扫读地点特征、开放条件与此版最近真实结果；当前点有明确标识，旧档不伪称未到访，短屏三点均在操作区上方可见 | P1 | `spot-content.json`、`spot-chronicle`、`ui/setup.jsx`、`responsive-ui.css`、现有钓点与路线卡 | `tests/spot-chronicle.test.mjs` 增至 16 项，覆盖三地配置、锁点/旧档、四类最近结果、结果顺序、损坏记录及语义接线；全量 734 项、构建和差异检查通过；320×568 与 390×844 浏览器画幅复核见 `docs/validation/spot-chronicle-2026-10-02/map-markers-report.md`。真实触控遮挡与玩家是否据此改选待试玩 | `2026.10-spot-map-markers-v3` |
 
 ## 图鉴手记成果与引导（2026-10-02）
 
 | 功能名称 | 目标 | 优先级 | 依赖模块 | 测试要点与待验 | 完成版本 |
 | --- | --- | --- | --- | --- | --- |
 | 个人成果总览与相遇图鉴 | 手记入口展示已遇鱼种、开放水域、受支持观察、最近相遇和下一竿建议；图鉴按现存证据回看重量/地点/搏鱼，主导航3项、辅助入口折叠，详细履历保留 | P1 | `journal-achievements`、book-markup、Solid journal、spot-chronicle/discovery-notes/fightRecords、原prepareSpotPlan、实际画幅/材质层 | 新增8项正常/边界/安全与真实跳转测试，相关32项通过；全量与构建见 `docs/validation/journal-experience-2026-10-02/report.md`。旧日志有界，未承诺完整历史；未进游戏，真机视觉/阅读/长文本待验 | `2026.10-journal-experience-v1` |
+| 手记实体层次V2 | 外沿/下沉阅读面/导航凹槽分层；已遇图鉴轻侧沿与图片接触阴影，未知槽位减弱；成果一体化，主行动5px侧沿 | P1 | `journal-experience.css`、原手记成果数据/导航、button-states、最终适配层 | 新增3项材质/状态隔离测试，相关24项和全量730项通过，构建通过；未进游戏，实际视觉、短屏阅读和静态滤镜低端合成开销待验 | `2026.10-journal-material-v2` |

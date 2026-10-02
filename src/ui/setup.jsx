@@ -1,39 +1,26 @@
 import {For, Show, createSignal} from 'solid-js';
 import {render} from 'solid-js/web';
 import {SPOTS, BAITS, spotUnlocked} from '../engine.mjs';
-import {explorationProgress} from '../progression-guide.mjs';
 import {selectedBaitCopy} from './fishing-ui-state.mjs';
-import {waterChronicleCoverage} from '../spot-chronicle.mjs';
-
-const habitat = {
-  reed: '入门 · 浅层小鱼',
-  bridge: '进阶 · 大型鱼与沉水物',
-  deep: '挑战 · 深水与异常目标',
-};
+import {spotMarkerView} from '../spot-chronicle.mjs';
 
 function Spot({spot, selection, onSelect}) {
   const active = () => selection().spot === spot.id;
   const unlocked = () => spotUnlocked(selection(), spot.id);
-  const recorded = () => selection().waterChronicle?.spots?.[spot.id]?.casts || 0;
-  const legacy = () => selection().hasOlderCasts;
-  const detail = () => active()
-    ? `当前垂钓 · ${recorded() ? `已记 ${recorded()} 竿` : legacy() ? '旧记录未归点' : habitat[spot.id]}`
-    : unlocked()
-      ? `${recorded() ? `已记 ${recorded()} 竿` : legacy() ? '旧记录未归点' : '尚无抛竿'} · ${habitat[spot.id]}`
-      : `探索 ${selection().exploration}/${spot.unlock} 解锁`;
+  const marker = () => spotMarkerView(selection(), spot.id, unlocked());
   const style = {'--spot-x': `${spot.x}%`, top: `${spot.y}%`};
   const content = () => <>
-    <span class="spot-order" aria-hidden="true">≈</span>
-    <span class="spot-copy"><strong>{spot.name}</strong><small>{detail()}</small></span>
+    <span class="spot-order" aria-hidden="true">{marker().glyph}</span>
+    <span class="spot-copy"><span class="spot-head"><strong>{spot.name}</strong><em class="spot-status">{active() ? '当前' : marker().status}</em></span><small>{active() ? `${marker().shortStatus} · ${marker().hint}` : unlocked() ? marker().hint : marker().detail}</small></span>
   </>;
   return <Show when={active()} fallback={
     <button type="button" classList={{spot: true, waiting: selection().pending, locked: !unlocked()}}
-      style={style} data-spot={spot.id} disabled={selection().pending}
-      aria-label={`选择钓点：${spot.name}，${unlocked() ? '已开放' : `需要探索进度 ${spot.unlock}`}`}
+      style={style} data-spot={spot.id} data-state={marker().state} disabled={selection().pending}
+      aria-label={`选择钓点：${marker().aria}`}
       onClick={() => onSelect(spot.id)}>{content()}</button>
   }>
-    <span class="spot active" style={style} data-spot={spot.id}
-      aria-label={`当前钓点：${spot.name}`}>{content()}</span>
+    <span class="spot active" style={style} data-spot={spot.id} data-state={marker().state}
+      aria-label={`当前钓点：${marker().aria}`}>{content()}</span>
   </Show>;
 }
 
@@ -52,7 +39,7 @@ function Bait({bait, selection, onSelect}) {
 }
 
 export function mountSetupUI(spotsRoot, baitsRoot, onSpot, onBait) {
-  const [selection, setSelection] = createSignal({spot: '', bait: '', pending: false, knowledge: 0, exploration: 0, casts: 0, waterChronicle: null, hasOlderCasts:false});
+  const [selection, setSelection] = createSignal({spot: '', bait: '', pending: false, knowledge: 0, casts: 0, waterChronicle: null});
   const disposeSpots = render(() => <For each={SPOTS}>{spot =>
     <Spot spot={spot} selection={selection} onSelect={onSpot} />
   }</For>, spotsRoot);
@@ -61,7 +48,7 @@ export function mountSetupUI(spotsRoot, baitsRoot, onSpot, onBait) {
   }</For>, baitsRoot);
   return {
     update(state) {
-      const next = {spot: state.spot, bait: state.bait, pending: !!state.pending, knowledge: state.knowledge, exploration: explorationProgress(state), log: state.log, casts: state.casts, waterChronicle: state.waterChronicle, hasOlderCasts:waterChronicleCoverage(state).hasOlderCasts};
+      const next = {spot: state.spot, bait: state.bait, pending: !!state.pending, knowledge: state.knowledge, log: state.log, casts: state.casts, waterChronicle: state.waterChronicle};
       const previous = selection();
       if (Object.keys(next).some(key => next[key] !== previous[key])) setSelection(next);
       const copy = selectedBaitCopy(state.bait);

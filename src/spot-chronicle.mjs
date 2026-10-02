@@ -1,5 +1,6 @@
 import {SPOTS,FISH,BAITS,WEATHERS} from './data/catalog.mjs';
 import SPOT_CONTENT from './config/gameplay/spot-content.json' with {type:'json'};
+import {explorationProgress} from './progression-guide.mjs';
 
 const spotIds=new Set(SPOTS.map(spot=>spot.id));
 const liveFish=new Map(FISH.filter(fish=>!fish.object).map(fish=>[fish.id,fish]));
@@ -19,11 +20,13 @@ export const emptyWaterChronicle=()=>({version:1,total:0,lastOrdinal:0,spots:Obj
 
 export function validateSpotContent(config=SPOT_CONTENT){
  if(config?.version!==1||!Array.isArray(config.spots)||config.spots.length!==SPOTS.length)return false;
- const seen=new Set();
+ const seen=new Set(),glyphs=new Set(),hints=new Set();
  for(const item of config.spots){
   if(!spotIds.has(item?.id)||seen.has(item.id)||!BAITS.some(bait=>bait.id===item.bait)||!zones.includes(item.zone))return false;
   if(!['theme','firstStep','returnStep'].every(key=>typeof item[key]==='string'&&item[key].trim().length>0&&item[key].length<=120))return false;
-  seen.add(item.id);
+  if(typeof item.mapHint!=='string'||!item.mapHint.trim()||item.mapHint.length>16||typeof item.mapGlyph!=='string'||!item.mapGlyph.trim()||[...item.mapGlyph].length>2)return false;
+  if(glyphs.has(item.mapGlyph)||hints.has(item.mapHint))return false;
+  seen.add(item.id);glyphs.add(item.mapGlyph);hints.add(item.mapHint);
  }
  return true;
 }
@@ -119,4 +122,19 @@ export function spotDecisionGuide(save,spotId){
  return {kind:'spot-plan',title:view.casts?`${view.name} · 下一竿怎么试`:`在${view.name}试第一竿`,
   detail:view.latest||view.next,
   action:{kind:'spot-plan',...view.action,label:`用${bait?.name||'当前鱼饵'}试${zoneNames[view.action.zone]||'中段'}`}};
+}
+
+export function spotMarkerView(save,spotId,unlocked=false){
+ const spot=SPOTS.find(item=>item.id===spotId);if(!spot)return null;
+ const content=validateSpotContent()?SPOT_CONTENT.spots.find(item=>item.id===spotId):null;
+ const hint=content?.mapHint||'先看看水面',glyph=content?.mapGlyph||'≈';
+ const record=normalizeWaterChronicle(save?.waterChronicle).spots[spotId];
+ const last=record.recent.at(-1),older=waterChronicleCoverage(save).hasOlderCasts;
+ let state,status,detail;
+ if(!unlocked){state='locked';status='未开放';detail=`探索 ${explorationProgress(save)}/${spot.unlock} 解锁`;}
+ else if(!record.casts){state=older?'legacy':'new';status=older?'旧竿未归点':'待试一竿';detail=older?'此版尚无地点记录':'此版尚无抛竿';}
+ else if(!last){state='legacy';status='已记竿';detail=`已记 ${record.casts} 竿 · 最近结果未记下`;}
+ else{state=last.kind;status={landed:'上次上岸','near-miss':'上次失手',object:'上次挂物',quiet:'上次平静'}[state];detail=`已记 ${record.casts} 竿 · ${status}`;}
+ const shortStatus={locked:'未开',new:'初试',legacy:record.casts?'已记':'旧竿',landed:'上岸','near-miss':'失手',object:'挂物',quiet:'平静'}[state];
+ return {id:spotId,glyph,hint,state,status,shortStatus,detail,aria:`${spot.name}，${detail}；${hint}`};
 }

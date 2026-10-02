@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {SPOTS,newSave,migrateSave,makeCast,finishCast,processCatch,startNextTrip,spotUnlocked} from '../src/engine.mjs';
-import {emptyWaterChronicle,normalizeWaterChronicle,addWaterChronicleMoment,spotChronicleView,spotDecisionGuide,waterChronicleCoverage,validateSpotContent} from '../src/spot-chronicle.mjs';
+import {emptyWaterChronicle,normalizeWaterChronicle,addWaterChronicleMoment,spotChronicleView,spotDecisionGuide,spotMarkerView,waterChronicleCoverage,validateSpotContent} from '../src/spot-chronicle.mjs';
 import {tripStory} from '../src/trip-summary.mjs';
 import {renderWaterChronicles} from '../src/ui/book-markup.mjs';
 import content from '../src/config/gameplay/spot-content.json' with {type:'json'};
@@ -19,6 +19,58 @@ test('each configured place has a valid first step and no content claim is gener
  assert.equal(spotChronicleView(save,'missing'),null);
  assert.deepEqual(spotChronicleView(save,'reed').action,{spot:'reed',bait:'grain',zone:'near'});
  assert.match(spotDecisionGuide(save,'reed').title,/近岸浅滩/);
+});
+
+test('map markers distinguish three authored water choices without claiming a sighting',()=>{
+ const save=newSave();
+ assert.deepEqual(SPOTS.map(spot=>spotMarkerView(save,spot.id,true).hint),['浅水看漂相','桥桩看线势','深水看微光']);
+ assert.deepEqual(SPOTS.map(spot=>spotMarkerView(save,spot.id,true).glyph),['≈','║','✧']);
+ assert.equal(spotMarkerView(save,'reed',true).state,'new');
+ assert.equal(spotMarkerView(save,'reed',true).shortStatus,'初试');
+ assert.match(spotMarkerView(save,'reed',true).aria,/此版尚无抛竿/);
+ assert.equal(spotMarkerView(save,'missing',true),null);
+ assert.equal(validateSpotContent({...content,spots:content.spots.map(item=>item.id==='reed'?{...item,mapHint:''}:item)}),false);
+ assert.equal(validateSpotContent({...content,spots:content.spots.map(item=>item.id==='deep'?{...item,mapGlyph:'too long'}:item)}),false);
+ assert.equal(validateSpotContent({...content,spots:content.spots.map(item=>item.id==='deep'?{...item,mapGlyph:'≈'}:item)}),false);
+});
+
+test('locked and legacy map labels are honest about access and old records',()=>{
+ const save=newSave();save.casts=8;save.knowledge=2;
+ const locked=spotMarkerView(save,'bridge',false);
+ assert.equal(locked.state,'locked');assert.match(locked.detail,/探索 2\/3 解锁/);
+ assert.doesNotMatch(locked.aria,/上次上岸/);
+ assert.equal(spotMarkerView(save,'bridge',true).state,'legacy');
+ assert.match(spotMarkerView(save,'bridge',true).status,/旧竿未归点/);
+ save.waterChronicle.spots.reed.casts=1;
+ const incomplete=spotMarkerView(save,'reed',true);
+ assert.equal(incomplete.state,'legacy');assert.match(incomplete.detail,/最近结果未记下/);
+});
+
+test('map status follows the latest settled event, including quiet after a catch',()=>{
+ const cases=[['landed','minnow','上次上岸'],['near-miss','perch','上次失手'],['object','bottle','上次挂物'],['quiet',null,'上次平静']];
+ for(const [kind,fishId,status] of cases){
+  const save=newSave();save.casts=1;
+  save.waterChronicle=addWaterChronicleMoment(save.waterChronicle,moment(1,'reed',kind,fishId));
+  assert.equal(spotMarkerView(save,'reed',true).state,kind);
+  assert.equal(spotMarkerView(save,'reed',true).status,status);
+  assert.match(spotMarkerView(save,'reed',true).shortStatus,/上岸|失手|挂物|平静/);
+ }
+ const save=newSave();save.casts=2;
+ save.waterChronicle=addWaterChronicleMoment(save.waterChronicle,moment(1,'reed','landed','minnow'));
+ save.waterChronicle=addWaterChronicleMoment(save.waterChronicle,moment(2,'reed','quiet'));
+ assert.equal(spotMarkerView(save,'reed',true).status,'上次平静');
+ assert.equal(spotMarkerView(save,'bridge',true).state,'new');
+});
+
+test('map component uses marker semantics and keeps selection separate from casting',()=>{
+ const source=readFileSync(new URL('../src/ui/setup.jsx',import.meta.url),'utf8');
+ assert.match(source,/spotMarkerView\(selection\(\), spot\.id, unlocked\(\)\)/);
+ assert.match(source,/data-state=\{marker\(\)\.state\}/);
+ assert.match(source,/aria-label=\{`选择钓点：\$\{marker\(\)\.aria\}`\}/);
+ assert.match(source,/onClick=\{\(\) => onSelect\(spot\.id\)\}/);
+ assert.doesNotMatch(source,/makeCast\(/);
+ const css=readFileSync(new URL('../src/responsive-ui.css',import.meta.url),'utf8');
+ assert.match(css,/min-height:48px/);assert.match(css,/#game:not\(\.overview\) #spots \.spot small \{display:block/);
 });
 
 test('each real outcome produces a distinct reversible place preparation without inventing a catch',()=>{
