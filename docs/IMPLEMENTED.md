@@ -6,6 +6,8 @@
 
 | 功能名称 | 目标 | 等级/优先级 | 依赖模块 | 测试要点 | 完成版本 |
 | --- | --- | --- | --- | --- | --- |
+| 上鱼承重与离水挣动节奏 | 正常搏鱼成功补承重提拉，真实离水后三次短收腹甩尾并收稳；正式模型迟到时保留钩点与相位交接 | P1 | `src/landing-motion.mjs`、`src/fish-animation.mjs`、`src/fish-body-rig.mjs`、`src/fishing-art.js`、`src/scene.js`、既有GLB/嘴锚/水花 | 新增8项脉冲/重量/边界/相位/减少动态/正常胜利/离水门槛/异步交接回归，七种实际GLB最大收腹及法线/包围球/锚点通过；共享工程718项与构建通过；390×844、320×568、横屏及真实触控上岸到记录见 `docs/validation/catch-landing-animation-2026-10-02/report.md`；低端真机帧时间与动画手感待验 | `2026.10-catch-landing-animation` |
+| 钓竿鱼线弹性与传力节奏第二版 | 固定竿长渐软弯曲、连续受载卸力、定向线波及蓄能失手触觉；完整反弯取景并修复逐帧累积后仰 | P1 | `src/rod-elasticity.mjs`、`src/fishing-motion.js`、`src/scene.js`、`src/haptics.mjs`、`src/app-final.js`、现有搏鱼与失手模块 | 新增14项长度/力向/回弹首帧/30–120Hz/波包/松线/坏输入/镜头投影/后仰/终结唯一性测试；当前共享工程700项及构建通过；390×844、320×568和844×390真实场景，固定构建抛竿到上鱼见 `docs/validation/rod-line-feel-2026-10-02/report.md`；真机振动、扬声器和低端帧时间待验 | `2026.10-rod-line-feel` |
 | 抛竿瞄准手势与入水交接 | 水面按下保持已选落点，点按松手定位；拖动按初始落点相对微调并固定手势取景；确认后落点圈延续到抛投飞行末端，接到浮漂入水 | P0 | `src/cast-target.mjs`、`src/camera-interaction.mjs`、`src/cast-flight.mjs`、`src/scene.js`、`docs/design/cast-landing-flow-spec.md` | 相对位移、范围/岸线边界、7px 阈值、实际场景拖动/双指切入、取景固定、预览淡出与旧处理手势回归；全量 673 项、构建与差异检查通过；390×844 点选/拖动/确认入水、320×568 远水布局见 `docs/validation/cast-aim-handoff-2026-10-02/report.md`；真实多点触控和低端持续帧率待验 | `2026.10-cast-aim-handoff` |
 | 圆润鱼身与连续游动 | 六鱼种轮廓与贴体侧纹细化；身体到尾部行波、胸鳍划水、鳃部呼吸与物种节奏，靠钩至搏鱼/托举/放流相位连续，虾单独收尾、杂物静止 | P1 | `src/fish-animation.mjs`、`src/fish-body-rig.mjs`、`src/fishing-art.js`、`src/scene.js`、鱼嘴锚点、`tools/generate_specimens.py` 与七种GLB/缩略图 | 新增12项阶段/边界/七种实际资产/圆润拓扑/法线/锚点/缓存释放回归，相关42项及全量669项通过，构建/资源/差异检查通过；390与320真实触控上岸放流、连续近景帧见 `docs/validation/fish-animation-2026-10-02/report.md`；primitive数不增，水下远机位可读性与低端真机持续帧率待验 | `2026.10-fish-animation` |
 | 抛竿落点触控流程 | 瞄准时用近水／中段／远水大触控预设快速选落点，保留水面微调和独立确认；首竿近水点避开人物并在短屏可见 | P0 | `src/cast-target.mjs`、`src/app-final.js`、`src/index.html`、`src/coastal-ui.css`、`docs/design/cast-landing-flow-spec.md` | `tests/cast-target.test.mjs` 覆盖三区有效、点位可达、真实区域高亮与坏点；原排队确认/引导/首竿测试回归；全量 669 项、构建和差异检查通过；390×844 浏览器核对三区与双确认，320×568 核对首竿构图、水面微调即时同步和实际抛竿；真机手指遮挡和低端帧率待验 | `2026.10-cast-landing-flow` |
@@ -196,3 +198,29 @@
 | --- | --- | --- | --- | --- | --- |
 | 通用按钮材质与状态反馈 | 浅海盐绿默认、暖杏主操作、浅鼠尾草选中、柔和侧沿和按压下沉；限制hover设备，保持钓点锚点和V7独立输入 | P1 | `button-states.css`、既有CSS层、镜头/手记状态属性、现有声音/设置语义 | 新增7项样式/实际镜头属性测试，相关25项、全量586项通过，构建通过；按用户要求未进入游戏验证，真机视觉/触感待验，详见 `docs/validation/ui-button-states-2026-10-01/report.md` | `2026.10-button-states-v1` |
 | 通用按钮状态强化与比例V2 | 区分hover提亮抬升、持续选中内沿与按压暗面下沉；收窄瞄准抛竿、放大内容并取消图标底框，镜头入口统一48×56px | P1 | V1状态层、原DOM/触控事件、安全区布局 | 状态模块9项、核心输入等相关24项通过；共享工作区全量596项及构建通过；按用户要求未进游戏，视觉/真机待验 | `2026.10-button-states-v2` |
+
+## 竖屏UI分辨率适配（2026-10-02）
+
+| 功能名称 | 目标 | 优先级 | 依赖模块 | 测试要点与待验 | 完成版本 |
+| --- | --- | --- | --- | --- | --- |
+| 实际画幅与可视高度适配 | 按game尺寸区分窄屏/短屏，统一安全区、底部操作与弹窗滚动；宽屏保持竖版比例，软键盘后设置/弹窗仍可操作，保留124px四向输入 | P1 | `ui/responsive-layout`、`responsive-ui.css`、V2按钮层、ResizeObserver/visualViewport、原DOM事件 | 新增5项适配/接线测试，相关29项通过；全量与构建结果见 `docs/validation/responsive-ui-2026-10-02/report.md`。未进游戏验证，实际长文/刘海/键盘/真机手感与帧时间待验 | `2026.10-responsive-ui-v1` |
+
+## UI柔和材质与通透层次（2026-10-02）
+
+| 功能名称 | 目标 | 优先级 | 依赖模块 | 测试要点与待验 | 完成版本 |
+| --- | --- | --- | --- | --- | --- |
+| 海盐面材与按钮受光层次 | 场景HUD浅透面色、柔边及接触阴影；阅读面板高不透明，按钮增加柔和受光面与底部内阴影，保留V2状态及实际画幅适配 | P1 | `ui-material.css`、button-states V2、responsive-ui、既有DOM | 新增5项材质规则测试，相关27项及全量705项通过，构建通过；小区域模糊有回退。实际视觉、场景文字对比与真机合成性能待验，见 `docs/validation/ui-material-2026-10-02/report.md` | `2026.10-ui-material-v1` |
+| 角色分材质与去重底框V2 | 信息暖灰、工具冷青、操作承托浅透、主按钮暖杏厚度；未选中鱼饵去底框，结算图标/说明减少套框，阅读内卡弱化侧沿 | P1 | 材质层、button-states、原选择/指向状态与最终适配层 | 材质模块7项（本轮新增2项）、相关29项及全量713项通过，构建通过；核心手势与布局未改，视觉/真机待验，见 `docs/validation/ui-material-2026-10-02/v2-report.md` | `2026.10-ui-material-v2` |
+
+## 钓点履历与行程内容（2026-10-02）
+
+| 功能名称 | 目标 | 优先级 | 依赖模块 | 测试要点与待验 | 完成版本 |
+| --- | --- | --- | --- | --- | --- |
+| 水域履历与本轮路线 | 将真实上岸、失手、沉水物、平静竿归入钓点，跨轮保存有界事实；在地图、手记和收竿页串起地点与竿数，提供不冒充发现的下一步建议 | P0 | `spot-chronicle`、`trip-summary`、`engine`、`spot-content.json`、手记/准备态/收竿界面 | `tests/spot-chronicle.test.mjs` 新增 8 项，覆盖结算、跨轮、旧档、重复/非法事件、三钓点与触控前往；构建、全量测试及 320×568/390×844 浏览器画幅见 `docs/validation/spot-chronicle-2026-10-02/report.md`。第 4/8/20 竿自发继续意愿、真实手机触控与低端帧率待试玩验证 | `2026.10-spot-chronicle-v1` |
+| 钓点选择到落点预览 | 地图选点即给该地真实经历或首次试法；手记/准备卡一按设置对应饵和合法落点，进入可取消瞄准，仍须二次确认抛竿；移除选点时冒充亲见的鱼讯 | P1 | `spot-chronicle`、`ui/trip-route`、`ui/book-markup`、既有两段式抛竿与响应式布局 | 履历模块增至 12 项，覆盖四类结果、旧数据退回、锁定/未决状态和不自动抛竿；320×568、390×844 浏览器核对选点、建议、落点与取消，详见 `docs/validation/spot-chronicle-2026-10-02/v2-report.md`。真实手机触控与玩家是否理解建议仍待试玩 | `2026.10-spot-flow-v2` |
+
+## 图鉴手记成果与引导（2026-10-02）
+
+| 功能名称 | 目标 | 优先级 | 依赖模块 | 测试要点与待验 | 完成版本 |
+| --- | --- | --- | --- | --- | --- |
+| 个人成果总览与相遇图鉴 | 手记入口展示已遇鱼种、开放水域、受支持观察、最近相遇和下一竿建议；图鉴按现存证据回看重量/地点/搏鱼，主导航3项、辅助入口折叠，详细履历保留 | P1 | `journal-achievements`、book-markup、Solid journal、spot-chronicle/discovery-notes/fightRecords、原prepareSpotPlan、实际画幅/材质层 | 新增8项正常/边界/安全与真实跳转测试，相关32项通过；全量与构建见 `docs/validation/journal-experience-2026-10-02/report.md`。旧日志有界，未承诺完整历史；未进游戏，真机视觉/阅读/长文本待验 | `2026.10-journal-experience-v1` |

@@ -16,8 +16,11 @@
   <link rel="stylesheet" href="portrait-polish.css">
   <link rel="stylesheet" href="fight-control.css">
   <link rel="stylesheet" href="coastal-ui.css">
+  <link rel="stylesheet" href="ui-material.css">
   <link rel="stylesheet" href="reel-surface.css">
   <link rel="stylesheet" href="button-states.css">
+  <link rel="stylesheet" href="journal-experience.css">
+  <link rel="stylesheet" href="responsive-ui.css">
 </head>
 <body>
   <main id="game" class="boot-loading">
@@ -110,7 +113,7 @@
         <button id="cameraReset" type="button" aria-label="镜头归位" title="镜头归位">◎</button>
       </div>
     </aside>
-    <div class="waterside"><span class="small-label">水边观察</span><p id="observation">浅滩有成群小鱼活动。</p><button id="clueButton">翻看鱼口记录 ↗</button></div>
+    <div class="waterside"><span class="small-label">水边观察</span><p id="observation">先看看浅滩的水纹与浮漂。</p><button id="clueButton">翻看鱼口记录 ↗</button></div>
       <div class="footer-top" id="aimCue">
         <span class="step-label" id="stepLabel">准备抛竿</span>
         <span id="status">选好鱼饵，找一处喜欢的水面。</span>
@@ -154,7 +157,7 @@
       <div id="otherCatchActions" class="process-actions"></div>
     </div>
   </dialog>
-  <dialog id="tripEnd"><div class="trip-end-top"><span class="eyebrow">月隐湾 · 本轮手记</span><button id="dismissTrip" class="close" type="button" aria-label="关闭本轮手记">×</button></div><h2 id="tripTitle">本轮收竿</h2><p class="trip-end-intro"></p><div id="tripSummary"></div><button class="primary" id="nextTrip">继续垂钓 <span aria-hidden="true">↗</span></button></dialog>
+  <dialog id="tripEnd"><div class="trip-end-top"><span class="eyebrow">月隐湾 · 本轮手记</span><button id="dismissTrip" class="close" type="button" aria-label="关闭本轮手记">×</button></div><h2 id="tripTitle">本轮收竿</h2><p class="trip-end-intro"></p><div id="tripWaterRoute" aria-label="本轮钓点路线"></div><div id="tripSummary"></div><button class="primary" id="nextTrip">继续垂钓 <span aria-hidden="true">↗</span></button></dialog>
   <dialog id="book" aria-label="湾区记录"><div class="book-top"><img class="journal-art" src="./assets/ui/shore-journal.webp" alt="" width="80" height="72"><div id="bookHeading"></div><button class="close" id="closeBook" aria-label="关闭湾区记录">×</button></div><nav id="bookTabs" aria-label="记录分类"></nav><div id="bookContent"></div></dialog>
   <script id="launchGuard">
     if (location.protocol === 'file:') {

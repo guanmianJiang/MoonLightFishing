@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fightHapticSample,fightHapticEvent,createHaptics} from '../src/haptics.mjs';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {fightHapticSample,fightHapticEvent,fightHapticStrength,createHaptics} from '../src/haptics.mjs';
 
 test('release water contact has one brief weight-dependent vibration and obeys visibility',()=>{
  let now=100,visible=true;const calls=[],h=createHaptics(p=>{calls.push(p);return true},()=>now,()=>visible);
@@ -74,4 +76,31 @@ test('restored or malformed fight snapshots stay silent and finite',()=>{
  assert.equal(before.load,0);
  assert.equal(before.slack,1);
  assert.equal(fightHapticEvent(before,{...base,slack:Infinity,tension:Infinity}),null);
+});
+
+test('slack take-up is one contact cue and only actual transmitted load changes its strength',()=>{
+ const before={...base,slack:.2},after={...base,slack:.1};assert.equal(fightHapticEvent(before,after),'take-up');assert.equal(fightHapticEvent(after,after),null);
+ assert.equal(fightHapticEvent(before,{...after,load:.1}),null);assert.equal(fightHapticStrength({...base,slack:.6}),0);
+ assert.ok(fightHapticStrength({...base,tension:1,load:1})>fightHapticStrength(base)*2);assert.equal(fightHapticStrength(null),0);
+});
+
+test('release strength changes short vibration duration without changing priority or inventing amplitude support',()=>{
+ let now=100;const calls=[],h=createHaptics(p=>{calls.push(p);return true},()=>now);
+ h.emit('line-break',{strength:0});now+=800;h.emit('line-break',{strength:1});assert.ok(calls[0][0]<calls[1][0]);assert.equal(calls[0][1],calls[1][1]);
+ now+=800;h.emit('line-break',{strength:Infinity});assert.deepEqual(calls[2],calls[1]);now+=800;h.emit('take-up',{strength:.4});assert.ok(calls[3]>=3&&calls[3]<=10);
+});
+
+test('actual app terminal transition emits exactly once using the last loaded rod strength',()=>{
+ const source=readFileSync(new URL('../src/app-final.js',import.meta.url),'utf8');
+ const functions=source.slice(source.indexOf('function stopFight('),source.indexOf('function startFight('));
+ for(const reason of ['line-break','escaped']){
+  const calls=[],noop=()=>{},f={status:'active',held:false,tension:1,load:.8,slack:0,lossReason:reason},node={hidden:false,classList:{remove(){}}};
+  const ctx=vm.createContext({state:{pending:{start:1,fight:f,catch:{id:'carp'}}},world:{getRodFeedback:()=>({strength:.91})},
+   fightFrame:1,fightLast:100,fightSaved:0,holdPointer:false,holdSpace:false,reelGesture:null,reelSurface:{reset:noop},reelConfirmUntil:0,reelCorrectionUntil:0,lastFightDanger:false,lastReelTick:0,lastFightHeldAudio:false,lastPayOutAt:0,lastSurgeAudio:false,lastReelSoundAt:0,
+   fightHapticSample,fightHapticEvent,fightHapticStrength,haptics:{emit:(...args)=>calls.push(args)},document:{hidden:false},$:()=>node,Date,
+   stepFight:current=>{current.status='lost'},stopReelLoop:noop,cancelAnimationFrame:noop,requestAnimationFrame:()=>assert.fail('terminal fight scheduled again'),renderFight:noop,save:noop,realSound:noop,sound:noop,startReelLoop:()=>false,
+   fightLossCopy:()=>({reaction:'失手',toast:'失手'}),fightLossCue:()=>({reason}),markNearMiss:noop,presentOutcome:noop,toast:noop,finishReel:noop});
+  vm.runInContext(functions+'\ntickFight(116);',ctx);
+  assert.equal(calls.length,1);assert.equal(calls[0][0],reason);assert.equal(calls[0][1].strength,.91);assert.equal(ctx.state.pending.fight,null);
+ }
 });

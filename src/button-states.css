@@ -1,16 +1,16 @@
 /* Final shared states. The elastic fishing input owns its own presentation. */
-:is(#game,#result,#book,#tripEnd,#renderSettingsPanel){--button-hover-top:#f3f7e8;--button-hover-bottom:#bdd3b8;--button-top:#edf3e4;--button-bottom:#d4e2d2;--button-edge:#9ab59f;--button-ink:#355d4c;--button-depth:3px;--button-radius:16px;--button-rest-transform:none;}
+:is(#game,#result,#book,#tripEnd,#renderSettingsPanel){--button-hover-top:#faf5e3;--button-hover-bottom:#c7dbc9;--button-top:#f4f1dff2;--button-bottom:#d4e4d8e6;--button-edge:#9ab59f;--button-ink:#355d4c;--button-depth:3px;--button-radius:16px;--button-rest-transform:none;}
 :is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold),#game #spots .spot{
  box-sizing:border-box;min-height:44px;min-width:44px;
  border:1px solid #eaf1df!important;border-radius:var(--button-radius)!important;
- background:linear-gradient(180deg,var(--button-top),var(--button-bottom))!important;color:var(--button-ink)!important;
- box-shadow:inset 0 1px 1px #fffbedb3,0 var(--button-depth) 0 var(--button-edge),0 5px 10px #294b3b18!important;
+ background:linear-gradient(115deg,#fffbed40,#fffbed00 62%),linear-gradient(180deg,var(--button-top) 0%,var(--button-top) 16%,var(--button-bottom) 100%)!important;color:var(--button-ink)!important;
+ box-shadow:inset 0 1px 2px #fffbedb3,inset 0 -2px 3px #52725024,0 var(--button-depth) 0 var(--button-edge),0 6px 12px #294b3b21!important;
  text-shadow:none!important;filter:none!important;transform:var(--button-rest-transform)!important;translate:0 0;
  transition:translate 120ms ease,background-color 120ms ease,box-shadow 120ms ease,border-color 120ms ease!important;touch-action:manipulation;
 }
-#game :is(#cast,#sceneAction,#landFish),#result :is(.process-recommended,#emptyContinue),#tripEnd #nextTrip{--button-hover-top:#ffebc9;--button-hover-bottom:#edbd7f;--button-top:#f7dfb9;--button-bottom:#e7bd86;--button-edge:#b68c60;--button-ink:#654b2e;--button-depth:4px;--button-radius:22px;}
+#game :is(#cast,#sceneAction,#landFish),#result :is(.process-recommended,#emptyContinue),#tripEnd #nextTrip{--button-hover-top:#ffebc9;--button-hover-bottom:#edbd7f;--button-top:#f7dfb9;--button-bottom:#e7bd86;--button-edge:#b68c60;--button-ink:#654b2e;--button-depth:5px;--button-radius:22px;}
 #game #cast span,#result .process-recommended :is(strong,small){color:inherit!important;text-shadow:none!important;}
-#game .hud-tools > button,#game .camera-controls #viewToggle{--button-radius:17px;}
+#game .hud-tools > button,#game .camera-controls :is(#viewToggle,#cameraAngleToggle){--button-top:#e7f1e7ed;--button-bottom:#b7d5c9de;--button-hover-top:#f0f6e9;--button-hover-bottom:#a4cbbc;--button-edge:#769b8c;--button-radius:17px;}
 #game #spots .spot{--button-rest-transform:translate(-50%,-100%);--button-radius:19px;animation:none!important;}
 #game #spots .spot.active{--button-top:#f5e3bd;--button-bottom:#e6c99a;--button-edge:#b69b70;--button-ink:#625037;--button-depth:2px;}
 #game #spots .spot small{color:inherit!important;opacity:.8;}
@@ -18,6 +18,7 @@
 #game #baits .bait{--button-depth:1px;--button-radius:16px;border-color:transparent!important;}
 :is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold):is([aria-pressed="true"],[aria-selected="true"],[aria-expanded="true"],.selected,.active),
 :is(#game,#result,#book,#tripEnd,#renderSettingsPanel) details[open] > summary:not(#fightHold){--button-hover-top:#d5e6c7;--button-hover-bottom:#9fbe93;--button-top:#cdddbe;--button-bottom:#a8c79c;--button-edge:#6e946a;--button-ink:#284d39;--button-depth:1px;box-shadow:inset 0 1px 1px #f7fbe7, inset 0 -3px 0 #74986bb3,0 1px 0 var(--button-edge),0 3px 7px #294b3b12!important;border-color:#648861!important;}
+#game #baits .bait:where(:not(.selected):not([aria-pressed="true"])){background:none!important;border-color:transparent!important;box-shadow:none!important;}
 #game #baits .bait.selected::after{background:#5c8261;color:#fff7e4;box-shadow:none;}
 #game #baits .bait strong{color:inherit!important;}
 #game .camera-controls .zoom-group button{--button-depth:0px;--button-radius:12px;background:transparent!important;box-shadow:none!important;border-color:transparent!important;}
@@ -28,7 +29,7 @@
 #result #moreCatchActions[aria-expanded="true"],#result #catchDetails[open] > summary{background:#b5cea4!important;color:#355f4b!important;}
 :is(#book,#tripEnd,#renderSettingsPanel) :is(.close,header button){--button-depth:1px;--button-radius:14px;}
 @media (hover:hover) and (pointer:fine){
- :is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold):not(:disabled):not([aria-disabled="true"]):hover{background:linear-gradient(180deg,var(--button-hover-top),var(--button-hover-bottom))!important;border-color:var(--button-edge)!important;translate:0 -2px;box-shadow:inset 0 1px 1px #fffbed,0 var(--button-depth) 0 var(--button-edge),0 6px 12px #294b3b20!important;}
+ :is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold):not(:disabled):not([aria-disabled="true"]):hover{background:linear-gradient(115deg,#fffbed4d,#fffbed00 62%),linear-gradient(180deg,var(--button-hover-top),var(--button-hover-bottom))!important;border-color:var(--button-edge)!important;translate:0 -2px;box-shadow:inset 0 1px 2px #fffbed,inset 0 -2px 3px #52725024,0 var(--button-depth) 0 var(--button-edge),0 6px 12px #294b3b20!important;}
  :is(#game,#book,#result) :is(.camera-controls .zoom-group button,#bookTabs button:not([aria-pressed="true"]),#moreCatchActions,#catchDetails > summary,#otherCatchActions button):not(#fightHold):not(:disabled):not([aria-disabled="true"]):hover{background:#b5cda9!important;box-shadow:inset 0 -2px 0 #77956855!important;}
 }
 :is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold):not(:disabled):not([aria-disabled="true"]):active{background:linear-gradient(0deg,#3f4c3429,#3f4c3429),linear-gradient(180deg,var(--button-top),var(--button-bottom))!important;border-color:var(--button-edge)!important;translate:0 3px;box-shadow:inset 0 3px 6px #39554340,0 1px 0 var(--button-edge),0 2px 4px #294b3b18!important;}

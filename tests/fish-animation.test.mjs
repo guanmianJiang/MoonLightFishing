@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
 import * as T from '../src/three.module.js';
 import {GLTFLoader} from '../src/vendor/loaders/GLTFLoader.js';
 import {fishAnimationTarget,createFishAnimation} from '../src/fish-animation.mjs';
 import {createFishBodyRig,fishBodyWave} from '../src/fish-body-rig.mjs';
-import {animateSpecimen,disposeSpecimenAnimation} from '../src/fishing-art.js';
+import {animateSpecimen,disposeSpecimenAnimation,handoffSpecimen} from '../src/fishing-art.js';
 import {makeSpecimen} from '../src/scene-assets.js';
 import {assetAnchorLocal,fishMouthWorld,alignFishMouth} from '../src/fish-attachment.mjs';
 
@@ -15,7 +16,7 @@ test('stages use real effort, species pace and low holding amplitude; objects re
  assert.ok(fight.amplitude>quiet.amplitude*3&&held.amplitude<quiet.amplitude);
  assert.ok(fishAnimationTarget({id:'minnow',weight:.05},{stage:'swim'}).speed>fishAnimationTarget({id:'carp',weight:4},{stage:'swim'}).speed*1.3);
  assert.equal(fishAnimationTarget({id:'carp'},{stage:'hooked',hookAge:0}).amplitude,quiet.amplitude);
- for(const caught of [{id:'bottle'},{id:'bell'},{id:'custom',object:true}])for(const stage of ['fight','landing','held','swim'])assert.deepEqual(fishAnimationTarget(caught,{stage}),{speed:0,amplitude:0,fin:0,breath:0});
+ for(const caught of [{id:'bottle'},{id:'bell'},{id:'custom',object:true}])for(const stage of ['fight','landing','held','swim'])assert.deepEqual(fishAnimationTarget(caught,{stage}),{speed:0,amplitude:0,fin:0,breath:0,curl:0});
 });
 
 test('transitions integrate the existing phase without snapping and reject invalid frame time',()=>{
@@ -30,7 +31,7 @@ test('transitions integrate the existing phase without snapping and reject inval
 });
 
 test('centreline displacement has the analytic derivative used to correct normals and locks the head',()=>{
- const pose={phase:1.2,amplitude:.1};for(const x of [-.7,-.4,0,.1]){
+ const pose={phase:1.2,amplitude:.1,curl:.06};for(const x of [-.7,-.4,0,.1]){
   const w=fishBodyWave(x,1.6,1,pose),eps=1e-5,derivative=(fishBodyWave(x+eps,1.6,1,pose).offset-fishBodyWave(x-eps,1.6,1,pose).offset)/(2*eps);
   assert.ok(Math.abs(derivative-w.slope)<1e-7);
  }
@@ -45,7 +46,7 @@ for(const id of ['carp','minnow','perch','catfish','oldgold','moon','shrimp'])te
   assert.ok(triangles>=1500&&triangles<1600,'the shipped body retains the rounded 32 by 24 profile');assert.ok(normals.size>500,'body normals remain smooth around the profile');
  }
  const mouth=assetAnchorLocal(model,'MouthAnchor'),rig=createFishBodyRig(model,{id}),tail=model.getObjectByName(id+'_Tail'),tip=tail.children[0];
- const tipBefore=Array.from(tip.geometry.attributes.position.array);rig.apply({phase:1.3,amplitude:.12,fin:.22,breath:.012});
+ const tipBefore=Array.from(tip.geometry.attributes.position.array);rig.apply({phase:1.3,amplitude:.12,curl:.18,fin:.22,breath:.012});
  assert.ok(assetAnchorLocal(model,'MouthAnchor').distanceTo(mouth)<1e-8);
  assert.notDeepEqual(Array.from(tip.geometry.attributes.position.array),tipBefore);
  assert.ok(rig.vertexCount>30&&rig.vertexCount<18000);
@@ -58,6 +59,36 @@ for(const id of ['carp','minnow','perch','catfish','oldgold','moon','shrimp'])te
  // Runtime wrapper and rotated/scaled hook alignment are unaffected by deformation.
  const root=new T.Group();root.add(model);model.rotation.y=Math.PI;root.userData.mouthLocal=assetAnchorLocal(root,'MouthAnchor');root.scale.setScalar(.55);root.rotation.set(.2,1,-.6);const hook=new T.Vector3(2,.3,4);alignFishMouth(root,hook);assert.ok(fishMouthWorld(root).distanceTo(hook)<.001);
  rig.dispose();const n=released;assert.ok(n>0);rig.dispose();assert.equal(released,n);
+});
+
+test('landing pulses bend the body clearly, settle between kicks, and carry across held without resetting phase',()=>{
+ const caught={id:'carp',weight:.15},peak=fishAnimationTarget(caught,{stage:'landing',airAge:.2}),quiet=fishAnimationTarget(caught,{stage:'landing',airAge:.4});
+ assert.ok(peak.amplitude>quiet.amplitude*5);assert.ok(fishAnimationTarget(caught,{stage:'landing',airAge:.13}).curl>.02);
+ assert.deepEqual(fishAnimationTarget(caught,{stage:'held',airAge:.13}),fishAnimationTarget(caught,{stage:'landing',airAge:.13}));
+ const driver=createFishAnimation(caught);let a;for(let i=0;i<10;i++)a=driver.update({stage:'landing',airAge:.13},.016);
+ const b=driver.update({stage:'held',airAge:.13},0);assert.deepEqual(a,b);
+ for(let i=0;i<120;i++)a=driver.update({stage:'held',airAge:3},1/60);assert.ok(Math.abs(a.curl)<1e-6&&a.amplitude<.017);
+ const reduced=createFishAnimation(caught);for(let i=0;i<20;i++)a=reduced.update({stage:'landing',airAge:.13},.016,true);assert.ok(Math.abs(a.curl)<Math.abs(fishAnimationTarget(caught,{stage:'landing',airAge:.13}).curl)*.4);
+ for(const id of ['bottle','bell'])assert.equal(fishAnimationTarget({id},{stage:'landing',airAge:.13}).curl,0);
+});
+
+test('late shipped fish preserves the exact mouth, scaled pose and living phase instead of restarting at its centre',async()=>{
+ const bytes=await readFile(new URL('../public/assets/models/specimens/carp.glb',import.meta.url)),asset=(await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'')).scene;
+ asset.userData.mouthLocal=assetAnchorLocal(asset,'MouthAnchor');
+ const old=makeSpecimen('carp');old.position.set(2,1.8,3);old.rotation.set(.6,.9,-.2);old.scale.setScalar(.58);old.visible=false;animateSpecimen(old,{id:'carp',weight:2},{stage:'landing',airAge:.13},.08);
+ const mouth=fishMouthWorld(old),driver=old.userData.fishAnimation,before=driver.update({},0);
+ assert.equal(handoffSpecimen(old,asset),asset);assert.ok(fishMouthWorld(asset).distanceTo(mouth)<1e-8);assert.ok(asset.quaternion.angleTo(old.quaternion)<1e-7);assert.deepEqual(asset.scale,old.scale);assert.equal(asset.visible,false);assert.equal(asset.userData.fishAnimation,driver);
+ disposeSpecimenAnimation(old);assert.deepEqual(asset.userData.fishAnimation.update({},0),before);assert.equal(handoffSpecimen(asset,null),asset);
+});
+
+test('actual late preload promotes both fight and reveal once, and stale or processed catches cannot replace a fish',async()=>{
+ const source=await readFile(new URL('../src/scene.js',import.meta.url),'utf8'),line=source.split('\n').find(s=>s.includes('preparedFish=asset;if(fightKey===key'));
+ for(const stale of [false,'key','pending']){
+  const old=makeSpecimen('carp'),asset=makeSpecimen('carp'),calls=[];old.position.y=1.8;animateSpecimen(old,{id:'carp'},{stage:'landing',airAge:.13},.05);
+  let resolve;const ctx=vm.createContext({p:{start:1,catch:{id:'carp'}},specimenIds:new Set(['carp']),preparedFishKey:null,preparedFish:null,fightKey:1,fightFish:old,revealFish:old,animatedSpecimens:new Set([old]),loadSpecimen:()=>new Promise(r=>resolve=r),handoffSpecimen,disposeSpecimenAnimation,scene:{remove:m=>calls.push(['remove',m]),add:m=>calls.push(['add',m])},getState:()=>({pending:stale==='pending'?null:{start:1}})});
+  vm.runInContext(line,ctx);if(stale==='key')ctx.preparedFishKey=2;resolve(asset);await Promise.resolve();await Promise.resolve();
+  if(stale){assert.equal(ctx.fightFish,old);assert.equal(calls.length,0);}else{assert.equal(ctx.fightFish,asset);assert.equal(ctx.revealFish,asset);assert.equal(ctx.animatedSpecimens.has(old),false);assert.equal(old.userData.fishBodyRig,undefined);assert.deepEqual(calls.map(c=>c[0]),['remove','add']);}
+ }
 });
 
 test('fallback deformation uses local length regardless of scene scale and rotation, and pins eye positions',()=>{

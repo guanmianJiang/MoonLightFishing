@@ -8,6 +8,7 @@ import {fightOutlook,fightOutlookDisplay} from '../../src/fight-outlook.mjs';
 import {fightRigGeometry} from '../../src/fight-rig.mjs';
 import {fightPerformance} from '../../src/fight-performance.mjs';
 import {fightGuidance} from '../../src/fight-guidance.mjs';
+import {fightHapticStrength} from '../../src/haptics.mjs';
 import {fishBehavior} from '../../src/fish-behavior.mjs';
 import {reelSurfaceSample} from './reel-surface-runtime-sample.mjs';
 const source=readFileSync(new URL('../../src/app-final.js',import.meta.url),'utf8');
@@ -22,7 +23,7 @@ export function reelInputSample({mode='reel',reject=false}={}){
  const state={pending:{phase:'cast',start:0,directHooked:true,catch:{id:mode==='retrieve'?'boot':'silver'},fight:mode==='reel'?fresh():null}};
  const context=vm.createContext({state,performance:{now:()=>0},Date:{now:()=>10000},revealing:false,holdPointer:false,holdSpace:false,pressBeganAt:0,tapHintUntil:0,lastReelSoundAt:0,lastPayOutAt:0,lastFightHeldAudio:false,
   reelSurface:s.view,fightUI:nodes,$:selector=>nodes[selector.slice(1)],startReelGesture,moveReelGesture,reelControlFeedback,fightControlMode,pumpOpportunity,pumpRod:(...args)=>reject?{ok:false,state:'slack'}:pumpRod(...args),fightOutlook,fightOutlookDisplay,fightRigGeometry,fightPerformance,fightGuidance,fishBehavior,
-  sound:k=>calls.push(['sound',k]),haptics:{emit:k=>calls.push(['haptic',k]),stop:()=>calls.push(['haptic-stop'])},save:()=>calls.push(['save']),stopReelLoop:()=>calls.push(['stop-audio']),startReelLoop:()=>true,
+  fightHapticStrength,sound:k=>calls.push(['sound',k]),haptics:{emit:k=>calls.push(['haptic',k]),stop:()=>calls.push(['haptic-stop'])},save:()=>calls.push(['save']),stopReelLoop:()=>calls.push(['stop-audio']),startReelLoop:()=>true,
   addEventListener:(k,f)=>globalEvents.set(k,f),document:{hidden:false,addEventListener:(k,f)=>documentEvents.set(k,f)},
   reel(){calls.push(['reel']);if(mode==='strike'){state.pending.fight=fresh();}},
  });

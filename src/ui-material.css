@@ -1,0 +1,43 @@
+/* Sea-salt surfaces: restrained edge light, readable translucent bodies. */
+:root{
+ --ui-hud-surface:linear-gradient(165deg,#f2f1dced 0%,#dde9dee0 48%,#c6ddd2cc 100%);
+ --ui-dock-surface:linear-gradient(165deg,#e2ece2b8,#bcd8cdad);
+ --ui-tool-surface:linear-gradient(165deg,#e7f1e7ed,#b7d5c9de);
+ --ui-read-surface:linear-gradient(165deg,#f3f0e0fc 0%,#e6ecdcfa 54%,#d8e4d8fa 100%);
+ --ui-surface-edge:#f8fae899;
+ --ui-surface-shadow:inset 0 1px 1px #fffbea80,inset 0 -1px 1px #527e6421,0 1px 2px #284a3a29,0 7px 16px #234a3826;
+}
+#game .route-card{background:var(--ui-hud-surface)!important;border:1px solid var(--ui-surface-edge)!important;box-shadow:var(--ui-surface-shadow)!important;backdrop-filter:none;-webkit-backdrop-filter:none;}
+#game .toolbar{background:var(--ui-dock-surface)!important;border:1px solid #edf5e780!important;box-shadow:inset 0 1px 1px #f7f8e966,0 2px 3px #264b3a26,0 7px 14px #264b3a21!important;backdrop-filter:none;-webkit-backdrop-filter:none;}
+#game .camera-controls .zoom-group{background:var(--ui-tool-surface)!important;border:1px solid #eaf5e9b3!important;box-shadow:var(--ui-surface-shadow)!important;backdrop-filter:none;-webkit-backdrop-filter:none;}
+#game .route-card{border-radius:24px;}
+#game .toolbar{border-radius:22px;}
+#game[data-ui-mode="aim"] .toolbar{background:none!important;border-color:transparent!important;box-shadow:none!important;}
+#game :is(#aimCue,.toast),#game.fighting #fight .fight-summary{background:var(--ui-hud-surface)!important;border-color:var(--ui-surface-edge)!important;box-shadow:var(--ui-surface-shadow)!important;color:#365e4e;}
+#game :is(#actionCue,#baitHint){background:linear-gradient(140deg,#eaf1e2ed,#c8ddcfe3)!important;border-color:#edf4df99!important;box-shadow:inset 0 1px 0 #fffbea66,0 2px 5px #254d3921!important;}
+#game #actionCue::before{background:#dbe8d8;border-color:#edf4df99;}
+#game .route-card__body{background:#f2f5e330;border-top:1px solid #9cb79d33;}
+#game .route-card__top,#game .route-card__progress{color:#547060;}
+#game .route-card__expand{background:none;box-shadow:none;color:#446952;}
+:is(#result,#book,#tripEnd,#renderSettingsPanel){background:var(--ui-read-surface)!important;border:1px solid #f5f8e4d9!important;box-shadow:inset 0 1px 2px #fffbea99,inset 0 -1px 1px #72966d33,0 4px 8px #173d3533,0 18px 42px #153a353d!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}
+#result .result-decisions{background:linear-gradient(180deg,#f1eddb26,#bfd5c33d)!important;border-top-color:#95b18c66!important;}
+#result .catch-stage{background:radial-gradient(ellipse at 50% 42%,#f7f5de99 0%,#e1ead44d 60%,#c7dcc200 100%)!important;border:0;box-shadow:none;}
+#result #catchGrade{background:#dbe7d28c;border-color:#a9c49666;box-shadow:inset 0 1px 0 #fffbea66;}
+#result #resultChoiceIntro{background:none!important;border-color:transparent!important;box-shadow:none!important;}
+#result #resultChoiceIntro::after{content:none;}
+#result :is(.process-icon,.process-arrow){background:none!important;border-color:transparent!important;box-shadow:none!important;color:#58795e;}
+#book #bookTabs{background:#aec9a54d;border:1px solid #f0f5de66;box-shadow:inset 0 1px 3px #607d5821;}
+#bookContent :is(.market-card,.shop-card,.collection-card,.water-row,.gear-item){background:linear-gradient(145deg,#f5f2e35c,#dbe6d359);border-color:#a5bf984d;box-shadow:none;}
+#renderSettingsPanel .render-settings-fields details{border-top-color:#9ab88a55;}
+#renderSettingsPanel :is(input[type="number"],select){background:#f6f7e8cc;border-color:#9cb99299;box-shadow:inset 0 1px 3px #4d6d3c14;}
+/* Small transient HUD only; no blur on the large persistent panels. */
+@supports ((backdrop-filter:blur(6px)) or (-webkit-backdrop-filter:blur(6px))){
+ #game :is(#aimCue,.toast){backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+}
+@supports not ((backdrop-filter:blur(6px)) or (-webkit-backdrop-filter:blur(6px))){
+ #game{--ui-hud-surface:linear-gradient(160deg,#f2f5e8fc,#d6e6d7f5);}
+}
+@media (prefers-reduced-motion:reduce){
+ #game{--ui-hud-surface:linear-gradient(160deg,#f2f5e8fc,#d6e6d7f5);}
+ #game :is(#aimCue,.toast){backdrop-filter:none;-webkit-backdrop-filter:none;}
+}

@@ -23,9 +23,15 @@ export function fightHapticEvent(previous,current){
  if(before.warningAge<.42&&after.warningAge>=.42)return 'line-warning';
  if(after.tension-before.tension>.16&&after.tension>.32)return 'impact';
  if(before.surge<=.55&&after.surge>.55)return 'surge';
+ if(before.slack>=.18&&after.slack<.18&&after.load>.2)return 'take-up';
  if(before.spoolVelocity<=.12&&after.spoolVelocity>.12)return 'payout';
  if(after.held&&Math.floor(after.reelTurns)>Math.floor(before.reelTurns)&&after.load>.22)return 'spool';
  return null;
+}
+
+export function fightHapticStrength(f){
+ const sample=fightHapticSample(f);if(!sample)return 0;
+ return Math.max(0,Math.min(1,(sample.tension*.65+sample.load*.35)*Math.max(0,1-sample.slack/.42)));
 }
 
 const cues={
@@ -43,6 +49,7 @@ const cues={
  payout:{pattern:11,priority:2,cooldown:350},
  surge:{pattern:[15,27,12],priority:3,cooldown:480},
  impact:{pattern:[13,20,13],priority:3,cooldown:170},
+ 'take-up':{pattern:10,priority:3,cooldown:300},
  'line-warning':{pattern:[14,30,16],priority:4,cooldown:650},
  'line-critical':{pattern:[18,22,18],priority:5,cooldown:650},
  'line-break':{pattern:[29,18,10],priority:7,cooldown:700},
@@ -53,7 +60,7 @@ const cues={
 export function createHaptics(vibrate,clock=()=>performance.now(),active=()=>true){
  let busyUntil=0,busyPriority=-1,lastTime=-Infinity;
  const lastByCue=new Map();
- const emit=name=>{
+ const emit=(name,{strength=1}={})=>{
   const cue=cues[name],now=clock();
   if(!cue||!Number.isFinite(now)||!active()||typeof vibrate!=='function')return false;
   if(now<lastTime){busyUntil=0;lastByCue.clear()}
@@ -61,9 +68,12 @@ export function createHaptics(vibrate,clock=()=>performance.now(),active=()=>tru
   if(now<busyUntil&&cue.priority<=busyPriority)return false;
   if(now-(lastByCue.get(name)??-Infinity)<cue.cooldown)return false;
   let accepted=false;
-  try{accepted=!!vibrate(cue.pattern)}catch{return false}
+  const scalable=['impact','surge','take-up','payout','spool','pump','line-break','escaped','landed'].includes(name),factor=scalable?.42+.58*Math.max(0,Math.min(1,finite(strength,1))):1;
+  // Vibration API has duration control, not portable amplitude control.
+  const pattern=Array.isArray(cue.pattern)?cue.pattern.map((value,index)=>index%2?value:Math.max(3,Math.round(value*factor))):Math.max(3,Math.round(cue.pattern*factor));
+  try{accepted=!!vibrate(pattern)}catch{return false}
   if(!accepted)return false;
-  const duration=Array.isArray(cue.pattern)?cue.pattern.reduce((sum,value)=>sum+value,0):cue.pattern;
+  const duration=Array.isArray(pattern)?pattern.reduce((sum,value)=>sum+value,0):pattern;
   busyUntil=now+duration+12;busyPriority=cue.priority;lastByCue.set(name,now);
   return true;
  };

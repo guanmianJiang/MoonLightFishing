@@ -372,6 +372,23 @@ body:has(#book:modal)::before { display: none; }
 #book .tab-icon .ui-icon { width: 18px; height: 18px; }
 #bookContent :is(.market-card,.shop-card,.collection-card,.water-row,.gear-item) { border: 0; border-bottom: 1px solid #b9c9a8; border-radius: 0; background: none; box-shadow: none; }
 #bookContent .empty { background: #cbd8ba55; border-color: #aec09d; }
+#bookContent .spot-chronicle-section { margin-bottom: 16px; }
+#bookContent .spot-chronicle-section > .book-note { margin: 0 0 10px; padding: 9px 11px; font-size: 11px; line-height: 1.5; }
+#bookContent .spot-chronicle-list { display: grid; gap: 9px; }
+#bookContent .spot-chronicle { padding: 12px 13px; border: 1px solid #a9c3ab; border-radius: 16px; background: #eff2df; color: #43654c; }
+#bookContent .spot-chronicle.current { border-color: #d2b47b; background: #f4ebd3; }
+#bookContent .spot-chronicle.locked { opacity: .72; }
+#bookContent .spot-chronicle__head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+#bookContent .spot-chronicle__head span { color: #7a8c69; font-size: 11px; }
+#bookContent .spot-chronicle h4 { margin: 0; color: #315945; font-size: 16px; }
+#bookContent .spot-chronicle > strong { display: block; margin: 5px 0; font-size: 13px; }
+#bookContent .spot-chronicle p { margin: 3px 0 5px; font-size: 13px; line-height: 1.5; }
+#bookContent .spot-chronicle small { display: block; margin-top: 4px; color: #60765b; font-size: 12px; line-height: 1.45; }
+#bookContent .spot-chronicle button { margin-top: 9px; padding: 0 13px; border: 1px solid #9bb99f; border-radius: 12px; background: #d9e9d8; color: #315945; font-weight: 700; }
+#tripWaterRoute { display: flex; flex-wrap: wrap; gap: 7px; margin: -5px 0 16px; }
+#tripWaterRoute[hidden] { display: none; }
+#tripWaterRoute strong { width: 100%; color: #466751; font-size: 12px; }
+#tripWaterRoute span { padding: 7px 10px; border: 1px solid #b5c8ae; border-radius: 10px; background: #dce9d5; color: #315944; font-size: 13px; font-weight: 700; line-height: 1.4; }
 #tripEnd #nextTrip { background: linear-gradient(155deg,#f0cd96,#dcad74); border-color: #f6d8a4; color: #3e5038; box-shadow: inset 0 1px 0 #ffe6b3,0 3px 0 #937047; }
 
 /* Notifications inherit the game/modal frame rather than the browser canvas. */

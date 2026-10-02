@@ -5,8 +5,9 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:a));
 export function fishBodyWave(x,length,headDirection,pose={},out={}){
  const u=clamp(.20-x*headDirection/length,0,1),amplitude=clamp(pose.amplitude,0,.12)*length;
  const angle=(Number.isFinite(pose.phase)?pose.phase:0)-u*2.8;
- const offset=amplitude*u*u*Math.sin(angle);
- const slope=-headDirection*amplitude/length*(2*u*Math.sin(angle)-2.8*u*u*Math.cos(angle));
+ const curl=clamp(Number.isFinite(pose.curl)?pose.curl:0,-.18,.18)*length;
+ const offset=amplitude*u*u*Math.sin(angle)+curl*u*u;
+ const slope=-headDirection/length*(amplitude*(2*u*Math.sin(angle)-2.8*u*u*Math.cos(angle))+2*curl*u);
  out.offset=offset;out.slope=u>0&&u<1?slope:0;return out;
 }
 
@@ -31,7 +32,7 @@ export function createFishBodyRig(root,{id='carp',headDirection=1}={}){
   if(!animated)return;
   const original=mesh.geometry,geometry=original.clone();mesh.geometry=geometry;owned.push(geometry);
   geometry.attributes.position.setUsage(T.DynamicDrawUsage);geometry.attributes.normal?.setUsage(T.DynamicDrawUsage);
-  geometry.computeBoundingSphere();geometry.boundingSphere.radius+=length*.14/Math.max(.01,Math.min(...mesh.scale.toArray()));
+  geometry.computeBoundingSphere();geometry.boundingSphere.radius+=length*.33/Math.max(.01,Math.min(...mesh.scale.toArray()));
   const pectoral=/^Pectoral/.test(mesh.name),pivot=new T.Vector3().fromArray(points),side=Math.sign(pivot.z)||1;
   entries.push({mesh,original,geometry,points,normals,fromRoot,normalFromRoot,pectoral,pivot,side});
  });

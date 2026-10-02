@@ -12,7 +12,7 @@ const guarded=rule=>{for(let parent=rule.parent;parent;parent=parent.parent)if(p
 
 test('shared state layer loads last after the dedicated fishing input',()=>{
  const sheets=[...read('src/index.html').matchAll(/rel="stylesheet" href="([^"]+)"/g)].map(match=>match[1]);
- assert.equal(sheets.at(-1),'button-states.css');assert.ok(sheets.indexOf('reel-surface.css')<sheets.indexOf('button-states.css'));
+ assert.equal(sheets.at(-1),'responsive-ui.css');assert.ok(sheets.indexOf('reel-surface.css')<sheets.indexOf('button-states.css'));assert.ok(sheets.indexOf('button-states.css')<sheets.indexOf('responsive-ui.css'));
 });
 
 test('every existing hover rule is restricted to a precise hover pointer',()=>{

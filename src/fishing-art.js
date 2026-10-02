@@ -1,6 +1,6 @@
 import * as T from './three.module.js';
 import {GLTFLoader} from './vendor/loaders/GLTFLoader.js';
-import {assetAnchorLocal,alignAssetAnchorLocal,mountBaitAtAnchor} from './fish-attachment.mjs';
+import {assetAnchorLocal,alignAssetAnchorLocal,mountBaitAtAnchor,fishMouthWorld,alignFishMouth} from './fish-attachment.mjs';
 import {createAnglerFaceRig} from './angler-face-rig.mjs';
 import {createFishAnimation} from './fish-animation.mjs';
 import {createFishBodyRig} from './fish-body-rig.mjs';
@@ -31,6 +31,11 @@ export function animateSpecimen(model,caught,cue,dt,reduced=false){
  model.userData.fishAnimation??=createFishAnimation(caught);
  model.userData.fishBodyRig??=createFishBodyRig(model.userData.fishRigRoot||model,{id:caught?.id,headDirection:model.userData.fishRigRoot?1:-1});
  model.userData.fishBodyRig.apply(model.userData.fishAnimation.update(cue,dt,reduced));
+}
+export function handoffSpecimen(previous,next){
+ if(!previous||!next||previous===next)return next||previous;
+ const mouth=fishMouthWorld(previous);next.position.copy(previous.position);next.quaternion.copy(previous.quaternion);next.scale.copy(previous.scale);next.visible=previous.visible;
+ next.userData.fishAnimation=previous.userData.fishAnimation;alignFishMouth(next,mouth);return next;
 }
 export function disposeSpecimenAnimation(model){if(!model)return;model.userData.fishBodyRig?.dispose();delete model.userData.fishBodyRig;delete model.userData.fishAnimation;}
 function prepare(model){model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return model;}

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "spots": [
+    {
+      "id": "reed",
+      "theme": "浅水的细纹与小鱼群，最适合先看清一次鱼口。",
+      "firstStep": "用麦粒试近水，留意浮漂是否被轻轻带走。",
+      "returnStep": "换一片浅水，再看看鱼影和浮漂是否有不同回应。",
+      "bait": "grain",
+      "zone": "near"
+    },
+    {
+      "id": "bridge",
+      "theme": "木桩旁的缓流会藏住更谨慎的鱼和沉水物。",
+      "firstStep": "用蚯蚓试中段，先观察鱼线的移动。",
+      "returnStep": "沿木桩再试一竿，比较这次与上次的线势。",
+      "bait": "worm",
+      "zone": "middle"
+    },
+    {
+      "id": "deep",
+      "theme": "远水不容易直接看清鱼影，鱼线与微光更值得留意。",
+      "firstStep": "用夜光虫试中段，先守着浮漂和鱼线。",
+      "returnStep": "换一个远水落点，看鱼线是否再给出动静。",
+      "bait": "glow",
+      "zone": "middle"
+    }
+  ]
+}

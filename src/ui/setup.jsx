@@ -3,6 +3,7 @@ import {render} from 'solid-js/web';
 import {SPOTS, BAITS, spotUnlocked} from '../engine.mjs';
 import {explorationProgress} from '../progression-guide.mjs';
 import {selectedBaitCopy} from './fishing-ui-state.mjs';
+import {waterChronicleCoverage} from '../spot-chronicle.mjs';
 
 const habitat = {
   reed: '入门 · 浅层小鱼',
@@ -13,10 +14,12 @@ const habitat = {
 function Spot({spot, selection, onSelect}) {
   const active = () => selection().spot === spot.id;
   const unlocked = () => spotUnlocked(selection(), spot.id);
+  const recorded = () => selection().waterChronicle?.spots?.[spot.id]?.casts || 0;
+  const legacy = () => selection().hasOlderCasts;
   const detail = () => active()
-    ? `当前垂钓 · ${habitat[spot.id]}`
+    ? `当前垂钓 · ${recorded() ? `已记 ${recorded()} 竿` : legacy() ? '旧记录未归点' : habitat[spot.id]}`
     : unlocked()
-      ? `已开放 · ${habitat[spot.id]}`
+      ? `${recorded() ? `已记 ${recorded()} 竿` : legacy() ? '旧记录未归点' : '尚无抛竿'} · ${habitat[spot.id]}`
       : `探索 ${selection().exploration}/${spot.unlock} 解锁`;
   const style = {'--spot-x': `${spot.x}%`, top: `${spot.y}%`};
   const content = () => <>
@@ -49,7 +52,7 @@ function Bait({bait, selection, onSelect}) {
 }
 
 export function mountSetupUI(spotsRoot, baitsRoot, onSpot, onBait) {
-  const [selection, setSelection] = createSignal({spot: '', bait: '', pending: false, knowledge: 0, exploration: 0});
+  const [selection, setSelection] = createSignal({spot: '', bait: '', pending: false, knowledge: 0, exploration: 0, casts: 0, waterChronicle: null, hasOlderCasts:false});
   const disposeSpots = render(() => <For each={SPOTS}>{spot =>
     <Spot spot={spot} selection={selection} onSelect={onSpot} />
   }</For>, spotsRoot);
@@ -58,7 +61,7 @@ export function mountSetupUI(spotsRoot, baitsRoot, onSpot, onBait) {
   }</For>, baitsRoot);
   return {
     update(state) {
-      const next = {spot: state.spot, bait: state.bait, pending: !!state.pending, knowledge: state.knowledge, exploration: explorationProgress(state), log: state.log};
+      const next = {spot: state.spot, bait: state.bait, pending: !!state.pending, knowledge: state.knowledge, exploration: explorationProgress(state), log: state.log, casts: state.casts, waterChronicle: state.waterChronicle, hasOlderCasts:waterChronicleCoverage(state).hasOlderCasts};
       const previous = selection();
       if (Object.keys(next).some(key => next[key] !== previous[key])) setSelection(next);
       const copy = selectedBaitCopy(state.bait);

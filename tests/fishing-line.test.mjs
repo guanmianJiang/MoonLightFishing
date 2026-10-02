@@ -60,3 +60,29 @@ test('cutting a loaded line discards the detached span on the same frame',()=>{
  assert.ok(line.nodes.at(-1).distanceTo(freeTip)<1e-9);
  assert.ok(line.nodes.every(node=>node.x<3),'no old segment may remain drawn toward the detached float');
 });
+
+test('the force packet travels from its physical source without replaying constant load',()=>{
+ const a=new T.Vector3(0,2,0),b=new T.Vector3(6,.1,0),length=a.distanceTo(b);
+ for(const origin of ['fish','rod']){
+  const line=new FishingLine();for(let i=0;i<45;i++)line.update(a,b,1/60,{length,load:.8,impulse:0});
+  line.update(a,b,1/60,{length,load:.8,impulse:1,impulseOrigin:origin});assert.equal(line.pulses.length,1);
+  const center=()=>line.waveOffsets.reduce((s,p,i)=>s+i*Math.abs(p.z),0)/line.waveOffsets.reduce((s,p)=>s+Math.abs(p.z),0);
+  const before=center();for(let i=0;i<4;i++)line.update(a,b,1/60,{length,load:.8,impulse:1,impulseOrigin:origin});const after=center();
+  assert.ok(origin==='fish'?after<before-3:after>before+3,'packet must move along the line in the chosen direction');assert.equal(line.pulses.length,1);
+  for(let i=0;i<50;i++)line.update(a,b,1/60,{length,load:.8,impulse:1});assert.equal(line.pulses.length,0);assert.ok(line.nodes.every(p=>Math.abs(p.z)<1e-5),'render pulses cannot accumulate into a snake');
+ }
+});
+
+test('slack rejects transmitted pulses, finite options survive corruption and reset clears the old cast',()=>{
+ const a=new T.Vector3(0,2,0),b=new T.Vector3(6,.1,0),line=new FishingLine(),length=a.distanceTo(b);
+ for(let i=0;i<30;i++)line.update(a,b,1/60,{length:length+.6,load:0,impulse:1});assert.equal(line.pulses.length,0);
+ for(let i=0;i<20;i++)line.update(a,b,1/60,{length,load:.8,impulse:0});line.update(a,b,1/60,{length,load:.8,impulse:1});assert.ok(line.pulses.length>0);
+ line.reset(a,b);assert.equal(line.pulses.length,0);assert.equal(line.accumulator,0);assert.ok(line.waveOffsets.every(p=>p.lengthSq()===0));
+ line.update(a,b,1/60,{length:NaN,slack:Infinity,extra:NaN,load:NaN,impulse:Infinity});assert.ok(Number.isFinite(line.rest)&&line.nodes.every(p=>p.toArray().every(Number.isFinite)));
+});
+
+test('line takes up slack at similar times at 30/60/120 fps',()=>{
+ const a=new T.Vector3(0,2,0),b=new T.Vector3(6,.1,0),length=a.distanceTo(b),sags=[];
+ for(const fps of [30,60,120]){const line=new FishingLine();for(let i=0;i<fps;i++)line.update(a,b,1/fps,{length:length+.6,load:0});for(let i=0;i<Math.round(fps*.2);i++)line.update(a,b,1/fps,{length,load:.8});const u=19/37;sags.push(Math.abs(line.nodes[19].y-(a.y+(b.y-a.y)*u)));}
+ assert.ok(Math.max(...sags)-Math.min(...sags)<.02);assert.ok(Math.max(...sags)<.035);
+});

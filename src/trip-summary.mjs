@@ -1,4 +1,4 @@
-import {FISH} from './data/catalog.mjs';
+import {FISH,SPOTS,BAITS,WEATHERS} from './data/catalog.mjs';
 import {discoveryJournal,discoveryResultLine} from './discovery-notes.mjs';
 import {waterQuestionOutcome,waterQuestionRecap} from './water-question.mjs';
 
@@ -15,6 +15,11 @@ export function makeTripMoment(save,pending,action){
  const question=waterQuestionOutcome(pending);
  return {
   castId:`${save.casts}:${pending.start}`,kind,
+  ...(SPOTS.some(spot=>spot.id===pending.spot)?{spot:pending.spot}:{}),
+  ...(['near','middle','far'].includes(pending.castZone)?{zone:pending.castZone}:{}),
+  ...(BAITS.some(bait=>bait.id===pending.bait)?{bait:pending.bait}:{}),
+  ...(WEATHERS.some(weather=>weather.id===pending.weather?.id)?{weatherId:pending.weather.id}:{}),
+  at:pending.start,
   ...(caught||missed?{fishId:(caught||missed).id}:{}),
   ...(caught?{action}:{}),
   ...(kind==='landed'&&pending.catch.tagId?{returned:true}:{}),
@@ -59,12 +64,22 @@ function legacyHighlight(trip){
 
 export function tripStory(trip,thread=null){
  const moments=(Array.isArray(trip?.moments)?trip.moments:[]).filter(validMoment);
- let highlight=null;
- for(const moment of moments){const candidate=momentHighlight(moment);if(!highlight||candidate.score>=highlight.score)highlight=candidate;}
+ let highlight=null,highlightMoment=null;
+ for(const moment of moments){const candidate=momentHighlight(moment);if(!highlight||candidate.score>=highlight.score){highlight=candidate;highlightMoment=moment}}
  const legacy=legacyHighlight(trip);
- if(!highlight||legacy.score>highlight.score)highlight=legacy;
- const notes=[{kind:'memory',label:'这一轮记住了',title:highlight.title,body:highlight.body}];
+ if(!highlight||legacy.score>highlight.score){highlight=legacy;highlightMoment=null}
+ const route=[];
+ const hasCompleteRoute=moments.every(moment=>SPOTS.some(item=>item.id===moment.spot));
+ for(const moment of hasCompleteRoute?moments:[]){
+  const spot=SPOTS.find(item=>item.id===moment.spot);if(!spot)continue;
+  let entry=route.find(item=>item.id===spot.id);
+  if(!entry){entry={id:spot.id,name:spot.name,casts:0,landed:0,object:0,nearMiss:0,quiet:0};route.push(entry)}
+  entry.casts++;entry[moment.kind==='near-miss'?'nearMiss':moment.kind]++;
+ }
+ for(const entry of route){const facts=[entry.landed&&`上岸 ${entry.landed}`,entry.object&&`沉水物 ${entry.object}`,entry.nearMiss&&`失手 ${entry.nearMiss}`,entry.quiet&&`平静 ${entry.quiet}`].filter(Boolean);entry.result=facts.join(' · ')}
+ const place=SPOTS.find(item=>item.id===highlightMoment?.spot)?.name;
+ const notes=[{kind:'memory',label:place?`这一轮记住了 · ${place}`:'这一轮记住了',title:highlight.title,body:highlight.body}];
  const actionable=!!thread&&typeof thread.title==='string'&&typeof thread.detail==='string'&&['spot','bait','aim'].includes(thread.action?.kind);
  if(actionable)notes.push({kind:'next',label:'下次可试',title:thread.title,body:thread.detail});
- return {lead:highlight.lead,notes,continueLabel:actionable?'沿线索继续':'回到水边',hasNextAction:actionable};
+ return {lead:highlight.lead,route,notes,continueLabel:actionable?'沿线索继续':'回到水边',hasNextAction:actionable};
 }
