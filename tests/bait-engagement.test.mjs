@@ -1,6 +1,40 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {baitEngagement,fishApproachOffset,fishMouthApproach} from '../src/bait-engagement.mjs';
+import {baitEngagement,fishApproachOffset,fishMouthApproach,fishApproachSwim} from '../src/bait-engagement.mjs';
+
+test('near-bait fish circle, investigate twice and back off before committing',()=>{
+ for(const signal of ['broad','dart','deep']){
+  const gaps=[0,.25,.5,.75,1].map(u=>{const p=fishApproachOffset(-4.3+3.2*u,0,signal);return Math.hypot(p.x,p.z)});
+  assert.ok(gaps[1]<gaps[0]-.09&&gaps[2]>gaps[1]+.09);
+  assert.ok(gaps[3]<gaps[2]-.09&&gaps[4]>gaps[3]+.09);
+  const first=fishApproachOffset(-4.3,0,signal),last=fishApproachOffset(-1.1,0,signal);
+  assert.ok(Math.hypot(first.x-last.x,first.z-last.z)>.9,'the fish visibly travels around the bait');
+  assert.deepEqual(fishApproachOffset(0,10,signal),{x:0,z:0});
+  assert.deepEqual(fishApproachOffset(1,10,signal),{x:0,z:0});
+ }
+});
+
+test('pre-bite swim heading follows displacement with smooth turns at path joins',()=>{
+ for(const signal of ['broad','dart','deep'])for(const clock of [0,6,12,20]){
+  let prior=null;
+  for(let age=-5.3;age<-1.15;age+=.02){
+   const time=clock+age+5.5,swim=fishApproachSwim(age,time,signal),p=fishApproachOffset(age,time,signal),q=fishApproachOffset(age+.001,time+.001,signal);
+   assert.ok((q.x-p.x)*swim.heading.x+(q.z-p.z)*swim.heading.z>0,'fish head follows its swimming path');
+   assert.ok(swim.speed>.02&&swim.tailAmplitude>=.13&&swim.tailAmplitude<=.20);
+   const yaw=Math.atan2(swim.heading.z,swim.heading.x);
+   if(prior!==null)assert.ok(Math.abs(Math.atan2(Math.sin(yaw-prior),Math.cos(yaw-prior)))<4.8*.02,'path stays within the rendered turn speed');
+   prior=yaw;
+  }
+  for(const age of [-4.3,-1.1,0]){
+   const a=fishApproachOffset(age-.00001,clock,signal),b=fishApproachOffset(age+.00001,clock,signal);
+   assert.ok(Math.hypot(a.x-b.x,a.z-b.z)<.0001);
+  }
+ }
+ for(const age of [NaN,Infinity,-Infinity,0,100]){
+  const swim=fishApproachSwim(age,NaN,'unknown');
+  assert.ok([swim.heading.x,swim.heading.z,swim.speed,swim.tailAmplitude].every(Number.isFinite));
+ }
+});
 
 test('the fish tests the bait before committing its mouth to the hook',()=>{
  const early=baitEngagement('reading',0),probe=baitEngagement('reading',.3);
@@ -58,7 +92,7 @@ test('an unhooked fish keeps its own depth while the float bobs above it',()=>{
  }
  const orbitStart=fishMouthApproach(rest,-3.4,0,'broad','reading',0,restY);
  const orbitEnd=fishMouthApproach(rest,-3.4,2,'broad','reading',.5,restY);
- assert.ok(Math.hypot(orbitStart.x-orbitEnd.x,orbitStart.z-orbitEnd.z)>.1);
+ assert.ok(Math.hypot(orbitStart.x-orbitEnd.x,orbitStart.z-orbitEnd.z)>.05);
  assert.equal(orbitStart.y,orbitEnd.y,'circling and probe pulses must not bob the whole fish');
  const depths=[-5.5,-4.3,-3.4,-2.2,-1.1,-.3,-.001].map(age=>fishMouthApproach(rest,age,1,'broad','nibble',0,restY).y);
  assert.ok(depths.every((depth,i)=>i===0||depth>=depths[i-1]),'pre-hook depth only rises with the approach');

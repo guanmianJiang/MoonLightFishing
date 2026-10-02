@@ -34,3 +34,29 @@ export const CAST_TUNING=Object.freeze({
  mutationGoldChance:.09,
  markedTailChance:.12
 });
+
+export const FIGHT_FEEL_TUNING=Object.freeze({
+ cleanRunMinSeconds:.38,
+ turnReelBonus:2.2,
+ turnInwardForce:6,
+ turnThrustReduction:.6,
+ pumpLiftLineSpeed:4.5
+});
+
+export const LURE_TEASE_TUNING=Object.freeze({
+ liftMs:700,
+ followMs:400,
+ liftHeight:.075,
+ followStrength:.32,
+ biteBonusMs:1000
+});
+
+export const LURE_CAMERA_TUNING=Object.freeze({
+ portraitMaxMix:.55,
+ landscapeMaxMix:.72,
+ portraitFov:41,
+ landscapeFov:38,
+ focusStartDistance:3,
+ focusFullDistance:.8,
+ distantMix:.18
+});

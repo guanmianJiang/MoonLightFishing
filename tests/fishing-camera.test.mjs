@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from '../src/three.module.js';
-import {cameraTransitionBlend,castCameraBeat,fightCameraReaction,landingCameraWeight,fightCameraFov,fightCameraPose,orbitFightCameraPose,reelCameraPose,lureFocusEnvelope,lureCameraPose,landedFishCameraPose} from '../src/fishing-camera.mjs';
+import {cameraTransitionBlend,castCameraBeat,fightCameraReaction,lostRodCameraCue,landingCameraWeight,fightCameraFov,fightCameraPose,orbitFightCameraPose,reelCameraPose,lureFocusEnvelope,lureInspectionWeight,lureCameraStrength,lureCameraPose,landedFishCameraPose} from '../src/fishing-camera.mjs';
 
 const spots=[[-1.5,3.4],[2,8],[5,12]];
 const angler=new T.Vector3(-1.2,.5,.35);
@@ -41,6 +41,20 @@ test('surge opens the fight frame and landing waits before following the lifted 
  assert.equal(landingCameraWeight(1.2,true),1);
  assert.equal(landingCameraWeight(.1,false),1);
  assert.equal(landingCameraWeight(NaN,true),0);
+});
+
+test('line break keeps a wide view of the fast rod whip while unhooking stays softer',()=>{
+ const start=lostRodCameraCue(0,'line-break',true,62);
+ const broken=lostRodCameraCue(.09,'line-break',true,62);
+ const escaped=lostRodCameraCue(.09,'escaped',true,62);
+ assert.equal(start.focus,0);
+ assert.equal(start.fov,62);
+ assert.ok(broken.focus>.7&&broken.focus<.8,'the wide first frame centers both rod and angler');
+ assert.ok(escaped.focus>broken.focus);
+ assert.ok(broken.fov>=94&&broken.fov>escaped.fov);
+ assert.ok(lostRodCameraCue(.3,'line-break',true,62).focus>0,'the camera may follow the rod after the main snap');
+ assert.equal(lostRodCameraCue(.09,'line-break',true,98).fov,98,'an already wide fight frame must not narrow on the break');
+ assert.equal(lostRodCameraCue(NaN,'line-break',true,62).focus,0);
 });
 
 test('reeling view moves from the right shoulder toward the line and retains angler and fish',()=>{
@@ -131,12 +145,17 @@ test('reel-in begins closer to the hook than the fight camera',()=>{
  }
 });
 
-test('bait close-up approaches, holds, and eases back before the hook window',()=>{
- assert.equal(lureFocusEnvelope(-.1),0);
- assert.ok(lureFocusEnvelope(.28)>0&&lureFocusEnvelope(.28)<1);
+test('bait close-up begins with a light approach, holds, and eases back before the hook window',()=>{
+ assert.equal(lureFocusEnvelope(-1.3),0);
+ assert.ok(lureFocusEnvelope(-.6)>0&&lureFocusEnvelope(-.6)<.36);
+ assert.equal(lureFocusEnvelope(0),.36);
+ assert.ok(lureFocusEnvelope(.28)>.36&&lureFocusEnvelope(.28)<1);
  assert.equal(lureFocusEnvelope(.7),1);
  assert.ok(lureFocusEnvelope(2.2)<.7&&lureFocusEnvelope(2.2)>.2);
  assert.equal(lureFocusEnvelope(3.3),0);
+ assert.equal(lureFocusEnvelope(NaN),0);
+ let prior=lureFocusEnvelope(-1.3);
+ for(let age=-1.29;age<=3.35;age+=.01){const weight=lureFocusEnvelope(age);assert.ok(weight>=0&&weight<=1,{age,weight});assert.ok(Math.abs(weight-prior)<.035,{age,weight,prior});prior=weight}
  for(let age=1.3,last=1;age<3.25;age+=.1){const weight=lureFocusEnvelope(age);assert.ok(weight<=last+1e-9);last=weight}
  for(const portrait of [false,true])for(const [x,z] of spots){
   const fish=new T.Vector3(x,.1,z),forward=new T.Vector3(x-angler.x,0,z-angler.z).normalize(),right=new T.Vector3(forward.z,0,-forward.x);
@@ -145,6 +164,26 @@ test('bait close-up approaches, holds, and eases back before the hook window',()
   assert.ok(Math.abs(image.x)<.3&&Math.abs(image.y)<.3,{portrait,x,z,image});
   assert.ok(shot.position.clone().sub(fish).dot(forward)<-2,'camera should approach from the player side');
  }
+});
+
+test('portrait bait camera keeps a wide enough share of the waiting composition',()=>{
+ assert.equal(lureCameraStrength(0,true,0),0);
+ assert.equal(lureCameraStrength(1,true,0),.55);
+ assert.equal(lureCameraStrength(1,false,0),.72);
+ assert.equal(lureCameraStrength(2,true,0),.55);
+ assert.equal(lureCameraStrength(-1,true,0),0);
+ assert.equal(lureCameraStrength(NaN,true,0),0);
+ assert.equal(lureCameraStrength(1,true,Infinity),0);
+ assert.ok(lureCameraStrength(1,true,3)<.11);
+ assert.ok(lureCameraStrength(1,true,1)>lureCameraStrength(1,true,2));
+ assert.ok(lureCameraStrength(lureFocusEnvelope(-.6),true,3)<.04);
+});
+
+test('a valid bait tap gives one short camera response only while the fish is approaching or reading',()=>{
+ assert.equal(lureInspectionWeight('approach',.4),.58);
+ assert.equal(lureInspectionWeight('reading',.4),.58);
+ for(const phase of ['waiting','nibble','hooked','idle'])assert.equal(lureInspectionWeight(phase,.4),0);
+ for(const age of [-1,0,.8,NaN])assert.equal(lureInspectionWeight('approach',age),0);
 });
 
 test('landing close-up centers the fish body across fishing directions',()=>{

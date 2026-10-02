@@ -48,3 +48,10 @@ test('lift guidance explains the pull and reports only distance actually gained'
  assert.match(liftOutcomeText({...f,distance:8.98},9),/没有净拉近/);
  assert.match(liftOutcomeText(null,9),/守住鱼距/);
 });
+
+test('compact lift results keep real distance, no-gain boundary and recovery instruction',()=>{
+ assert.equal(liftOutcomeText({distance:8.8},9),'本次拉近 0.2 米\n按住收线守住距离');
+ assert.match(liftOutcomeText({distance:9.2},9),/^这次没有净拉近\n/);
+ assert.match(liftOutcomeText({distance:8.91},9),/^这次没有净拉近\n/);
+ for(const value of [NaN,Infinity,undefined])assert.equal(liftOutcomeText({distance:value},9),'竿放下后按住收线\n守住鱼距');
+});

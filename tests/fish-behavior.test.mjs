@@ -35,8 +35,11 @@ test('perch gives a second visible warning before its next run',()=>{
  assert.deepEqual(sequence.slice(0,5),['windup','run','windup','run','recover']);
  const f=createFight({id:'perch',weight:2});
  for(let i=0;i<600&&!(f.fishState==='windup'&&f.runCount===1);i++)stepFight(f,false,.016);
- assert.equal(fightGuidance(f,false).step,'release');
+ assert.equal(fightGuidance(f,false).step,'reel');
  assert.equal(pumpOpportunity(f,false).ready,false);
+ for(let i=0;i<100&&f.fishState==='windup'&&f.surgeWarning<.7;i++)stepFight(f,false,.016);
+ assert.equal(f.fishState,'windup');
+ assert.equal(fightGuidance(f,false).step,'release');
 });
 
 test('catfish anchors on the bottom and blocks a premature lift',()=>{

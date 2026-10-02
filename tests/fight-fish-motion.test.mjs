@@ -3,6 +3,23 @@ import assert from 'node:assert/strict';
 import {fightFishMotion,hookedFishPose,biteFishPose,turnFishYaw,fightEntryPosition} from '../src/fight-fish-motion.mjs';
 import {Euler,Group,Vector3} from '../src/three.module.js';
 import {alignFishMouth,fishMouthWorld} from '../src/fish-attachment.mjs';
+import {fishApproachSwim} from '../src/bait-engagement.mjs';
+
+test('circling has readable calm tail and body motion and flows into the hooked pose',()=>{
+ const outward={x:.6,z:.8};
+ for(const signal of ['broad','dart','deep']){
+  const swim=fishApproachSwim(-3,2,signal),pose=biteFishPose(outward,-3,Math.PI/10.4,0,false,swim);
+  assert.ok(pose.heading.x*swim.heading.x+pose.heading.z*swim.heading.z>.999);
+  assert.ok(Math.abs(pose.tail)>=.13&&Math.abs(pose.tail)<=.2);
+  assert.ok(Math.abs(pose.roll)>.02&&Math.abs(pose.roll)<.04);
+  const before=biteFishPose(outward,-.0001,2,0,false,fishApproachSwim(-.0001,2,signal));
+  const contact=biteFishPose(outward,0,2,0,true,fishApproachSwim(0,2,signal));
+  assert.ok(Math.hypot(before.heading.x-contact.heading.x,before.heading.z-contact.heading.z)<.001);
+  assert.ok(Math.abs(before.tail-contact.tail)<.001&&Math.abs(before.roll-contact.roll)<.001);
+ }
+ const bad=biteFishPose(outward,NaN,NaN,NaN,false,{heading:{x:NaN,z:Infinity},tailAmplitude:NaN});
+ assert.ok([bad.heading.x,bad.heading.z,bad.tail,bad.roll].every(Number.isFinite));
+});
 
 const fish={startDistance:9,distance:7,progress:2/7.2,fishPosition:.5,fishVelocity:0,surge:0,load:.4,pumpPulse:0,radialVelocity:-1,seed:1};
 

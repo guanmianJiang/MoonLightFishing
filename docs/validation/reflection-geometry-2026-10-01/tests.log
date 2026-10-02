@@ -584,7 +584,7 @@ test at tests\result-dialog.test.mjs:110:1
 ✖ a landed catch cannot replay its lift or sound after the result opens (0.8965ms)
   ReferenceError: reelSurface is not defined
       at Object.finishReel (evalmachine.<anonymous>:1:306)
-      at TestContext.<anonymous> (file:///D:/Raiders/MoonLightFishing/tests/result-dialog.test.mjs:117:10)
+      at TestContext.<anonymous> (./tests/result-dialog.test.mjs:117:10)
       at Test.runInAsyncScope (node:async_hooks:228:14)
       at Test.run (node:internal/test_runner/test:1118:25)
       at Test.processPendingSubtests (node:internal/test_runner/test:787:18)

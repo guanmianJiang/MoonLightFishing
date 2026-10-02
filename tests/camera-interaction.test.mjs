@@ -24,6 +24,7 @@ test('camera intent gives manual overview priority and follows the fishing actio
  assert.equal(cameraStage({pending},'casting'),'fight');
  assert.equal(cameraStage({pending:{phase:'cast'}},'casting'),'casting');
  assert.equal(cameraStage({pending:{phase:'cast'}},'waiting'),'waiting');
+ assert.equal(cameraStage({pending:{phase:'cast'}},'approach'),'bite');
  assert.equal(cameraStage({pending:{phase:'cast'}},'reading'),'bite');
 });
 

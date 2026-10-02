@@ -11,7 +11,7 @@ test('ordinary repeat catch offers one goal based action',()=>{
  assert.deepEqual(catchActionPlan(save,{id:'minnow'},fish,3),{recommended:'release',notable:false});
 });
 
-test('a first, unusual or tracked catch opens the full decision',()=>{
+test('a first, unusual or tracked catch is marked as notable',()=>{
  const save=newSave(),common={id:'minnow'};
  assert.equal(catchActionPlan(save,{id:'minnow'},common,1).notable,true);
  assert.equal(catchActionPlan(save,{id:'minnow',mutation:'浅金体色'},common,4).notable,true);

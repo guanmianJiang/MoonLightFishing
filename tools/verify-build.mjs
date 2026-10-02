@@ -23,7 +23,8 @@ for(const path of [
  'assets/audio/source/ocean-wave-01.flac',
  'assets/fonts/noto-sans-sc-ui.woff2',
  'assets/fonts/noto-serif-sc-ui.woff2',
- 'assets/journal-fish-watercolor.webp'
+ 'assets/journal-fish-watercolor.webp',
+ 'assets/ui/shore-journal.webp'
 ])await check(path);
 for(const {path} of SKY_TEXTURES){
  await check(path.slice(2));

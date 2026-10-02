@@ -1,3 +1,6 @@
+import {LURE_CAMERA_TUNING} from './config/fishing-tuning.mjs';
+import {cameraImpulse,adjustCameraAngles} from './camera-interaction.mjs';
+
 // Camera targets for the fight and landing shots. The fight camera sits to
 // the angler's right, abreast of the line, so both ends stay readable.
 export function cameraTransitionBlend(current,active,dt){
@@ -23,6 +26,16 @@ export function fightCameraReaction(fight){
  const surge=Number.isFinite(fight.surge)?Math.max(0,Math.min(1,fight.surge)):0;
  const warning=Number.isFinite(fight.surgeWarning)?Math.max(0,Math.min(1,fight.surgeWarning)):0;
  return {pull:Math.max(surge,warning*.35),open:Math.max(surge*.75,warning*.25)};
+}
+
+export function lostRodCameraCue(age,reason,portrait,fightFov){
+ const base=Number.isFinite(fightFov)?fightFov:portrait?60:42;
+ if(!Number.isFinite(age)||age<0)return {focus:0,aimFraction:.5,aimFloor:1.8,fov:base};
+ const broken=reason==='line-break',exit=1-smooth(.52,.95,age);
+ const focus=(broken?smooth(0,.07,age)*.75:smooth(0,.12,age))*exit;
+ const width=(broken?smooth(0,.05,age):smooth(0,.12,age))*exit;
+ const target=broken?Math.max(base,portrait?94:68):portrait?58:48;
+ return {focus,aimFraction:.5,aimFloor:broken?2:1.8,fov:base+(target-base)*width};
 }
 
 export function landingCameraWeight(age,fromFight){
@@ -67,6 +80,35 @@ export function orbitFightCameraPose(shot,yaw=0,pitch=0){
  return {position,aim:shot.aim.clone()};
 }
 
+export function orbitCloseCameraPose(shot,yaw=0,pitch=0,framing){
+ const angles=adjustCameraAngles('close',{yaw,pitch});
+ const offset=shot.position.clone().sub(shot.aim),radius=offset.length();
+ if(radius<.001||angles.yaw===0&&angles.pitch===0)return {position:shot.position.clone(),aim:shot.aim.clone()};
+ const azimuth=Math.atan2(offset.x,offset.z)+angles.yaw;
+ const elevation=Math.max(.10,Math.min(1.15,Math.atan2(offset.y,Math.hypot(offset.x,offset.z))+angles.pitch));
+ const horizontal=radius*Math.cos(elevation),position=shot.aim.clone();
+ position.x+=horizontal*Math.sin(azimuth);position.y+=radius*Math.sin(elevation);position.z+=horizontal*Math.cos(azimuth);
+ if(framing?.subjects?.length){
+  // Keep the camera on the clear shoulder: crossing behind the line hides the float.
+  if(framing.angler&&framing.target){
+   const line=framing.target.clone().sub(framing.angler).setY(0).normalize(),side=line.clone().cross({x:0,y:1,z:0}).negate();
+   const lateral=position.clone().sub(framing.angler).dot(side);
+   if(lateral<1.8)position.addScaledVector(side,1.8-lateral);
+  }
+  const orbitRadius=position.distanceTo(shot.aim);
+  const forward=shot.aim.clone().sub(position).normalize(),right=forward.clone().cross({x:0,y:1,z:0}).normalize(),up=right.clone().cross(forward);
+  const vertical=Math.tan(framing.fov*Math.PI/360)/(framing.zoom||1),horizontal=vertical*framing.aspect;
+  let distance=orbitRadius;
+  if(vertical>0&&horizontal>0)for(const point of framing.subjects){
+   const delta=point.clone().sub(shot.aim),x=delta.dot(right),y=delta.dot(up),along=delta.dot(forward);
+   const required=Math.max(Math.abs(x)/(horizontal*.48),Math.abs(y)/(vertical*(y<0?.50:.65)));
+   distance=Math.max(distance,required-along);
+  }
+  position.sub(shot.aim).multiplyScalar(distance/orbitRadius).add(shot.aim);
+ }
+ return {position,aim:shot.aim.clone()};
+}
+
 // Reel-in begins near the hook. A distant target may leave the angler outside
 // the frame briefly; the fish stays legible instead of shrinking both subjects.
 export function reelCameraPose(angler,fish,forward,right,portrait){
@@ -80,8 +122,21 @@ export function reelCameraPose(angler,fish,forward,right,portrait){
 }
 
 export function lureFocusEnvelope(age){
+ if(!Number.isFinite(age))return 0;
  const smooth=(from,to)=>{const u=Math.max(0,Math.min(1,(age-from)/(to-from)));return u*u*(3-2*u)};
- return smooth(0,.48)*(1-smooth(1.25,3.25));
+ return (.36*smooth(-1.2,0)+.64*smooth(0,.55))*(1-smooth(1.25,3.25));
+}
+
+export function lureInspectionWeight(phase,age){
+ return ['approach','reading'].includes(phase)?cameraImpulse(age,.8)*.58:0;
+}
+
+export function lureCameraStrength(envelope,portrait,fishGap=Infinity){
+ const weight=Number.isFinite(envelope)?Math.max(0,Math.min(1,envelope)):0;
+ if(!Number.isFinite(fishGap))return 0;
+ const nearness=smooth(0,1,(LURE_CAMERA_TUNING.focusStartDistance-Math.max(0,fishGap))/(LURE_CAMERA_TUNING.focusStartDistance-LURE_CAMERA_TUNING.focusFullDistance));
+ const spacing=LURE_CAMERA_TUNING.distantMix+(1-LURE_CAMERA_TUNING.distantMix)*nearness;
+ return weight*spacing*(portrait?LURE_CAMERA_TUNING.portraitMaxMix:LURE_CAMERA_TUNING.landscapeMaxMix);
 }
 
 // Move along the player's line of sight for a brief water-level bite close-up.

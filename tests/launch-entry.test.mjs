@@ -8,6 +8,17 @@ const html = readFileSync(new URL('../src/index.html', import.meta.url), 'utf8')
 const guard = html.match(/<script id="launchGuard">([\s\S]*?)<\/script>/)?.[1];
 const bootGuard = html.match(/<script id="bootGuard">([\s\S]*?)<\/script>/)?.[1];
 
+test('active game and render settings modules use fresh local imports in development', () => {
+  const app = readFileSync(new URL('../src/app-final.js', import.meta.url), 'utf8');
+  const scene = readFileSync(new URL('../src/scene.js', import.meta.url), 'utf8');
+  assert.match(html, /<script type="module" src="app-final\.js"><\/script>/);
+  const styles = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)];
+  assert.ok(styles.length > 0);
+  assert.ok(styles.every(([, href]) => !href.includes('?')));
+  assert.match(app, /from '\.\/render-settings-panel\.js';/);
+  assert.match(scene, /from '\.\/fishing-camera\.mjs';/);
+});
+
 test('file URL shows a usable startup instruction before the game module loads', () => {
   assert.ok(guard);
   const title = {textContent: ''};

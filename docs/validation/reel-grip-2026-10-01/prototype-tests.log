@@ -1,0 +1,15 @@
+✔ grip has no normal status text or gauge; pressing moves only the grip (1.5881ms)
+✔ bite uses the same pointer for strike and hold; object uses a single confirmation (0.6414ms)
+✔ danger remains after release or payout and suppresses success and repeated commands (0.5463ms)
+✔ upward acceptance requires opportunity, threshold and lane; once per opportunity (0.5485ms)
+✔ payout hysteresis, visual ellipse and invalid coordinates do not alter the anchor (0.5878ms)
+✔ second pointer, cancel, blur and state changes clear input (0.9725ms)
+✔ one-shot gesture preview uses the same states, ends cleanly and yields to manual input (0.6526ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 99.6254

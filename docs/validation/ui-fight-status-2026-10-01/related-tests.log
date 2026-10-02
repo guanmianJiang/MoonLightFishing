@@ -1,0 +1,26 @@
+✔ fight guidance follows the line and gives a usable next action (1.8647ms)
+✔ a swipe pumps only during a real opening (0.4039ms)
+✔ lift guidance explains the pull and reports only distance actually gained (0.2288ms)
+✔ compact lift results keep real distance, no-gain boundary and recovery instruction (0.1221ms)
+✔ the animated fish and real rig belong to the same compact status heading (1.8468ms)
+✔ the displayed rig receives live distance, slack and strain geometry without changing physics (1.689ms)
+✔ the diagram follows real fish distance, line slack and rod load (0.186ms)
+✔ the compact proportional viewport contains near, far, loose and lifted geometry (1.8172ms)
+✔ a well-timed rod lift tires the fish and softens its next run (2.0193ms)
+✔ one reel shows the action available in each phase (0.9771ms)
+✔ tension arc follows physical load and fades with slack (0.1307ms)
+✔ the lever moves with the thumb and returns to its rooted center (0.4274ms)
+✔ control keeps a complete layout when the optional stylesheet is missing (0.9339ms)
+✔ strike and object retrieval explain different inputs without advertising fight gestures (0.1223ms)
+✔ line risk and existing thumb actions explain the immediate next input (0.1241ms)
+✔ slack cannot advertise a lift even with a stale opportunity flag (0.0953ms)
+✔ missing and nonfinite inputs produce legible two-line hints without changing physical state (0.1855ms)
+✔ starting the next strike clears previous feedback without replacing the gesture button (1.3412ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 159.1475

@@ -1,27 +1,19 @@
-/* A small reel mark sits over water-colored material; the action lives below it. */
-#fightControl{position:absolute;z-index:12;right:calc(24px + env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));left:auto;display:block;width:108px;height:144px;margin:0;pointer-events:none}
+/* Critical geometry and color also live in HTML, so a missing sheet cannot expose a black button. */
 #fightControl[hidden]{display:none!important}
-#game #fightControl #fightHold.game-action{position:absolute;top:0;left:0;display:block;width:108px;height:108px;min-height:0;margin:0;padding:0;overflow:visible;border:0;border-radius:50%;background:none;box-shadow:none;color:#f0e6cb;text-align:center;text-shadow:none;transform:none;filter:none;touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:auto}
 #game #fightControl #fightHold.game-action::before,#game #fightControl #fightHold.game-action::after{display:none}
-#fightControl #fightHold.game-action:focus-visible{outline:3px solid #fff2c6;outline-offset:4px}
-#fightControl .fight-drag-effect{position:absolute;z-index:1;left:50%;top:50%;display:block;width:0;height:0;overflow:visible;pointer-events:none;filter:drop-shadow(0 6px 9px rgba(12,55,49,.22))}
-#fightControl .fight-surface{position:absolute;left:-110px;top:-110px;display:block;width:220px;height:220px;opacity:0;pointer-events:none}
-#fightControl #fightHold.shader-ready .fight-surface{opacity:1}
-#fightControl #fightHold.shader-ready .fight-membrane{opacity:0}
-#fightControl .fight-membrane{position:absolute;left:-110px;top:-110px;display:block;width:220px;height:220px;overflow:visible;transform:rotate(var(--blob-angle,0deg)) scaleX(var(--membrane-squash,1));transform-origin:center}
-#fightControl #fightMembraneHalo{fill:none;stroke:#c4c79b;stroke-opacity:calc(.22 + var(--membrane-tension,0)*.22);stroke-width:3;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-#fightControl .fight-glass-glint{opacity:calc(.48 + var(--membrane-tension,0)*.16);transition:opacity .13s ease-out}
-#fightControl #fightMembraneRim{fill:none;stroke:#d5c9a2;stroke-opacity:.64;stroke-width:1.4;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-#fightControl .fight-press-face{position:absolute;z-index:2;inset:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:108px;height:108px;color:#f0e6cb;pointer-events:none}
-#fightControl .fight-reel-icon{width:48px;height:48px;overflow:visible;stroke:currentColor;stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round;transform:rotate(var(--spool-angle,0deg));transition:transform .08s linear;filter:drop-shadow(0 1px 2px rgba(4,40,40,.28))}
-#fightControl .fight-reel-icon circle{fill:currentColor;stroke:none}
-#fightControl #fightHold.held .fight-drag-effect{filter:drop-shadow(0 4px 8px rgba(14,58,52,.23))}
-#fightControl #fightHold.tap-flash .fight-drag-effect{filter:drop-shadow(0 0 7px rgba(241,205,140,.43))}
-#fightControl #fightHold.paying .fight-press-face,#fightControl #fightHold[data-cue="release"] .fight-press-face{color:#f3cf92}
-#fightControl .fight-control-caption{position:absolute;top:112px;left:50%;display:block;min-width:78px;box-sizing:border-box;padding:4px 8px;border:1px solid rgba(225,221,186,.16);border-radius:8px;background:rgba(20,68,63,.76);box-shadow:0 3px 9px rgba(13,51,48,.1);color:#f6ecd3;font:650 12px/1.3 var(--sans);letter-spacing:.055em;text-align:center;white-space:nowrap;transform:translateX(-50%);pointer-events:none}
-#fightControl #fightHold[data-cue="release"] + .fight-control-caption{color:#f3d4a3}
-#fightControl .fight-control-hint{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none}
-@media(prefers-reduced-motion:reduce){#fightControl .fight-reel-icon{transition:none}}
+#fightControl #fightHold.game-action:focus-visible{outline:3px solid #356f61;outline-offset:2px}
+#fightControl .fight-control-art{filter:drop-shadow(0 3px 4px rgba(23,69,58,.18))}
+#fightControl .fight-guide-up,#fightControl .fight-guide-down{display:inline-flex;align-items:center;gap:3px;opacity:.57;transition:opacity .13s,color .13s}
+#fightControl[data-cue="lift"] .fight-guide-up,#fightControl[data-cue="return"] .fight-guide-up,#fightControl[data-mode="strike"] .fight-guide-up{color:#216c59;opacity:1}
+#fightControl[data-cue="release"] .fight-guide-down,#fightControl[data-cue="payout"] .fight-guide-down{color:#a25839;opacity:1}
+#fightControl[data-mode="retrieve"] .fight-motion-guide{visibility:hidden}
+#fightControl.is-dragging .fight-motion-guide,#fightControl.is-dragging .fight-control-caption{opacity:.35}
+#fightControl #fightHold.held .fight-control-art{filter:drop-shadow(0 1px 2px rgba(23,69,58,.16)) brightness(.96)}
+#fightControl #fightHold.tap-flash .fight-control-art{filter:drop-shadow(0 2px 6px rgba(227,182,98,.5)) brightness(1.08)}
+#fightControl[data-load="danger"] #fightTensionArc{stroke:#d37a50}
+#fightControl[data-load="slack"] #fightTensionArc{stroke-opacity:.35}
+#fightControl[data-cue="release"] .fight-control-caption,#fightControl[data-cue="payout"] .fight-control-caption{background:#755c43!important}
+@media(prefers-reduced-motion:reduce){#fightControl .fight-guide-up,#fightControl .fight-guide-down{transition:none}}
 #game.fighting #fight #fightBeatTitle{color:#28584d}
 #game.fighting #fight #fightBeatHint{color:#5c7467}
 #game.fighting #fight #fightFeedback:not(:empty){color:#315e4c;background:#f1f6eb;border-color:#dbe7d5;text-shadow:none}

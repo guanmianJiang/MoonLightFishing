@@ -1,0 +1,52 @@
+/* Final shared states. The elastic fishing input owns its own presentation. */
+:is(#game,#result,#book,#tripEnd,#renderSettingsPanel){--button-hover-top:#f3f7e8;--button-hover-bottom:#bdd3b8;--button-top:#edf3e4;--button-bottom:#d4e2d2;--button-edge:#9ab59f;--button-ink:#355d4c;--button-depth:3px;--button-radius:16px;--button-rest-transform:none;}
+:is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold),#game #spots .spot{
+ box-sizing:border-box;min-height:44px;min-width:44px;
+ border:1px solid #eaf1df!important;border-radius:var(--button-radius)!important;
+ background:linear-gradient(180deg,var(--button-top),var(--button-bottom))!important;color:var(--button-ink)!important;
+ box-shadow:inset 0 1px 1px #fffbedb3,0 var(--button-depth) 0 var(--button-edge),0 5px 10px #294b3b18!important;
+ text-shadow:none!important;filter:none!important;transform:var(--button-rest-transform)!important;translate:0 0;
+ transition:translate 120ms ease,background-color 120ms ease,box-shadow 120ms ease,border-color 120ms ease!important;touch-action:manipulation;
+}
+#game :is(#cast,#sceneAction,#landFish),#result :is(.process-recommended,#emptyContinue),#tripEnd #nextTrip{--button-hover-top:#ffebc9;--button-hover-bottom:#edbd7f;--button-top:#f7dfb9;--button-bottom:#e7bd86;--button-edge:#b68c60;--button-ink:#654b2e;--button-depth:4px;--button-radius:22px;}
+#game #cast span,#result .process-recommended :is(strong,small){color:inherit!important;text-shadow:none!important;}
+#game .hud-tools > button,#game .camera-controls #viewToggle{--button-radius:17px;}
+#game #spots .spot{--button-rest-transform:translate(-50%,-100%);--button-radius:19px;animation:none!important;}
+#game #spots .spot.active{--button-top:#f5e3bd;--button-bottom:#e6c99a;--button-edge:#b69b70;--button-ink:#625037;--button-depth:2px;}
+#game #spots .spot small{color:inherit!important;opacity:.8;}
+#game #spots .spot.locked{--button-top:#e0e7db;--button-bottom:#ccd8c9;--button-edge:#a4b3a0;--button-ink:#6b7a65;--button-depth:1px;}
+#game #baits .bait{--button-depth:1px;--button-radius:16px;border-color:transparent!important;}
+:is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold):is([aria-pressed="true"],[aria-selected="true"],[aria-expanded="true"],.selected,.active),
+:is(#game,#result,#book,#tripEnd,#renderSettingsPanel) details[open] > summary:not(#fightHold){--button-hover-top:#d5e6c7;--button-hover-bottom:#9fbe93;--button-top:#cdddbe;--button-bottom:#a8c79c;--button-edge:#6e946a;--button-ink:#284d39;--button-depth:1px;box-shadow:inset 0 1px 1px #f7fbe7, inset 0 -3px 0 #74986bb3,0 1px 0 var(--button-edge),0 3px 7px #294b3b12!important;border-color:#648861!important;}
+#game #baits .bait.selected::after{background:#5c8261;color:#fff7e4;box-shadow:none;}
+#game #baits .bait strong{color:inherit!important;}
+#game .camera-controls .zoom-group button{--button-depth:0px;--button-radius:12px;background:transparent!important;box-shadow:none!important;border-color:transparent!important;}
+#game .camera-controls #zoomIn{border-bottom:1px solid #a9bda655!important;}
+#book #bookTabs button{--button-depth:0px;--button-radius:13px;background:transparent!important;box-shadow:none!important;border-color:transparent!important;}
+#book #bookTabs button[aria-pressed="true"]{background:linear-gradient(180deg,var(--button-top),var(--button-bottom))!important;box-shadow:inset 0 -2px 0 #7f9f7d!important;border-color:#a3bc9a!important;}
+#game :is(.waterside button,.route-card__details > summary),#result :is(#moreCatchActions,#catchDetails > summary,#otherCatchActions button){--button-depth:0px;--button-radius:13px;background:transparent!important;box-shadow:none!important;border-color:transparent!important;}
+#result #moreCatchActions[aria-expanded="true"],#result #catchDetails[open] > summary{background:#b5cea4!important;color:#355f4b!important;}
+:is(#book,#tripEnd,#renderSettingsPanel) :is(.close,header button){--button-depth:1px;--button-radius:14px;}
+@media (hover:hover) and (pointer:fine){
+ :is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold):not(:disabled):not([aria-disabled="true"]):hover{background:linear-gradient(180deg,var(--button-hover-top),var(--button-hover-bottom))!important;border-color:var(--button-edge)!important;translate:0 -2px;box-shadow:inset 0 1px 1px #fffbed,0 var(--button-depth) 0 var(--button-edge),0 6px 12px #294b3b20!important;}
+ :is(#game,#book,#result) :is(.camera-controls .zoom-group button,#bookTabs button:not([aria-pressed="true"]),#moreCatchActions,#catchDetails > summary,#otherCatchActions button):not(#fightHold):not(:disabled):not([aria-disabled="true"]):hover{background:#b5cda9!important;box-shadow:inset 0 -2px 0 #77956855!important;}
+}
+:is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold):not(:disabled):not([aria-disabled="true"]):active{background:linear-gradient(0deg,#3f4c3429,#3f4c3429),linear-gradient(180deg,var(--button-top),var(--button-bottom))!important;border-color:var(--button-edge)!important;translate:0 3px;box-shadow:inset 0 3px 6px #39554340,0 1px 0 var(--button-edge),0 2px 4px #294b3b18!important;}
+:is(#game,#book,#result) :is(.camera-controls .zoom-group button,#bookTabs button,#moreCatchActions,#catchDetails > summary,#otherCatchActions button):not(#fightHold):not(:disabled):not([aria-disabled="true"]):active{background:#a4bf99!important;box-shadow:inset 0 3px 5px #39554340!important;}
+:is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold):focus-visible{outline:2px solid #426f59!important;outline-offset:3px!important;}
+:is(#game,#result,#book,#tripEnd,#renderSettingsPanel) button:not(#fightHold):is(:disabled,[aria-disabled="true"]){--button-top:#e4eadc;--button-bottom:#d9e2d2;--button-ink:#687967;background:linear-gradient(180deg,var(--button-top),var(--button-bottom))!important;color:var(--button-ink)!important;border-color:#c9d5c2!important;box-shadow:inset 0 1px 0 #f5f6e9!important;translate:0 0!important;transform:var(--button-rest-transform)!important;opacity:.72!important;cursor:default;}
+/* Aim actions stay compact enough to leave the scene readable. */
+#game[data-ui-mode="aim"] .toolbar{justify-content:flex-end;align-items:center;gap:12px;}
+#game[data-ui-mode="aim"] #cast:not(:disabled),#game[data-ui-mode="aim"] #cast:disabled{flex:0 1 auto;width:clamp(160px,55vw,248px);min-width:0;min-height:64px;padding:10px 18px;gap:12px;font-size:18px;}
+#game[data-ui-mode="aim"] #cancelAim{flex:0 0 80px;width:80px;min-width:80px;min-height:56px;padding:8px;--button-radius:18px;font-size:14px;}
+#game #cast .ui-icon{box-sizing:border-box;width:30px;height:30px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:inherit;}
+#game #cast span{font-size:inherit;line-height:1.2;}
+#game .camera-controls{width:48px!important;gap:10px;}
+#game .camera-controls :is(#viewToggle,#cameraAngleToggle){box-sizing:border-box;width:48px;min-width:48px;height:56px;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px;--button-radius:17px;}
+#game .camera-controls .camera-icon{width:24px;height:24px;flex:none;}
+#game .camera-controls :is(#viewToggleLabel,#cameraAngleToggle span){font-size:11px;line-height:14px;}
+#game .camera-controls .zoom-group{box-sizing:border-box;width:48px;padding:1px;align-items:center;}
+#game .camera-controls .zoom-group button{box-sizing:border-box;width:44px;min-width:44px;}
+@media (prefers-reduced-motion:reduce){
+ :is(#game,#result,#book,#tripEnd,#renderSettingsPanel) :is(button,summary):not(#fightHold){transition:none!important;translate:0 0!important;}
+}

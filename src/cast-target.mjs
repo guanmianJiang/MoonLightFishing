@@ -29,7 +29,7 @@ export function castPreset(spot,zone='middle'){
 
 export function openingCastPoint(){
  const near=castPreset('reed','near');
- const point=[+(near[0]-1.1).toFixed(3),+(near[1]+.25).toFixed(3)];
+ const point=[+(near[0]-3.1).toFixed(3),+(near[1]+.25).toFixed(3)];
  return castPointFromWorld('reed',...point)?point:near;
 }
 

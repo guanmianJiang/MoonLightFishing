@@ -1,0 +1,13 @@
+✔ design sample uses the same entry for strike and continuous reeling (1.9343ms)
+✔ sample strain remains visible after release and has no contradictory success cue (0.5611ms)
+✔ sample upward gesture requires a real sample opportunity and returns to reeling (0.5077ms)
+✔ sample downward threshold, return hysteresis and horizontal lane stay distinct (0.4813ms)
+✔ sample second pointer, cancellation, blur and state changes cannot leave held input (0.6023ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.7306

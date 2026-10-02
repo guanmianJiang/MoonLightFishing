@@ -1,0 +1,31 @@
+✔ main key shows one action, no status paragraph or gauge; only its cap moves (1.5773ms)
+✔ bite uses the same pointer for strike and hold; object uses a single confirmation (0.6705ms)
+✔ danger remains after release or payout and suppresses success and repeated commands (0.7003ms)
+✔ upward acceptance requires opportunity, threshold and lane; once per opportunity (1.1884ms)
+✔ payout hysteresis, radial bounds and invalid coordinates do not alter the anchor (0.6341ms)
+✔ second pointer, cancel, blur and state changes clear input (0.5338ms)
+✔ one-shot gesture preview uses the same states, ends cleanly and yields to manual input (0.713ms)
+✔ all four directions have equal reach and distinct corresponding feedback (0.6823ms)
+✔ diagonal input stays continuous without bypassing the vertical gesture lane (0.5436ms)
+✔ authored CSS keeps the substantial key, touch area and directions inside portrait bounds (30.2725ms)
+✔ accepted actions change the single label; rejected gestures do not claim a lift (0.5061ms)
+✔ lost capture and hidden page release pressure and stop playback (0.4479ms)
+✔ fishing symbol reuses the existing game icon and is a self-contained SVG image (0.2336ms)
+✔ grip has no normal status text or gauge; pressing moves only the grip (1.6571ms)
+✔ bite uses the same pointer for strike and hold; object uses a single confirmation (0.4778ms)
+✔ danger remains after release or payout and suppresses success and repeated commands (0.4936ms)
+✔ upward acceptance requires opportunity, threshold and lane; once per opportunity (0.5317ms)
+✔ payout hysteresis, radial bounds and invalid coordinates do not alter the anchor (1.0159ms)
+✔ second pointer, cancel, blur and state changes clear input (0.4071ms)
+✔ one-shot gesture preview uses the same states, ends cleanly and yields to manual input (0.6086ms)
+✔ all four directions have equal reach and distinct corresponding feedback (0.5494ms)
+✔ diagonal input stays continuous without bypassing the vertical gesture lane (0.6471ms)
+✔ authored CSS geometry keeps direction marks, rod and correction inside narrow portrait bounds (26.2419ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 188.4988

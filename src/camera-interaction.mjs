@@ -4,7 +4,7 @@ export function cameraStage(state,phase){
  if(state.revealing)return 'landing';
  if(state.pending?.fight?.status==='active')return 'fight';
  if(phase==='casting')return 'casting';
- if(['reading','responding','nibble','hooked'].includes(phase))return 'bite';
+ if(['approach','reading','responding','nibble','hooked'].includes(phase))return 'bite';
  if(state.pending)return 'waiting';
  return 'survey';
 }
@@ -45,4 +45,23 @@ export function cameraSettled(position,aim,targetPosition,targetAim,blend){
 export function cameraImpulse(age,duration){
  if(!Number.isFinite(age)||!Number.isFinite(duration)||age<=0||age>=duration||duration<=0)return 0;
  return Math.sin(Math.PI*age/duration);
+}
+
+export function cameraViewMode(state={}){
+ if(state.overview)return 'overview';
+ if(state.pending?.fight?.status==='active')return 'fight';
+ return state.pending||state.aiming||state.keepFishingView?'close':'overview';
+}
+
+export const CAMERA_ANGLE_LIMITS=Object.freeze({
+ overview:Object.freeze({yaw:[-1.2,1.2],pitch:[.58,1.47],defaultYaw:.16,defaultPitch:1.02}),
+ close:Object.freeze({yaw:[-.30,.30],pitch:[-.12,.22],defaultYaw:0,defaultPitch:0}),
+ fight:Object.freeze({yaw:[-.58,.58],pitch:[-.22,.28],defaultYaw:0,defaultPitch:0})
+});
+
+export function adjustCameraAngles(mode,angles={},deltaYaw=0,deltaPitch=0){
+ const limits=CAMERA_ANGLE_LIMITS[mode]||CAMERA_ANGLE_LIMITS.overview;
+ const bound=(key,delta)=>Math.max(limits[key][0],Math.min(limits[key][1],
+  (Number.isFinite(angles[key])?angles[key]:limits[key==='yaw'?'defaultYaw':'defaultPitch'])+(Number.isFinite(delta)?delta:0)));
+ return {yaw:bound('yaw',deltaYaw),pitch:bound('pitch',deltaPitch)};
 }

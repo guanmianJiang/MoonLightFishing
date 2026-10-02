@@ -1,0 +1,122 @@
+<div id="moon-fishing-control-v6" class="viz-dotted-background">
+  <div class="viz-controls">
+    <label class="form-label" for="moon-grip-scene">体验状态</label>
+    <select class="form-select" id="moon-grip-scene">
+      <option value="steady">正常搏鱼</option><option value="bite">咬稳提竿</option><option value="window">抬竿机会</option><option value="danger">临界受力</option><option value="slack">松线纠错</option><option value="retrieve">收回挂物</option>
+    </select>
+    <button type="button" class="btn" id="moon-grip-play">播放四向</button>
+  </div>
+  <section class="moon-grip-field" aria-label="连续受力操作设计样例，静态场景与可操作入口">
+    <img class="moon-grip-scene" src="__SCENE_IMAGE__" alt="">
+    <span class="moon-grip-context">操作键 · 样例</span>
+    <div class="moon-grip-control" data-tone="steady" data-input="idle" data-aim="none" data-guide="none" data-result="none" aria-label="四向垂钓操作入口">
+      <svg class="moon-grip-surface" viewBox="-14 -14 176 176" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="moon-surface-face" gradientUnits="userSpaceOnUse" x1="28" y1="16" x2="118" y2="126">
+            <stop offset="0" stop-color="#f7dfb9"/><stop offset=".52" stop-color="#efc991"/><stop offset="1" stop-color="#e7ba81"/>
+          </linearGradient>
+          <linearGradient id="moon-surface-bevel" x1="0" y1="0" x2=".35" y2="1"><stop stop-color="#fff0d0"/><stop offset="1" stop-color="#c99c65"/></linearGradient>
+          <linearGradient id="moon-surface-wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e1b782"/><stop class="moon-grip-wall-tone" offset="1" stop-color="#b28b59"/></linearGradient>
+          <filter id="moon-surface-shadow" x="-20%" y="-20%" width="140%" height="155%"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+        <path class="moon-grip-shadow" fill="#2d504330" filter="url(#moon-surface-shadow)" transform="translate(0 5)"/>
+        <path class="moon-grip-wall"/>
+        <path class="moon-grip-face"/>
+        <path class="moon-grip-inner"/>
+        <path class="moon-grip-edge"/>
+      </svg>
+      <button class="moon-grip-input cursor-interaction" type="button" aria-label="按住提竿与收线，上划抬竿，下划让线，横移调竿，松开卸力" aria-pressed="false">
+        <span class="moon-grip-head" aria-hidden="true">
+          <img class="moon-grip-symbol" src="__CAST_ICON__" alt="">
+          <span class="moon-grip-action">收线</span><span class="moon-grip-confirm"></span>
+        </span>
+      </button>
+      <span class="moon-grip-correction" aria-live="polite" hidden></span><span class="moon-grip-reader" aria-live="polite"></span>
+    </div>
+  </section>
+</div>
+<style>
+__STYLE_SOURCE__
+</style>
+<script>
+(() => {
+__SURFACE_SOURCE__
+ const root=document.getElementById('moon-fishing-control-v6');
+ const picker=root.querySelector('#moon-grip-scene'),play=root.querySelector('#moon-grip-play'),control=root.querySelector('.moon-grip-control'),button=root.querySelector('.moon-grip-input'),correction=root.querySelector('.moon-grip-correction'),reader=root.querySelector('.moon-grip-reader'),actionLabel=root.querySelector('.moon-grip-action');
+ const face=root.querySelector('.moon-grip-face'),wall=root.querySelector('.moon-grip-wall'),inner=root.querySelector('.moon-grip-inner'),shadow=root.querySelector('.moon-grip-shadow'),edge=root.querySelector('.moon-grip-edge'),light=root.querySelector('#moon-surface-face'),wallTone=root.querySelector('.moon-grip-wall-tone');
+ const allowed=['steady','bite','window','danger','slack','retrieve'];
+ const saved=window.openai?.widgetState?.modelContent?.scene;
+ let scene=allowed.includes(saved)?saved:'steady',gesture=null,held=false,paying=false,lifted=false,windowUsed=false,released=false,event='',eventTimer=0,dx=0,dy=0,playFrame=0,playing=false,returnFrame=0,returning=null;
+ const motion=window.matchMedia?.('(prefers-reduced-motion: reduce)');
+ function paint(x,y,pressure,guide,risk){
+  const g=fishingSurfaceGeometry({dx:x,dy:y,pressed:pressure,guide,risk});
+  face.setAttribute('d',g.facePath);wall.setAttribute('d',g.wallPath);inner.setAttribute('d',g.innerPath);shadow.setAttribute('d',g.footPath);edge.setAttribute('d',g.edgePath);
+  edge.style.setProperty('opacity',g.edgeVisible?'1':'0');wallTone.setAttribute('stop-color',risk?'#bf7b61':'#b28b59');
+  for(const [k,v] of Object.entries(g.light))light.setAttribute(k,v);
+  control.style.setProperty('--grip-x',g.offset.x*.35+'px');control.style.setProperty('--grip-y',g.offset.y*.35+'px');control.style.setProperty('--grip-depth',pressure*4+'px');control.style.setProperty('--grip-tilt',g.offset.x*.4+'deg');
+ }
+ function render(){
+  const side=gesture&&Math.abs(dx)>12;
+  const mode=gesture?(paying?'payout':lifted?'lift':side?'side':'hold'):'idle',guide=scene==='window'&&!windowUsed?'up':'none';
+  let result=lifted||event==='lift'?'lift':event==='hooked'?'hooked':event==='retrieved'?'retrieved':'none',short=event==='slack'?'先收紧':event==='blocked'?'先稳住':'';
+  if(scene==='danger'){result='none';short=held?'松手':'';}else if(paying||lifted)short='';
+  const angle=Math.atan2(dy,dx),octants=['right','down-right','down','down-left','left','up-left','up','up-right'];
+  const aim=gesture&&Math.hypot(dx,dy)>=8?octants[(Math.round(angle/(Math.PI/4))+8)%8]:'none';
+  control.dataset.input=mode;control.dataset.aim=aim;control.dataset.guide=scene==='danger'?'none':guide;control.dataset.result=result;control.dataset.tone=scene==='danger'?'danger':'steady';
+  if(!returning)paint(gesture?dx:0,gesture?dy:0,gesture?1:0,control.dataset.guide==='up',scene==='danger');
+  correction.textContent=short;correction.hidden=!short;
+  actionLabel.textContent=paying?'让线':lifted?'抬竿':side?'调竿':scene==='bite'?'提竿':scene==='retrieve'?'收回':'收线';
+  const action=paying?'正在让线':lifted?'抬竿已生效，滑回中位收线':side?'正在调竿':held?'正在收线':scene==='bite'?'按住提竿':scene==='retrieve'?'点按收回':'按住收线';
+  const status=scene==='danger'?(held?'受力临界，松手':released?'已松手，仍在卸力':'受力临界'):scene==='slack'?'鱼线松了':guide==='up'?'可以上划抬竿':'';
+  const message=[action,status,short].filter(Boolean).join('。');
+  button.setAttribute('aria-pressed',String(!!gesture));button.setAttribute('aria-label',message+'。上划抬竿，下划让线，滑回中位，横移调竿');if(reader.textContent!==message)reader.textContent=message;
+ }
+ function stopReturn(){cancelAnimationFrame(returnFrame);returnFrame=0;returning=null;}
+ function relax(oldX,oldY){
+  if(motion?.matches)return;
+  const bounded=fishingSurfaceGeometry({dx:oldX,dy:oldY}).offset;
+  returning={x:bounded.x*4,y:bounded.y*4,start:null};
+  function frame(time){if(!returning)return;if(returning.start===null)returning.start=time;const p=Math.min(1,(time-returning.start)/220),w=fishingSurfaceReturn(p);
+   paint(returning.x*w,returning.y*w,w,scene==='window'&&!windowUsed&&scene!=='danger',scene==='danger');
+   if(p>=1){returning=null;returnFrame=0;render();}else returnFrame=requestAnimationFrame(frame);
+  }returnFrame=requestAnimationFrame(frame);
+ }
+ function transient(kind){if(event===kind)return;event=kind;clearTimeout(eventTimer);eventTimer=setTimeout(()=>{event='';render();},650);}
+ function end(cancelled=false){
+  const accepted=lifted,hadGesture=!!gesture,oldX=dx,oldY=dy;stopReturn();gesture=null;held=paying=lifted=false;dx=dy=0;released=scene==='danger';
+  if(cancelled){clearTimeout(eventTimer);event='';}else if(accepted)transient('lift');
+  if(hadGesture&&!cancelled)relax(oldX,oldY);render();
+ }
+ function stopPlayback(){if(playing){playing=false;cancelAnimationFrame(playFrame);playFrame=0;play.textContent='播放四向';end(true);}}
+ function reset(){stopPlayback();stopReturn();clearTimeout(eventTimer);event='';gesture=null;held=paying=lifted=released=windowUsed=false;dx=dy=0;render();}
+ function begin(id,x,y){
+  if(gesture||![x,y].every(Number.isFinite))return;stopReturn();
+  if(scene==='retrieve'){transient('retrieved');render();return;}if(scene==='bite'){scene='steady';picker.value=scene;transient('hooked');}
+  gesture={id,x,y};held=true;released=false;paying=lifted=false;dx=dy=0;render();
+ }
+ function move(x,y){
+  if(!gesture||![x,y].every(Number.isFinite))return;dx=x-gesture.x;dy=y-gesture.y;const lane=Math.abs(dx)<=30;
+  if(lifted){if(lane&&dy>=-12){lifted=false;paying=dy>=24;held=!paying;}}
+  else if(paying){if(lane&&dy<=10){paying=false;held=true;}}
+  else if(lane&&dy>=24){paying=true;held=false;}
+  else if(lane&&dy < -42){if(scene==='window'&&!windowUsed){lifted=true;held=false;windowUsed=true;}else transient(scene==='slack'?'slack':'blocked');}render();
+ }
+ button.addEventListener('pointerdown',e=>{if(gesture&&gesture.id!=='demo')return;stopPlayback();e.preventDefault();begin(e.pointerId,e.clientX,e.clientY);if(gesture)button.setPointerCapture(e.pointerId);});
+ button.addEventListener('pointermove',e=>{if(gesture?.id===e.pointerId)move(e.clientX,e.clientY);});
+ for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,e=>{if(gesture?.id===e.pointerId)end(type!=='pointerup');});
+ button.addEventListener('keydown',e=>{if([' ','Enter','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Escape'].includes(e.key)){e.preventDefault();stopPlayback();if(e.key==='Escape')end(true);else{if(!gesture)begin('keyboard',0,0);if(e.key==='ArrowUp')move(0,-48);if(e.key==='ArrowDown')move(0,30);if(e.key==='ArrowLeft')move(-45,0);if(e.key==='ArrowRight')move(45,0);}}});
+ button.addEventListener('keyup',e=>{if([' ','Enter'].includes(e.key))end();});button.addEventListener('blur',()=>end(true));
+ window.addEventListener('blur',()=>{stopPlayback();end(true);});document.addEventListener('visibilitychange',()=>{if(document.hidden){stopPlayback();end(true);}});
+ motion?.addEventListener?.('change',()=>{if(motion.matches){stopReturn();render();}});
+ picker.addEventListener('change',()=>{reset();scene=allowed.includes(picker.value)?picker.value:'steady';render();window.openai?.setWidgetState?.({modelContent:{scene}})?.catch(()=>{});});
+ window.addEventListener('openai:set_globals',e=>{const next=e.detail?.globals?.widgetState?.modelContent?.scene;if(allowed.includes(next)){reset();scene=next;picker.value=scene;render();}});
+ play.addEventListener('click',()=>{
+  if(playing){stopPlayback();return;}reset();scene='window';picker.value=scene;playing=true;play.textContent='停止演示';begin('demo',0,0);
+  const points=[[0,0,0],[700,0,0],[1300,-48,0],[1650,-48,0],[2000,0,0],[2600,48,0],[2950,48,0],[3300,0,0],[3900,0,-52],[4250,0,-52],[4600,0,0],[5200,0,36],[5550,0,36],[5900,0,0],[6300,42,-42],[6700,0,0],[7000,0,0]];
+  let start=null;
+  function frame(time){if(!playing)return;if(start===null)start=time;const elapsed=time-start;if(elapsed>=7000){playing=false;playFrame=0;play.textContent='播放四向';end();return;}
+   let i=0;while(i<points.length-2&&elapsed>points[i+1][0])i++;const a=points[i],b=points[i+1],p=Math.max(0,Math.min(1,(elapsed-a[0])/(b[0]-a[0])));move(a[1]+(b[1]-a[1])*p,a[2]+(b[2]-a[2])*p);playFrame=requestAnimationFrame(frame);
+  }playFrame=requestAnimationFrame(frame);
+ });picker.value=scene;render();
+})();
+</script>

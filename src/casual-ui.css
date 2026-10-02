@@ -17,7 +17,8 @@ header{align-items:flex-start}
 .trip-meta #tripState{font-size:13px;letter-spacing:.02em}
 .trip-meta #knowledge{font-size:11px;font-weight:700;color:#426e5e}
 .trip-chip{border:1px solid rgba(74,116,98,.17);background:rgba(255,251,239,.9);box-shadow:var(--e1);color:#3b695b}
-.trip-chip:hover{background:#fffaf0;box-shadow:var(--e1)}
+@media (hover:hover) and (pointer:fine){
+.trip-chip:hover{background:#fffaf0;box-shadow:var(--e1)}}
 .trip-chip summary{min-height:42px;padding:8px 11px;font-size:12px;font-weight:700}
 .trip-chip .detail-chevron{font-size:14px;color:#a57453}
 .trip-chip[open]{border-color:#b9d0b0;background:#f4f5e8}
@@ -37,7 +38,8 @@ header{align-items:flex-start}
 #spots .spot-copy{display:flex;flex-direction:column;min-width:0}
 #spots .spot strong{font-size:12px;font-weight:800;line-height:1.3}
 #spots .spot small{display:block;margin:2px 0 0;color:#668373;font-size:10px;font-weight:650;line-height:1.25;opacity:1}
-#spots button.spot:hover{border-color:#c79664;background:#fff9e9;box-shadow:0 8px 22px rgba(28,70,59,.19)}
+@media (hover:hover) and (pointer:fine){
+#spots button.spot:hover{border-color:#c79664;background:#fff9e9;box-shadow:0 8px 22px rgba(28,70,59,.19)}}
 #spots .spot.active{border-color:#d7a66c;background:rgba(255,246,221,.97);box-shadow:0 5px 18px rgba(95,79,40,.18);color:#315d53;pointer-events:none;animation:none}
 #spots .spot.active .spot-order{border-color:#d5a46d;background:#eac28a;color:#35584b}
 #spots .spot.active small{color:#936d43}
@@ -59,12 +61,14 @@ footer,.fishing footer,.aiming footer{border:1px solid rgba(255,255,255,.9);back
 .bait-group-label{color:#718e7d;font-size:12px}
 .bait{border:1px solid transparent;color:#4d7566}
 .bait strong{font-size:14px;font-weight:750}
-.bait:hover{background:#f4f4e7;color:#315f52}
+@media (hover:hover) and (pointer:fine){
+.bait:hover{background:#f4f4e7;color:#315f52}}
 .bait.selected{border-color:#b8d0af;background:#e9f1e3;color:#2d6650;box-shadow:inset 0 1px rgba(255,255,255,.75)}
 .bait.selected .symbol{background:rgba(176,208,166,.18)}
 .bait.selected:after{background:#8dad82}
 #cast{border-color:#dfb982;background:#f0c98e;color:#345444;box-shadow:0 3px 0 #d8ad75,inset 0 1px rgba(255,255,255,.56);font-size:15px;font-weight:800}
-#cast:hover,.aiming #cast:hover{background:#f6d6a1;box-shadow:0 4px 0 #d8ad75}
+@media (hover:hover) and (pointer:fine){
+#cast:hover,.aiming #cast:hover{background:#f6d6a1;box-shadow:0 4px 0 #d8ad75}}
 #cast.ready{border-color:#c9a776;background:#e9d29d;color:#315545}
 #cast:disabled{border-color:#d5dccd;background:#e9ebdf;color:#899c8c;box-shadow:none}
 #cast[hidden]{display:none!important}
@@ -90,7 +94,9 @@ footer,.fishing footer,.aiming footer{border:1px solid rgba(255,255,255,.9);back
 .signal-copy span{color:#a47550}
 .signal-copy strong{color:#315f52}
 .tactic-list button{border-color:#d3e0cc;background:#f4f5e9;color:#315f52}
-.tactic-list button:hover,.tactic-list button:focus-visible{border-color:#a2bf96;background:#e6efdd;color:#2d5d4e}
+@media (hover:hover) and (pointer:fine){
+.tactic-list button:hover{border-color:#a2bf96;background:#e6efdd;color:#2d5d4e}}
+.tactic-list button:focus-visible{border-color:#a2bf96;background:#e6efdd;color:#2d5d4e}
 .tactic-list small{color:#698376}
 #tactics{width:min(700px,calc(100% - 28px));padding:18px 20px}
 .reading:not(.overview) #biteReadout{display:none}
@@ -123,7 +129,9 @@ footer,.fishing footer,.aiming footer{border:1px solid rgba(255,255,255,.9);back
 .tactic-icon{display:grid;flex:none;place-items:center;width:36px;height:36px;border:1px solid #c9dbd0;border-radius:10px;background:#e6f0e5;color:#3e7464;font:700 25px/1 var(--sans);transition:transform .2s ease}
 .tactic-icon svg{width:29px;height:29px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .tactic-icon ellipse{fill:#fff9e6}
-.tactic-list button:hover .tactic-icon,.tactic-list button:focus-visible .tactic-icon{transform:scale(1.12)}
+@media (hover:hover) and (pointer:fine){
+.tactic-list button:hover .tactic-icon{transform:scale(1.12)}}
+.tactic-list button:focus-visible .tactic-icon{transform:scale(1.12)}
 .tactic-label{display:flex;min-width:0;flex-direction:column;align-items:flex-start;text-align:left}
 .tactic-list strong{font-size:14px}
 .tactic-list small{margin:0;overflow:visible;font-size:11px;line-height:1.45;text-overflow:clip;white-space:normal}
@@ -163,12 +171,14 @@ footer,.fishing footer,.aiming footer{border:1px solid rgba(255,255,255,.9);back
 #book .book-top .eyebrow{color:#ad7851}
 #bookSubtitle{color:#708a79}
 #book .close{border-color:#d8e2d0;background:#fffaf0;color:#426f5c}
-#book .close:hover{background:#e7efdf}
+@media (hover:hover) and (pointer:fine){
+#book .close:hover{background:#e7efdf}}
 #book nav{background:#fffaf0}
 #book nav button.active{border-bottom-color:#9cbd95;color:#315f50}
 #bookContent .market-summary,#bookContent .collection-head,#bookContent .water-progress{background:#edf3e7}
 #bookContent .market-summary button,#bookContent .market-card button,#bookContent .shop-card button{border:1px solid #a8c5a5;border-radius:10px;background:#e0eddc;color:#2f5f4d;font-weight:750;box-shadow:0 2px 0 #afc8aa}
-#bookContent .market-summary button:hover,#bookContent .market-card button:hover,#bookContent .shop-card button:hover{background:#d1e5cf}
+@media (hover:hover) and (pointer:fine){
+#bookContent .market-summary button:hover,#bookContent .market-card button:hover,#bookContent .shop-card button:hover{background:#d1e5cf}}
 .market-summary button:disabled,.shop-card button:disabled{box-shadow:none}
 .market-card,.shop-card,.collection-card,.water-row,.gear-item{border-radius:12px}
 dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter:blur(3px)}
@@ -185,7 +195,8 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
 .tactic-next strong{font-size:15px;line-height:1.3;color:#315e50}
 .tactic-next small{font-size:11px;line-height:1.4;color:#688474}
 #tacticDo{min-height:42px;padding:8px 15px;border:1px solid #d3ae72;border-radius:10px;background:#f1cf93;color:#365848;font-size:12px;font-weight:800;white-space:nowrap}
-#tacticDo:hover{background:#f6daa7}
+@media (hover:hover) and (pointer:fine){
+#tacticDo:hover{background:#f6daa7}}
 #tacticDo[hidden],#tacticWait[hidden]{display:none}
 #tacticWait{margin-top:10px;padding:8px 10px;border-radius:9px;background:#e7f0df;color:#426b53;font-size:11px;font-weight:750;text-align:center}
 #result.no-catch{width:min(360px,calc(100% - 28px));padding:22px 22px 18px;cursor:pointer}
@@ -257,13 +268,15 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
 /* Compact touch HUD: the camera mode is the primary action; zoom stays secondary. */
 .camera-controls{top:48%;right:15px;z-index:8;display:flex;flex-direction:column;align-items:center;gap:4px;width:62px;padding:5px;border:1px solid rgba(255,255,255,.36);border-radius:20px;background:rgba(20,64,60,.78);box-shadow:0 5px 20px rgba(9,42,42,.18);transform:translateY(-50%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 #viewToggle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:50px;min-width:50px;height:55px;min-height:55px;padding:3px 0;border:0;border-radius:15px;background:#f2d597;color:#28564b;font-size:10px;font-weight:750;line-height:1.15;letter-spacing:0}
-#viewToggle:hover{background:#ffe0a1;color:#28564b}
+@media (hover:hover) and (pointer:fine){
+#viewToggle:hover{background:#ffe0a1;color:#28564b}}
 .camera-icon{width:24px;height:24px}
 #viewToggle[data-target="near"] .camera-icon-top,#viewToggle[data-target="top"] .camera-icon-near{display:none}
 .camera-controls .zoom-group{display:flex;flex-direction:column;gap:0;width:50px;padding:0;border-radius:13px;background:rgba(255,255,255,.1)}
 .camera-controls .zoom-group button{width:50px;min-width:50px;height:40px;min-height:40px;padding:0;border:0;border-radius:0;background:transparent;color:#f9f4e8;font-size:23px;font-weight:400;line-height:1}
 .camera-controls .zoom-group button+button{border-top:1px solid rgba(255,255,255,.16)}
-.camera-controls .zoom-group button:hover{background:rgba(255,255,255,.15)}
+@media (hover:hover) and (pointer:fine){
+.camera-controls .zoom-group button:hover{background:rgba(255,255,255,.15)}}
 .fishing .camera-controls button:not(.view-toggle),.aiming .camera-controls button:not(.view-toggle){opacity:1}
 .fighting .camera-controls{pointer-events:auto;opacity:1}
 @media(max-width:600px){
@@ -332,7 +345,8 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
 /* The hook decision is a screen control, never a marker over the 3D float. */
 #game.no-cast-action[data-phase="hooked"] footer,#game.no-cast-action[data-phase="empty"] footer{display:none}
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]){display:flex!important;top:auto;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;z-index:10;flex-direction:row;justify-content:flex-start;gap:10px;width:min(370px,calc(100% - 28px));height:74px;padding:10px 16px 10px 12px;border:1px solid #d4a760;border-radius:17px;background:linear-gradient(180deg,#ffe4ab,#eac181);box-shadow:0 5px 0 #ab7b43,0 13px 26px #133f3250;color:#25493e;text-align:left;text-shadow:none;opacity:1;filter:none;transform:translateX(-50%);isolation:auto;touch-action:manipulation}
-#game[data-phase="hooked"] #sceneAction:not([hidden]):hover{background:linear-gradient(180deg,#ffe9bc,#efcc91)}
+@media (hover:hover) and (pointer:fine){
+#game[data-phase="hooked"] #sceneAction:not([hidden]):hover{background:linear-gradient(180deg,#ffe9bc,#efcc91)}}
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]):active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 #ab7b43,0 7px 16px #133f3240;filter:none}
 #sceneAction:before,#sceneAction .action-ripple{display:none}
 #sceneAction .action-symbol-wrap{display:grid;flex:none;place-items:center;width:50px;height:50px;border:1px solid #be995f;border-radius:13px;background:#294f43;color:#fff2d3}
@@ -403,7 +417,8 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction:not([hidden]):active{transform:translateY(3px)}
 #game[data-phase="landed"] footer{display:none}
 .shore-action{position:absolute;right:24px;bottom:24px;z-index:10;display:flex;align-items:center;gap:10px;width:min(250px,calc(100% - 48px));min-height:74px;padding:10px 14px 10px 11px;border:1px solid #a7783a;border-radius:17px;background:linear-gradient(180deg,#ffe8b8,#edc783);box-shadow:inset 0 1px 0 #ffffffbf,0 5px 0 #a7783a,0 13px 26px #133f3250;color:#503822;text-align:left;touch-action:manipulation}
-.shore-action:hover{background:linear-gradient(180deg,#ffedc5,#f3d194)}
+@media (hover:hover) and (pointer:fine){
+.shore-action:hover{background:linear-gradient(180deg,#ffedc5,#f3d194)}}
 .shore-action:active{transform:translateY(3px);box-shadow:inset 0 2px 5px #79542d40,0 2px 0 #a7783a,0 7px 16px #133f3240}
 .shore-action-art{flex:none;display:grid;place-items:center;width:50px;height:50px;border:1px solid #78572f;border-radius:13px;background:linear-gradient(180deg,#986e3b,#78532f);color:#fff2d3}
 .shore-action-art svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
@@ -485,7 +500,8 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
 /* One control family for hook, pump, reel and landing actions. */
 .game-action:is(#fightHold,#sceneAction,#landFish){--action-top:#fff4d8;--action-bottom:#f2d69e;--action-edge:#ad8046;--action-ink:#3e4938;--action-muted:#746248;--action-icon:#315e50;--action-icon-border:#244e43;--action-icon-ink:#fff6df;position:relative;display:flex;align-items:center;gap:10px;box-sizing:border-box;min-height:76px;padding:10px 13px 10px 10px;border:1px solid var(--action-edge);border-radius:16px;background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink);text-align:left;text-shadow:none;cursor:pointer;touch-action:manipulation;transition:transform .1s ease,box-shadow .1s ease,filter .15s ease}
 .game-action[hidden]{display:none!important}
-.game-action:hover{filter:brightness(1.045)}
+@media (hover:hover) and (pointer:fine){
+.game-action:hover{filter:brightness(1.045)}}
 .game-action:focus-visible{outline:3px solid #fff9df;outline-offset:3px}
 .game-action:is(#fightHold,#sceneAction,#landFish):active,.game-action#fightHold.held{transform:translateY(3px);box-shadow:inset 0 2px 5px #1d473034,0 1px 0 var(--action-edge),0 5px 13px #123e3433}
 .game-action:is(#fightHold,#sceneAction,#landFish) .game-action__art{flex:none;display:grid;place-items:center;width:48px;height:48px;box-sizing:border-box;border:1px solid var(--action-icon-border);border-radius:12px;background:var(--action-icon);box-shadow:inset 0 1px 0 #ffffff30;color:var(--action-icon-ink);filter:none}
@@ -507,7 +523,8 @@ dialog::backdrop,#result::backdrop{background:rgba(45,87,72,.28);backdrop-filter
 .game-action#sceneAction,.game-action#landFish{position:absolute}
 .game-action#sceneAction{animation:none;filter:none;isolation:auto}
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]),#game #landFish.game-action:not([hidden]){right:24px;bottom:24px;left:auto;width:min(250px,calc(100% - 48px));height:auto;min-height:76px;padding:10px 13px 10px 10px;gap:10px;border:1px solid var(--action-edge);border-radius:16px;background:linear-gradient(180deg,var(--action-top),var(--action-bottom));box-shadow:inset 0 1px 0 #ffffffb8,0 4px 0 var(--action-edge),0 11px 25px #123e3440;color:var(--action-ink);transform:none}
-#game[data-phase="hooked"] #sceneAction.game-action:not([hidden]):hover{background:linear-gradient(180deg,var(--action-top),var(--action-bottom));filter:brightness(1.045)}
+@media (hover:hover) and (pointer:fine){
+#game[data-phase="hooked"] #sceneAction.game-action:not([hidden]):hover{background:linear-gradient(180deg,var(--action-top),var(--action-bottom));filter:brightness(1.045)}}
 #game:is([data-phase="hooked"],[data-phase="empty"]) #sceneAction.game-action:not([hidden]):active,#game #landFish.game-action:not([hidden]):active{transform:translateY(3px);box-shadow:inset 0 2px 5px #1d473034,0 1px 0 var(--action-edge),0 5px 13px #123e3433}
 #fight .fight-actions{grid-template-columns:minmax(0,1fr);width:min(460px,calc(100vw - 48px))}
 #fight .fight-actions .game-action{min-width:0;min-height:76px}
@@ -550,7 +567,7 @@ body > .render-settings-panel > footer{position:static;inset:auto;display:grid;f
 body > .render-settings-panel > footer button{width:100%;min-width:0;cursor:pointer}
 body > .render-settings-panel > footer button[hidden]{display:none!important}
 body > .render-settings-panel > footer output{display:block;grid-column:1/-1}
-@media(max-width:600px){body > .render-settings-panel{top:calc(62px + env(safe-area-inset-top));right:10px;width:calc(100vw - 20px);height:calc(100dvh - 74px - env(safe-area-inset-top));padding:14px}body > .render-settings-panel .render-setting-row{grid-template-columns:86px minmax(0,1fr) 72px}body > .render-settings-panel .render-setting-row input[type=number]{width:72px}}
+@media(max-width:600px){body > .render-settings-panel{top:calc(62px + env(safe-area-inset-top));right:10px;width:calc(100vw - 20px);height:min(500px,62dvh,calc(100dvh - 74px - env(safe-area-inset-top)));padding:14px}body > .render-settings-panel .render-setting-row{grid-template-columns:86px minmax(0,1fr) 72px}body > .render-settings-panel .render-setting-row input[type=number]{width:72px}}
 
 /* The trip recap reads like a short field note, with outcomes kept scannable. */
 #tripEnd{display:none;max-height:min(82dvh,680px);overflow:auto}

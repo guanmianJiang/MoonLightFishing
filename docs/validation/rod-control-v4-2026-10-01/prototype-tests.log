@@ -1,0 +1,18 @@
+✔ grip has no normal status text or gauge; pressing moves only the grip (1.6939ms)
+✔ bite uses the same pointer for strike and hold; object uses a single confirmation (0.5329ms)
+✔ danger remains after release or payout and suppresses success and repeated commands (0.4934ms)
+✔ upward acceptance requires opportunity, threshold and lane; once per opportunity (0.5064ms)
+✔ payout hysteresis, radial bounds and invalid coordinates do not alter the anchor (1.055ms)
+✔ second pointer, cancel, blur and state changes clear input (0.4409ms)
+✔ one-shot gesture preview uses the same states, ends cleanly and yields to manual input (0.6138ms)
+✔ all four directions have equal reach and distinct corresponding feedback (0.5971ms)
+✔ diagonal input stays continuous without bypassing the vertical gesture lane (0.5413ms)
+✔ authored CSS geometry keeps direction marks, rod and correction inside narrow portrait bounds (25.146ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.4729

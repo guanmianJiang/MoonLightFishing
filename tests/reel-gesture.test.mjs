@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createFight} from '../src/reference-loop.mjs';
-import {startReelGesture,moveReelGesture,verticalLiftProgress,controlOrigin,joystickVisual,joystickReleaseFrames,membranePath,gestureRodInput} from '../src/reel-gesture.mjs';
+import {startReelGesture,moveReelGesture,verticalLiftProgress,controlOrigin,joystickVisual,joystickReleaseFrames,gestureRodInput} from '../src/reel-gesture.mjs';
 
 test('video-style droplet follows every direction independently of pump timing',()=>{
  const bounds={left:0,right:390,top:0,bottom:844},start=[300,690,300,690];
@@ -37,34 +37,9 @@ test('demo sensitivity drives a short soft tail and caps input at triple width',
  assert.equal(visual(75).scale,2);
  assert.equal(visual(150).scale,3);
  assert.equal(visual(300).scale,3);
- assert.equal(44+21*(visual(300).scale-1),86,'the visible tail stays shorter than the original stretched half');
+ assert.equal(44+21*(visual(300).scale-1),86,'the directional line stays inside the visible edge');
  assert.deepEqual(joystickReleaseFrames(3),[{scale:3,offset:0},{scale:1+(1-3)*.307,offset:.57},{scale:1,offset:1}]);
  assert.deepEqual(joystickReleaseFrames(Number.NaN),[{scale:1,offset:0},{scale:1,offset:.57},{scale:1,offset:1}]);
-});
-
-test('one closed membrane outline morphs continuously and handles invalid input',()=>{
- const still=membranePath(1),pulled=membranePath(3);
- assert.ok(still.startsWith('M44 0 C'));
- assert.ok(pulled.startsWith('M86 0 C'));
- assert.ok(still.endsWith(' Z')&&pulled.endsWith(' Z'));
- assert.equal(membranePath(Number.NaN),still);
- assert.equal(membranePath(9),pulled);
- assert.equal((pulled.match(/ C/g)||[]).length,4,'four smooth quarters replace the pinched radial lobe');
- const bezier=(p,t)=>{const u=1-t;return [0,1].map(axis=>u*u*u*p[0][axis]+3*u*u*t*p[1][axis]+3*u*t*t*p[2][axis]+t*t*t*p[3][axis])};
- for(const scale of [1,1.25,1.5,2,2.5,3]){
-  const coords=membranePath(scale).match(/-?\d+(?:\.\d+)?/g).map(Number);
-  let start=coords.slice(0,2),samples=[];
-  for(let quarter=0;quarter<4;quarter++){
-   const numbers=coords.slice(2+quarter*6,8+quarter*6),curve=[start,numbers.slice(0,2),numbers.slice(2,4),numbers.slice(4,6)];
-   for(let step=0;step<40;step++)samples.push(bezier(curve,step/40));
-   start=curve[3];
-  }
-  for(let i=0;i<samples.length;i++){
-   const a=samples[(i-1+samples.length)%samples.length],b=samples[i],c=samples[(i+1)%samples.length];
-   const cross=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);
-   assert.ok(cross<.01,`outline must remain convex at scale ${scale}, point ${i}`);
-  }
- }
 });
 
 test('gesture changes rod intention on both axes and load resists upward lift',()=>{
@@ -157,29 +132,15 @@ test('fight UI presents the gesture on one touch control',()=>{
  const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
  const actions=html.split('<div id="fightControl" class="fight-actions"')[1]?.split('</div>')[0]||'';
  assert.match(actions,/id="fightHold"/);
- assert.match(actions,/fight-drag-effect/);
- assert.match(actions,/id="fightMembraneFill"/);
- assert.match(actions,/id="fightMembraneMask"/);
- assert.match(actions,/id="fightMembraneRim"/);
- assert.match(actions,/fightGlassBody/);
- assert.match(actions,/fightGlassDepth/);
- assert.doesNotMatch(actions,/<image|fight-pearl-material/);
- assert.doesNotMatch(actions,/fight-joystick-base|fight-joystick-drag|fight-reel-art|fightPressCaption/);
- assert.doesNotMatch(actions,/fight-elastic-blob|fight-blob-shape/);
- assert.doesNotMatch(actions,/fight-tension-lines|fight-compression-rings|fight-drag-glint/);
- assert.match(actions,/fight-press-face/);
+ assert.match(actions,/data-surface="elastic"/);
+ assert.match(actions,/data-reel="face"/);
+ assert.match(actions,/data-reel="edge"/);
+ assert.match(actions,/reel-surface-hook/);
+ assert.doesNotMatch(actions,/fightLever|fightTensionArc|fight-motion-guide/);
+ assert.doesNotMatch(actions,/<canvas|fight-membrane/);
  assert.doesNotMatch(actions,/fight-gesture-guide|按住 <b>收线<\/b>/);
  assert.doesNotMatch(actions,/fight-pull-track|fight-stick-track|fight-drag-head|fightCueArrow/);
  assert.match(actions,/按住提竿/);
  assert.match(actions,/继续收线/);
  assert.doesNotMatch(actions,/fightPump/);
-});
-
-test('reel membrane resolves its gradients inside the SVG fallback',()=>{
- const html=readFileSync(new URL('../src/index.html',import.meta.url),'utf8');
- const css=readFileSync(new URL('../src/fight-control.css',import.meta.url),'utf8');
- assert.match(html,/<path id="fightMembraneFill" fill="url\(#fightGlassBody\) #28665e"/);
- assert.match(html,/<path id="fightMembraneDepth" fill="url\(#fightGlassDepth\) transparent"/);
- assert.match(html,/<radialGradient id="fightGlassBody"/);
- assert.doesNotMatch(css,/fill\s*:\s*url\(#fightGlass(?:Body|Depth)\)/);
 });

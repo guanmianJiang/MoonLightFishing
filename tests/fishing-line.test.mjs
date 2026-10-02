@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from '../src/three.module.js';
 import {FishingLine} from '../src/fishing-motion.js';
+import {lostLineEnd} from '../src/angler-feedback.mjs';
 
 test('paid-out line sags while a loaded taut line follows its endpoints',()=>{
  const a=new T.Vector3(0,2,0),b=new T.Vector3(6,.06,0),line=new FishingLine();
@@ -47,4 +48,15 @@ test('a fish tug travels through the line without shifting either anchor',()=>{
  assert.ok(line.tautness<1);
  line.update(tip,float,Number.NaN,{length,load:0,impulse:Number.NaN});
  assert.ok(line.nodes.every(node=>Number.isFinite(node.x)&&Number.isFinite(node.y)&&Number.isFinite(node.z)));
+});
+
+test('cutting a loaded line discards the detached span on the same frame',()=>{
+ const tip=new T.Vector3(0,2,0),float=new T.Vector3(6,.1,0),line=new FishingLine();
+ for(let i=0;i<30;i++)line.update(tip,float,1/60,{length:tip.distanceTo(float),load:.8});
+ const free=lostLineEnd(0,tip,tip,float,0,'line-break');
+ const freeTip=new T.Vector3(free.x,free.y,free.z);
+ line.reset(tip,freeTip);
+ line.update(tip,freeTip,1/60,{tight:false,slack:1.16,extra:.12,reel:true});
+ assert.ok(line.nodes.at(-1).distanceTo(freeTip)<1e-9);
+ assert.ok(line.nodes.every(node=>node.x<3),'no old segment may remain drawn toward the detached float');
 });

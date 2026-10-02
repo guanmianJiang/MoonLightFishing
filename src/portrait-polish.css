@@ -52,7 +52,9 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
 }
 .hud-tools #sound:before { color: #487d73; }
 .hud-tools #journal { padding: 0 6px; }
-.hud-resources .trip-chip summary:hover, .hud-tools button:hover { background: rgba(67, 112, 100, .09) !important; }
+@media (hover:hover) and (pointer:fine) {
+.hud-resources .trip-chip summary:hover,.hud-tools button:hover { background: rgba(67, 112, 100, .09) !important; }
+}
 
 /* Water markers stay readable without becoming dashboard panels. */
 #spots .spot, #spots .spot.locked {
@@ -72,7 +74,9 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
   color: #f8faec; text-shadow: 0 1px 6px rgba(25, 66, 62, .72);
 }
 #spots .spot.locked small { color: #e1eee1; }
+@media (hover:hover) and (pointer:fine) {
 #spots .spot:hover { background: #fff9e8; color: #28534d; }
+}
 
 /* A small field note carries the outing objective. */
 .route-card {
@@ -90,7 +94,9 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
   border-color: var(--ui-line); color: #4d7468; font-weight: 600;
 }
 .route-card button span { color: #a66e50; }
+@media (hover:hover) and (pointer:fine) {
 .route-card button:hover { color: #9d644b; }
+}
 .route-card__detail { margin: 0 0 7px; color: #55756a; font-size: 11px; line-height: 1.4; }
 .route-card__difficulty { margin-top: 7px; color: #8b715d; font-size: 10px; line-height: 1.25; }
 .route-card .route-card__primary { min-height: 44px; margin-top: 5px; padding: 8px 2px; border-top: 1px solid var(--ui-line); color: #27665b; font-size: 12px; }
@@ -129,7 +135,9 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
   min-height: 58px; border-radius: 12px; color: #779088;
   transition: background .18s ease, color .18s ease, transform .15s ease;
 }
+@media (hover:hover) and (pointer:fine) {
 #baits .bait:hover { background: rgba(220, 236, 225, .65); color: #3b6b61; }
+}
 #baits .bait.selected { background: #e5eee3; color: #315e55; }
 #baits .bait.selected:after { display: none; }
 #baits .bait strong { font-weight: 650; }
@@ -140,7 +148,9 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
   background: #34695f; box-shadow: inset 0 1px rgba(255,255,255,.17), 0 3px 8px rgba(40, 85, 74, .22);
   color: #fff9e8; font-size: 13px; font-weight: 650; text-shadow: none;
 }
+@media (hover:hover) and (pointer:fine) {
 #cast:hover { background: #407a6e; }
+}
 #cast:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgba(13, 55, 49, .35); }
 #cast:disabled { background: #a9b7aa; color: #f6f6ed; box-shadow: none; }
 .camera-controls .view-toggle, #viewToggle, .camera-controls .zoom-group button {
@@ -177,8 +187,9 @@ header { top: calc(16px + env(safe-area-inset-top)); align-items: center; }
 #result.no-catch #emptyContinue, #tripEnd .primary {
   border: 0; border-radius: 10px; background: #397166; box-shadow: none; color: #fffaf0;
 }
-#result:not(.no-catch) #processActions .process-recommended:hover,
-#result.no-catch #emptyContinue:hover, #tripEnd .primary:hover { background: #498176; }
+@media (hover:hover) and (pointer:fine) {
+#result:not(.no-catch) #processActions .process-recommended:hover,#result.no-catch #emptyContinue:hover,#tripEnd .primary:hover { background: #498176; }
+}
 
 @media (max-width: 780px) {
   header { top: calc(12px + env(safe-area-inset-top)); }

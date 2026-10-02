@@ -1,0 +1,459 @@
+{
+  "kind": "Offline direction-to-asset sampling; not a GPU render or captured camera",
+  "skyTexture": "./assets/sky-toon-02.png",
+  "skyRotation": 82,
+  "skyCloudHeight": 0.5,
+  "samples": [
+    {
+      "u": 0.92,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            72,
+            175,
+            254
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            58,
+            165,
+            253
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            46,
+            152,
+            254
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            37,
+            145,
+            254
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            29,
+            132,
+            248
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0.94,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            71,
+            175,
+            254
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            62,
+            166,
+            253
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            46,
+            153,
+            253
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            36,
+            143,
+            253
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            30,
+            132,
+            248
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0.96,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            71,
+            175,
+            253
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            59,
+            165,
+            254
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            46,
+            152,
+            254
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            36,
+            141,
+            253
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            28,
+            131,
+            249
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0.98,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            68,
+            173,
+            252
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            57,
+            163,
+            254
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            45,
+            153,
+            254
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            36,
+            144,
+            252
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            29,
+            132,
+            251
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            69,
+            176,
+            253
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            57,
+            166,
+            253
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            43,
+            153,
+            254
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            35,
+            146,
+            252
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            27,
+            134,
+            248
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0.02,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            68,
+            173,
+            253
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            58,
+            165,
+            253
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            43,
+            151,
+            254
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            36,
+            143,
+            254
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            26,
+            131,
+            249
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0.04,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            68,
+            173,
+            253
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            57,
+            164,
+            253
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            44,
+            152,
+            255
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            34,
+            142,
+            253
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            27,
+            130,
+            249
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0.1,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            63,
+            170,
+            254
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            133,
+            189,
+            243
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            171,
+            203,
+            240
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            33,
+            139,
+            252
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            25,
+            129,
+            248
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0.2,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            115,
+            182,
+            246
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            97,
+            171,
+            248
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            194,
+            208,
+            229
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            248,
+            229,
+            207
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            251,
+            235,
+            205
+          ]
+        }
+      ]
+    },
+    {
+      "u": 0.3,
+      "latitudeSamples": [
+        {
+          "degrees": 2,
+          "rgb": [
+            64,
+            171,
+            253
+          ]
+        },
+        {
+          "degrees": 5,
+          "rgb": [
+            153,
+            196,
+            237
+          ]
+        },
+        {
+          "degrees": 10,
+          "rgb": [
+            247,
+            229,
+            210
+          ]
+        },
+        {
+          "degrees": 14,
+          "rgb": [
+            32,
+            138,
+            252
+          ]
+        },
+        {
+          "degrees": 20,
+          "rgb": [
+            26,
+            131,
+            250
+          ]
+        }
+      ]
+    }
+  ],
+  "note": "A world +Z ray maps to u=0.75+rotation/360. At rotation 82 this is about 0.978, within the cloud-free seam region in sky02. Rotating toward u=0.2 reveals cloud pixels without changing fog. A screenshot alone does not determine its actual heading, saved texture or load state."
+}

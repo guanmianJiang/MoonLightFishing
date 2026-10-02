@@ -17,20 +17,6 @@ export function controlOrigin(rect){
  return {x:width/2,y:height/2};
 }
 
-// Four convex Bezier quarters keep the dragged shoulder smooth without a pinched neck.
-export function membranePath(scale=1){
- const clamped=Number.isFinite(scale)?Math.max(1,Math.min(3,scale)):1;
- const radius=44,extension=21*(clamped-1),tip=radius+extension;
- const arc=4*(Math.SQRT2-1)/3,round=arc*radius;
- const shoulder=round+.45*extension,nose=round*(1-.35*extension/42);
- const fmt=n=>Math.round(n*100)/100;
- return `M${fmt(tip)} 0`+
-  ` C${fmt(tip)} ${fmt(-nose)} ${fmt(shoulder)} ${fmt(-radius)} 0 ${fmt(-radius)}`+
-  ` C${fmt(-round)} ${fmt(-radius)} ${fmt(-radius)} ${fmt(-round)} ${fmt(-radius)} 0`+
-  ` C${fmt(-radius)} ${fmt(round)} ${fmt(-round)} ${fmt(radius)} 0 ${fmt(radius)}`+
-  ` C${fmt(shoulder)} ${fmt(radius)} ${fmt(tip)} ${fmt(nose)} ${fmt(tip)} 0 Z`;
-}
-
 export function joystickVisual(startX,startY,currentX,currentY,anchorX,anchorY,gameBounds,viewportBounds){
  const values=[startX,startY,currentX,currentY,anchorX,anchorY];
  if(!values.every(Number.isFinite))return {active:false,angle:0,scale:1,dx:0,dy:0};

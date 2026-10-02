@@ -15,21 +15,24 @@ export function hookedFishPose(outward,age,time,seed=0){
  };
 }
 
-export function biteFishPose(outward,age,time,seed=0,hooked=false){
+export function biteFishPose(outward,age,time,seed=0,hooked=false,swim=null){
  const biteAge=Number.isFinite(age)?age:-5.5,clock=Number.isFinite(time)?time:0,phase=Number.isFinite(seed)?seed:0;
  const target=hookedFishPose(outward,Math.max(0,biteAge),clock,phase);
  const blend=clamp((biteAge+1.1)/1.1,0,1);
  const smooth=blend*blend*(3-2*blend);
- const start=Math.atan2(-1.45,-2.6),end=Math.atan2(target.heading.z,target.heading.x);
+ const swimHeading=swim?.heading;
+ const swimming=Number.isFinite(swimHeading?.x)&&Number.isFinite(swimHeading?.z)&&Math.hypot(swimHeading.x,swimHeading.z)>1e-5;
+ const start=swimming?Math.atan2(swimHeading.z,swimHeading.x):Math.atan2(-1.45,-2.6),end=Math.atan2(target.heading.z,target.heading.x);
  const delta=Math.atan2(Math.sin(end-start),Math.cos(end-start));
  const yaw=start+delta*smooth;
  const load=hooked?clamp(biteAge/.26,0,1):0,ramp=load*load*(3-2*load);
- const calmTail=Math.sin(clock*5.2+phase)*(.09+.03*clamp((biteAge+2.2)/2.2,0,1));
+ const calmAmplitude=swimming&&Number.isFinite(swim?.tailAmplitude)?clamp(swim.tailAmplitude,.12,.20):.09+.03*clamp((biteAge+2.2)/2.2,0,1);
+ const calmTail=Math.sin(clock*5.2+phase)*calmAmplitude;
  const fightTail=Math.sin(clock*19+phase)*.55;
  return {
   heading:{x:Math.cos(yaw),z:Math.sin(yaw)},
   pitch:biteAge<0?-.08*clamp((biteAge+.5)/.5,0,1):target.pitch,
-  roll:target.roll*smooth*(.3+.7*ramp),
+  roll:target.roll*smooth*(.3+.7*ramp)+(swimming?Math.sin(clock*5.2+phase)*.025*(1-smooth):0),
   tail:calmTail+(fightTail-calmTail)*ramp
  };
 }

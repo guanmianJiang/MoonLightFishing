@@ -76,7 +76,9 @@ header{position:absolute;top:20px;left:24px;right:24px;z-index:6;display:flex;al
 .brand{display:flex;align-items:center;gap:12px;pointer-events:auto}
 .brand-mark{width:46px;height:46px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.7);border-radius:var(--r-md);
   background:var(--surface);box-shadow:var(--e1);font:32px/1 Georgia,serif;color:var(--pine-2);transition:transform .45s var(--spring)}
+@media (hover:hover) and (pointer:fine){
 .brand:hover .brand-mark{transform:rotate(-8deg) scale(1.07)}
+}
 .brand h1{margin:0;font:600 22px/1.15 var(--serif);letter-spacing:.14em;color:var(--pine);text-shadow:0 1px 12px rgba(255,253,240,.9)}
 .brand-subtitle{display:flex;align-items:center;gap:7px;margin-top:5px;color:var(--pine-2);font-size:12px;font-weight:600;letter-spacing:.05em}
 .brand-subtitle i{width:4px;height:4px;border-radius:50%;background:var(--gold-deep)}
@@ -112,7 +114,9 @@ header{position:absolute;top:20px;left:24px;right:24px;z-index:6;display:flex;al
 #sound,#journal,#renderSettingsButton{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:var(--control);
   padding:0 13px;border:1px solid var(--line-strong);border-radius:var(--r-md);background:var(--surface);box-shadow:var(--e1);
   color:var(--pine-2);font-size:12.5px;font-weight:700;white-space:nowrap}
+@media (hover:hover) and (pointer:fine){
 #sound:hover,#journal:hover,#renderSettingsButton:hover{transform:translateY(-1px);box-shadow:var(--e2)}
+}
 #sound:active,#journal:active,#renderSettingsButton:active{transform:translateY(1px);box-shadow:var(--e1)}
 #sound{width:var(--control);padding:0}
 #sound svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -133,7 +137,9 @@ header{position:absolute;top:20px;left:24px;right:24px;z-index:6;display:flex;al
   color:var(--ink);font-size:12.5px;font-weight:700;line-height:1.3;text-align:left;pointer-events:auto;
   backdrop-filter:blur(4px);white-space:normal;
   transition:opacity .22s ease,background .25s ease,border-color .25s ease,box-shadow .3s ease,color .25s ease}
+@media (hover:hover) and (pointer:fine){
 .spot:hover{border-color:var(--gold-deep);background:#fffdf6;box-shadow:var(--e2);transform:translate(-50%,-104%)}
+}
 .spot:after{content:"";position:absolute;top:100%;left:calc(50% - 7px);width:14px;height:22px;pointer-events:none;
   background:linear-gradient(rgba(28,74,62,.55),rgba(28,74,62,.55)) center top/2px 14px no-repeat,
   radial-gradient(circle,var(--gold) 0 3px,#fff9e8 3px 5px,transparent 5px) center bottom/12px 12px no-repeat}
@@ -143,7 +149,9 @@ header{position:absolute;top:20px;left:24px;right:24px;z-index:6;display:flex;al
 .spot strong{font-size:12.5px;font-weight:800}
 .spot small{display:block;margin-top:1px;color:var(--muted);font-size:10.5px;font-weight:600;line-height:1.3}
 .spot.active{border-color:var(--pine);background:var(--pine);color:var(--cream-text);box-shadow:var(--e2);animation:spot-bob 3.4s ease-in-out infinite}
+@media (hover:hover) and (pointer:fine){
 .spot.active:hover{transform:translate(-50%,-104%)}
+}
 .spot.active .spot-order{border-color:rgba(233,185,110,.5);background:rgba(233,185,110,.16);color:var(--gold)}
 .spot.active small{color:var(--cream-dim)}
 @keyframes spot-bob{0%,100%{translate:0 0}50%{translate:0 -4px}}
@@ -238,7 +246,9 @@ header{position:absolute;top:20px;left:24px;right:24px;z-index:6;display:flex;al
   background:linear-gradient(180deg,#f7cd8f,#eeae63);box-shadow:0 4px 0 var(--gold-deep),var(--e2);
   color:#43310e;text-align:left;animation:hook-pop .42s var(--spring) both}
 #game[data-phase="hooked"] #sceneAction:not([hidden]),#game[data-phase="empty"] #sceneAction:not([hidden]){display:flex}
+@media (hover:hover) and (pointer:fine){
 #sceneAction:hover{filter:brightness(1.05)}
+}
 #sceneAction:active{transform:translateX(-50%) translateY(3px);box-shadow:0 1px 0 var(--gold-deep),var(--e1)}
 #sceneAction .action-symbol-wrap{display:grid;flex:none;place-items:center;width:52px;height:52px;
   border:1px solid rgba(255,246,222,.45);border-radius:var(--r-md);background:var(--pine);color:#ffe9bb}
@@ -394,7 +404,9 @@ h2{margin:5px 0 10px;font:700 25px/1.35 var(--serif)}
 #emptyVisual svg{display:block;width:100%;height:120px}
 #emptyDismissHint{display:block;margin-top:12px;color:var(--muted)}
 .primary{min-height:44px;border-color:var(--pine);background:var(--pine);color:#fff;font-weight:800}
+@media (hover:hover) and (pointer:fine){
 .primary:hover{background:var(--pine-2);color:#fff}
+}
 #tripEnd{width:min(440px,calc(100% - 24px))}
 #book[open],#tripEnd[open]{position:fixed;top:50%;left:50%;z-index:21;margin:0;transform:translate(-50%,-50%)}
 body:has(#book[open],#tripEnd[open])::before{content:"";position:fixed;inset:0;z-index:20;background:rgba(13,48,42,.38);backdrop-filter:blur(3px)}

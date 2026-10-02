@@ -2,6 +2,7 @@ import {For, Show, createSignal} from 'solid-js';
 import {render} from 'solid-js/web';
 import {SPOTS, BAITS, spotUnlocked} from '../engine.mjs';
 import {explorationProgress} from '../progression-guide.mjs';
+import {selectedBaitCopy} from './fishing-ui-state.mjs';
 
 const habitat = {
   reed: '入门 · 浅层小鱼',
@@ -35,6 +36,7 @@ function Spot({spot, selection, onSelect}) {
 
 function Bait({bait, selection, onSelect}) {
   return <button type="button" class={`bait bait-${bait.id}`}
+    data-bait={bait.id}
     classList={{selected: selection().bait === bait.id}}
     disabled={selection().pending}
     aria-label={`选择${bait.name}，${bait.desc}`}
@@ -59,6 +61,9 @@ export function mountSetupUI(spotsRoot, baitsRoot, onSpot, onBait) {
       const next = {spot: state.spot, bait: state.bait, pending: !!state.pending, knowledge: state.knowledge, exploration: explorationProgress(state), log: state.log};
       const previous = selection();
       if (Object.keys(next).some(key => next[key] !== previous[key])) setSelection(next);
+      const copy = selectedBaitCopy(state.bait);
+      document.getElementById('baitHintName').textContent = copy.name;
+      document.getElementById('baitHintEffect').textContent = copy.effect;
     },
     dispose() { disposeSpots(); disposeBaits(); },
   };
