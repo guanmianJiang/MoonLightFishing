@@ -32,7 +32,9 @@ function apply(values){
 for(const key of colorSettingKeys)if(/^#[0-9a-f]{6}$/i.test(values[key]||''))settings[key]=values[key];if(Object.hasOwn(toneModes,values.toneMapping))settings.toneMapping=values.toneMapping;if(Object.hasOwn(shadingModes,values.shadingMode))settings.shadingMode=values.shadingMode;for(const [key,,min,max] of fields)if(Number.isFinite(values[key]))settings[key]=Math.min(max,Math.max(min,values[key]));if(typeof values.bloomOnly==='boolean')settings.bloomOnly=values.bloomOnly;if(textures.some(([path])=>path===values.normalTexture))settings.normalTexture=values.normalTexture;if(isSkyTexture(values.skyTexture))settings.skyTexture=values.skyTexture;
  const depths=['causticMinDepth','causticFadeInDepth','causticFadeOutDepth','causticDepth'];for(let i=1;i<depths.length;i++)settings[depths[i]]=Math.max(settings[depths[i]],settings[depths[i-1]]+.01);
 }
-try{const saved=JSON.parse(localStorage.getItem(storageKey));if(saved){if(!saved.waterGradient&&saved.shallowWaterColor&&saved.midWaterColor&&saved.deepWaterColor)saved.waterGradient=[{depth:0,color:saved.shallowWaterColor},{depth:3.4,color:saved.midWaterColor},{depth:8.8,color:saved.deepWaterColor}];apply(saved);}}catch{}
+// 仅当本地保存的发布版本号与当前 render-defaults.js 一致时才恢复用户调整；
+// 发布默认值更新后，旧的 localStorage 会被忽略，所有机器回到同一套发布参数。
+try{const saved=JSON.parse(localStorage.getItem(storageKey));if(saved&&saved.__publishedVersion===defaults.__publishedVersion){if(!saved.waterGradient&&saved.shallowWaterColor&&saved.midWaterColor&&saved.deepWaterColor)saved.waterGradient=[{depth:0,color:saved.shallowWaterColor},{depth:3.4,color:saved.midWaterColor},{depth:8.8,color:saved.deepWaterColor}];apply(saved);}}catch{}
 // Earlier saved settings can suppress the new lens even after deployment.
 // Migrate only the meniscus controls once and preserve all other art tuning.
 const meniscusOpticsKey='moonwater-meniscus-optics-v2';
@@ -87,10 +89,13 @@ export function createRenderSettingsPanel(world){
  publishButton.onclick=async()=>{
   publishButton.disabled=true;status.textContent='正在保存发布默认…';
   const snapshot=structuredClone(settings);
+  snapshot.__publishedVersion=new Date().toISOString();
   try{
    const response=await fetch('/__render-defaults',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(snapshot)});
    if(!response.ok)throw new Error('保存失败');
    Object.assign(defaults,snapshot);
+   settings.__publishedVersion=snapshot.__publishedVersion;
+   try{localStorage.setItem(storageKey,JSON.stringify(settings));}catch{}
    status.textContent='已写入项目，重新发布后新访客将使用这套参数';
   }catch{status.textContent='写入失败，请下载发布默认文件';}
   finally{publishButton.disabled=false;}

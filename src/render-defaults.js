@@ -82,5 +82,6 @@ export default {
   "foamSpeed": -1.12,
   "foamCutoff": 0.49,
   "foamSoftness": 0.201,
-  "shoreLip": 0.77
+  "shoreLip": 0.77,
+  "__publishedVersion": "2026-10-02"
 };

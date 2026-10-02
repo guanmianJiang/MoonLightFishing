@@ -17,7 +17,7 @@ export function validDefaults(value,template=defaultRenderSettings,key=''){
  if(typeof template==='boolean')return typeof value==='boolean';
  if(typeof template==='string')return typeof value==='string'&&value.length<200&&(template.startsWith('#')?/^#[0-9a-f]{6}$/i.test(value):template.startsWith('./assets/')?/^\.\/assets\/[\w.-]+$/.test(value):template==='shaded'?['shaded','wireframe','shaded-wireframe'].includes(value):['aces','neutral','agx','reinhard','linear','none'].includes(value));
  if(Array.isArray(template))return Array.isArray(value)&&value.length>=2&&value.length<=8&&value.every((v,i)=>validDefaults(v,template[0])&&v.depth>=0&&v.depth<=50&&(!i||v.depth-value[i-1].depth>=.01));
- return value!==null&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===Object.keys(template).length&&Object.keys(template).every(k=>Object.hasOwn(value,k)&&validDefaults(value[k],template[k],k));
+ return value!==null&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===Object.keys(template).length&&Object.keys(template).every(k=>k.startsWith('__')||(Object.hasOwn(value,k)&&validDefaults(value[k],template[k],k)));
 }
 export default {
  root:'src',base:'./',publicDir:fileURLToPath(new URL('./public/',import.meta.url)),
