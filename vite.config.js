@@ -21,7 +21,10 @@ export function validDefaults(value,template=defaultRenderSettings,key=''){
 }
 export default {
  root:'src',base:'./',publicDir:fileURLToPath(new URL('./public/',import.meta.url)),
- build:{outDir:'../build',emptyOutDir:true,assetsDir:'bundles',rollupOptions:{output:{manualChunks(id){
+ build:{outDir:'../build',emptyOutDir:true,assetsDir:'bundles',rollupOptions:{input:{
+   index:fileURLToPath(new URL('./src/index.html',import.meta.url)),
+   'shooter-demo':fileURLToPath(new URL('./src/shooter-demo.html',import.meta.url)),
+  },output:{manualChunks(id){
   if(id.includes('/src/three.core.js'))return 'three-core';
   if(id.includes('/src/three.module.js')||id.includes('/src/vendor/'))return 'three-addons';
   if(id.includes('/node_modules/solid-js/'))return 'solid';

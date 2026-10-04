@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#101418">
+  <title>机甲射击 · Demo</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{width:100%;height:100%;overflow:hidden;background:#0a0e12;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#e8f4ff;user-select:none;touch-action:none}
+    #app{position:fixed;inset:0}
+    canvas{display:block;width:100%;height:100%}
+    .hud{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;pointer-events:none;z-index:5;font-size:12px;line-height:1.5}
+    .hud .panel{background:rgba(10,20,30,.55);backdrop-filter:blur(6px);padding:6px 10px;border-radius:8px;border:1px solid rgba(120,220,255,.18);font-variant-numeric:tabular-nums}
+    .hud .score{color:#7fffd4;font-weight:600}
+    .hud .combo{color:#ffd86b}
+    .crosshair{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:34px;height:34px;pointer-events:none;z-index:4;opacity:.85}
+    .crosshair::before,.crosshair::after{content:"";position:absolute;background:#7fffd4;box-shadow:0 0 6px #7fffd4}
+    .crosshair::before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
+    .crosshair::after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%)}
+    .crosshair i{position:absolute;left:50%;top:50%;width:6px;height:6px;border:1.5px solid #ff5a7a;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 8px #ff5a7a}
+    .hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-size:13px;color:rgba(232,244,255,.7);background:rgba(10,20,30,.5);padding:7px 16px;border-radius:20px;border:1px solid rgba(120,220,255,.15);pointer-events:none;z-index:5;white-space:nowrap}
+    .fire{position:absolute;right:18px;bottom:80px;width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff7a8a,#c8324a);border:2px solid rgba(255,255,255,.25);box-shadow:0 4px 18px rgba(255,60,90,.45),inset 0 2px 6px rgba(255,255,255,.3);z-index:6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);cursor:pointer;touch-action:none}
+    .fire:active{transform:scale(.92);filter:brightness(1.2)}
+    .wave{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:800;color:#ffd86b;text-shadow:0 0 20px rgba(255,200,80,.7),0 2px 6px rgba(0,0,0,.6);z-index:7;opacity:0;transition:opacity .4s;pointer-events:none;letter-spacing:2px}
+    .wave.show{opacity:1}
+    .damage-vignette{position:absolute;inset:0;pointer-events:none;z-index:3;box-shadow:inset 0 0 120px 30px rgba(255,40,60,0);transition:box-shadow .25s}
+    .damage-vignette.hit{box-shadow:inset 0 0 140px 40px rgba(255,40,60,.55)}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div class="hud">
+    <div class="panel">
+      <div>FPS <span id="fps">--</span></div>
+      <div>时间 <span id="time">0</span>s</div>
+    </div>
+    <div class="panel" style="text-align:right">
+      <div>得分 <span id="score" class="score">0</span></div>
+      <div>连击 <span id="combo" class="combo">x1</span></div>
+      <div>波次 <span id="wave">1</span></div>
+    </div>
+  </div>
+  <div class="crosshair"><i></i></div>
+  <div class="wave" id="waveBanner"></div>
+  <div class="damage-vignette" id="vignette"></div>
+  <button class="fire" id="fireBtn">发射</button>
+  <div class="hint">拖动瞄准 · 点击「发射」或双击屏幕开火</div>
+  <script type="module" src="./shooter-demo.js"></script>
+</body>
+</html>
