@@ -232,19 +232,18 @@ class Mech {
 
   setAim(dir) {
     this.aimDir.copy(dir);
-    // 炮管朝瞄准方向（使用世界坐标）
-    const wp = new THREE.Vector3();
     for (const g of this.guns) {
-      g.getWorldPosition(wp);
-      g.lookAt(wp.clone().add(this.aimDir));
+      g.getWorldPosition(_v3);
+      _lookTarget.copy(_v3).add(this.aimDir);
+      g.lookAt(_lookTarget);
     }
   }
 
   getMuzzleWorld(i) {
     const g = this.guns[i];
-    const v = new THREE.Vector3(0, 0, 1.1);
-    g.localToWorld(v);
-    return v;
+    _muzzleV.set(0, 0, 1.1);
+    g.localToWorld(_muzzleV);
+    return _muzzleV.clone();
   }
 
   update(dt, t) {
@@ -279,6 +278,7 @@ class Target {
     this.maxHp = hp;
     this.alive = true;
     this.hitFlash = 0;
+    this.scale = scale;
     this.group = new THREE.Group();
     this.group.position.copy(pos);
 
@@ -339,9 +339,41 @@ class Target {
       this.mat.color.copy(this.origColor).lerp(_WHITE, this.hitFlash);
     }
   }
+
+  dispose() {
+    scene.remove(this.group);
+    this.mesh.geometry.dispose();
+    this.mat.dispose();
+  }
 }
 
 const _WHITE = new THREE.Color(0xffffff);
+const _v3 = new THREE.Vector3();
+const _lookTarget = new THREE.Vector3();
+const _muzzleV = new THREE.Vector3();
+
+// 烟雾贴图
+function makeSmokeTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(32, 32, 2, 32, 32, 30);
+  g.addColorStop(0, 'rgba(220,220,220,0.8)');
+  g.addColorStop(0.6, 'rgba(160,160,160,0.3)');
+  g.addColorStop(1, 'rgba(120,120,120,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+}
+const smokeTex = makeSmokeTexture();
+
+// 共享几何体（避免重复创建）
+const _boltGeo = new THREE.SphereGeometry(0.16, 10, 8);
+const _haloGeo = new THREE.SphereGeometry(0.32, 10, 8);
+const _flashGeo = new THREE.SphereGeometry(0.6, 12, 8);
+const _shardGeos = [
+  new THREE.BoxGeometry(0.12, 0.12, 0.12),
+  new THREE.TetrahedronGeometry(0.14),
+  new THREE.SphereGeometry(0.08, 6, 5)
+];
 
 // ============================================================
 // 弹丸（弹道）
@@ -408,18 +440,23 @@ class Projectile {
 // 爆炸（碎片 + 闪光 + 烟雾）
 // ============================================================
 class Explosion {
-  constructor(pos, color, scale = 1) {
+  constructor(pos, color, scale = 1, simple = false) {
     this.alive = true;
-    this.life = 1.4;
+    this.life = simple ? 0.18 : 1.4;
     this.group = new THREE.Group();
     this.group.position.copy(pos);
     scene.add(this.group);
 
     // 闪光球
     this.flash = new THREE.Mesh(_flashGeo,
-      new THREE.MeshBasicMaterial({ color: 0xffffcc, transparent: true, opacity: 1 })
+      new THREE.MeshBasicMaterial({ color: simple ? color : 0xffffcc, transparent: true, opacity: 1 })
     );
     this.group.add(this.flash);
+
+    this.flashScale = scale;
+    this.simple = simple;
+
+    if (simple) return;
 
     // 碎片
     this.shards = [];
@@ -455,82 +492,62 @@ class Explosion {
       scene.add(s);
       this.smoke.push(s);
     }
-
-    this.flashScale = scale;
   }
 
   update(dt) {
     this.life -= dt;
-    const k = clamp(1 - this.life / 1.4, 0, 1);
+    const lifeMax = this.simple ? 0.18 : 1.4;
+    const k = clamp(1 - this.life / lifeMax, 0, 1);
 
     // 闪光扩散+淡出
-    const fs = (0.6 + k * 4) * this.flashScale;
+    const fs = (this.simple ? (0.4 + k * 1.5) : (0.6 + k * 4)) * this.flashScale;
     this.flash.scale.setScalar(fs);
     this.flash.material.opacity = (1 - k) * 0.9;
 
-    // 碎片
-    for (let i = this.shards.length - 1; i >= 0; i--) {
-      const s = this.shards[i];
-      s.userData.life -= dt;
-      s.userData.vel.y -= 14 * dt; // 重力
-      s.position.addScaledVector(s.userData.vel, dt);
-      s.rotation.x += s.userData.spin.x * dt;
-      s.rotation.y += s.userData.spin.y * dt;
-      s.rotation.z += s.userData.spin.z * dt;
-      if (s.position.y < 0.1) { s.position.y = 0.1; s.userData.vel.y *= -0.3; s.userData.vel.x *= 0.6; s.userData.vel.z *= 0.6; }
-      if (s.userData.life <= 0) {
-        scene.remove(s); s.material.dispose();
-        this.shards.splice(i, 1);
-      } else {
-        s.material.opacity = clamp(s.userData.life, 0, 1);
-        s.material.transparent = true;
+    if (!this.simple) {
+      // 碎片
+      for (let i = this.shards.length - 1; i >= 0; i--) {
+        const s = this.shards[i];
+        s.userData.life -= dt;
+        s.userData.vel.y -= 14 * dt; // 重力
+        s.position.addScaledVector(s.userData.vel, dt);
+        s.rotation.x += s.userData.spin.x * dt;
+        s.rotation.y += s.userData.spin.y * dt;
+        s.rotation.z += s.userData.spin.z * dt;
+        if (s.position.y < 0.1) { s.position.y = 0.1; s.userData.vel.y *= -0.3; s.userData.vel.x *= 0.6; s.userData.vel.z *= 0.6; }
+        if (s.userData.life <= 0) {
+          scene.remove(s); s.material.dispose();
+          this.shards.splice(i, 1);
+        } else {
+          s.material.opacity = clamp(s.userData.life, 0, 1);
+          s.material.transparent = true;
+        }
+      }
+
+      // 烟雾
+      for (let i = this.smoke.length - 1; i >= 0; i--) {
+        const s = this.smoke[i];
+        s.userData.life -= dt;
+        s.position.addScaledVector(s.userData.vel, dt);
+        s.userData.vel.multiplyScalar(0.96);
+        s.scale.setScalar(s.scale.x + s.userData.grow * dt);
+        s.material.opacity = 0.6 * clamp(s.userData.life / 1.2, 0, 1);
+        if (s.userData.life <= 0) {
+          scene.remove(s); s.material.dispose();
+          this.smoke.splice(i, 1);
+        }
       }
     }
 
-    // 烟雾
-    for (let i = this.smoke.length - 1; i >= 0; i--) {
-      const s = this.smoke[i];
-      s.userData.life -= dt;
-      s.position.addScaledVector(s.userData.vel, dt);
-      s.userData.vel.multiplyScalar(0.96);
-      s.scale.setScalar(s.scale.x + s.userData.grow * dt);
-      s.material.opacity = 0.6 * clamp(s.userData.life / 1.2, 0, 1);
-      if (s.userData.life <= 0) {
-        scene.remove(s); s.material.dispose();
-        this.smoke.splice(i, 1);
-      }
-    }
-
-    if (this.life <= 0 && this.shards.length === 0 && this.smoke.length === 0) {
+    const shardsEmpty = this.simple ? true : (this.shards.length === 0);
+    const smokeEmpty = this.simple ? true : (this.smoke.length === 0);
+    if (this.life <= 0 && shardsEmpty && smokeEmpty) {
       this.alive = false;
       scene.remove(this.group);
       this.flash.material.dispose();
     }
   }
 }
-
-// 烟雾贴图
-function makeSmokeTexture() {
-  const c = document.createElement('canvas'); c.width = c.height = 64;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(32, 32, 2, 32, 32, 30);
-  g.addColorStop(0, 'rgba(220,220,220,0.8)');
-  g.addColorStop(0.6, 'rgba(160,160,160,0.3)');
-  g.addColorStop(1, 'rgba(120,120,120,0)');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(c);
-}
-const smokeTex = makeSmokeTexture();
-
-// 共享几何体（避免重复创建）
-const _boltGeo = new THREE.SphereGeometry(0.16, 10, 8);
-const _haloGeo = new THREE.SphereGeometry(0.32, 10, 8);
-const _flashGeo = new THREE.SphereGeometry(0.6, 12, 8);
-const _shardGeos = [
-  new THREE.BoxGeometry(0.12, 0.12, 0.12),
-  new THREE.TetrahedronGeometry(0.14),
-  new THREE.SphereGeometry(0.08, 6, 5)
-];
 
 // ============================================================
 // Boss（粉色星形/花朵）
@@ -581,6 +598,15 @@ class Boss {
     this.hitFlash = 1;
     if (this.hp <= 0) { this.alive = false; return true; }
     return false;
+  }
+
+  dispose() {
+    scene.remove(this.group);
+    this.mat.dispose();
+    this.core.material.dispose();
+    this.group.traverse(obj => {
+      if (obj.geometry) obj.geometry.dispose();
+    });
   }
 
   update(dt, t) {
@@ -693,11 +719,9 @@ function fire() {
     state.projectiles.push(p);
   }
 
-  // 枪口闪光
+  // 枪口闪光（仅闪光，无碎片烟雾）
   for (let i = 0; i < 2; i++) {
-    const flash = new Explosion(mech.getMuzzleWorld(i), 0x66ffcc, 0.4);
-    flash.life = 0.15;
-    state.explosions.push(flash);
+    state.explosions.push(new Explosion(mech.getMuzzleWorld(i), 0x66ffcc, 0.5, true));
   }
 }
 
@@ -709,25 +733,24 @@ function checkCollisions() {
     const p = state.projectiles[i];
     if (!p.alive) continue;
 
-    // 目标
+    // 目标（用平方距离避免开方）
     for (let j = state.targets.length - 1; j >= 0; j--) {
       const t = state.targets[j];
       if (!t.alive) continue;
-      if (p.pos.distanceTo(t.group.position) < t.radius + 0.2) {
+      const r = t.radius + 0.2;
+      if (p.pos.distanceToSquared(t.group.position) < r * r) {
         const killed = t.hit(1);
         p.alive = false;
         if (killed) {
-          const exp = new Explosion(t.group.position.clone(), t.mat.color.getHex(), t.mesh.scale.x);
-          state.explosions.push(exp);
-          scene.remove(t.group);
-          t.mesh.geometry.dispose();
+          state.explosions.push(new Explosion(t.group.position.clone(), t.mat.color.getHex(), t.scale));
+          t.dispose();
           state.targets.splice(j, 1);
           addScore(10 * state.combo);
           state.combo = Math.min(state.combo + 1, 20);
           state.comboTimer = 2.5;
         } else {
-          // 命中火花
-          state.explosions.push(new Explosion(p.pos.clone(), 0xffee88, 0.4));
+          // 命中火花（仅闪光）
+          state.explosions.push(new Explosion(p.pos.clone(), 0xffee88, 0.4, true));
         }
         break;
       }
@@ -736,13 +759,14 @@ function checkCollisions() {
 
     // Boss
     if (state.boss && state.boss.alive) {
-      if (p.pos.distanceTo(state.boss.group.position) < state.boss.radius) {
+      const br = state.boss.radius;
+      if (p.pos.distanceToSquared(state.boss.group.position) < br * br) {
         const killed = state.boss.hit(1);
         p.alive = false;
-        state.explosions.push(new Explosion(p.pos.clone(), 0xff88cc, 0.6));
+        state.explosions.push(new Explosion(p.pos.clone(), 0xff88cc, 0.6, true));
         if (killed) {
           state.explosions.push(new Explosion(state.boss.group.position.clone(), 0xff4d9d, 3));
-          scene.remove(state.boss.group);
+          state.boss.dispose();
           addScore(500 * state.combo);
           state.boss = null;
           flashDamage();
@@ -869,7 +893,11 @@ function animate() {
   }
 
   // 云缓慢漂移
-  cloudGroup.children.forEach((c, i) => { c.position.x += dt * (0.3 + i * 0.02); if (c.position.x > 140) c.position.x = -140; });
+  for (let i = 0; i < cloudGroup.children.length; i++) {
+    const c = cloudGroup.children[i];
+    c.position.x += dt * (0.3 + i * 0.02);
+    if (c.position.x > 140) c.position.x = -140;
+  }
 
   // 波次管理
   if (state.targets.length === 0 && !state.boss) {
