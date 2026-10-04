@@ -11,18 +11,45 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const TAU = Math.PI * 2;
 
 // ============================================================
-// 场景与渲染
+// 场景与渲染（支持 WebGL 与 Canvas2D 降级）
 // ============================================================
 const app = document.getElementById('app');
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-app.appendChild(renderer.domElement);
+
+let renderer = null;
+let renderMode = 'webgl';
+let canvas2d = null;
+let ctx2d = null;
+
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  app.appendChild(renderer.domElement);
+} catch (e) {
+  // WebGL 不可用，降级到 Canvas2D
+  renderMode = 'canvas2d';
+  console.warn('[shooter-demo] WebGL 不可用，使用 Canvas2D 降级渲染:', e?.message || e);
+  canvas2d = document.createElement('canvas');
+  canvas2d.width = window.innerWidth;
+  canvas2d.height = window.innerHeight;
+  canvas2d.style.cssText = 'display:block;width:100%;height:100%';
+  app.appendChild(canvas2d);
+  ctx2d = canvas2d.getContext('2d');
+  // 显示降级提示
+  const notice = document.createElement('div');
+  notice.style.cssText = 'position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(180,60,60,.85);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;z-index:20;pointer-events:none';
+  notice.textContent = '当前环境无 WebGL，已切换为 Canvas2D 降级渲染';
+  document.body.appendChild(notice);
+  setTimeout(() => notice.remove(), 4000);
+}
+
+// 统一的输入画布（WebGL 或 Canvas2D）
+const inputCanvas = renderer ? renderer.domElement : canvas2d;
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x1a2533, 0.018);
@@ -763,24 +790,24 @@ function addScore(v) {
 let pointerDown = false;
 
 function onPointerMove(e) {
-  const rect = renderer.domElement.getBoundingClientRect();
+  const rect = inputCanvas.getBoundingClientRect();
   const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
   const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
   state.aim.x = (cx / rect.width) * 2 - 1;
   state.aim.y = -(cy / rect.height) * 2 + 1;
 }
 
-renderer.domElement.addEventListener('pointermove', onPointerMove);
-renderer.domElement.addEventListener('pointerdown', e => {
+inputCanvas.addEventListener('pointermove', onPointerMove);
+inputCanvas.addEventListener('pointerdown', e => {
   pointerDown = true;
   onPointerMove(e);
 });
-renderer.domElement.addEventListener('pointerup', () => { pointerDown = false; });
-renderer.domElement.addEventListener('pointerleave', () => { pointerDown = false; });
+inputCanvas.addEventListener('pointerup', () => { pointerDown = false; });
+inputCanvas.addEventListener('pointerleave', () => { pointerDown = false; });
 
 // 双击屏幕开火
 let lastTap = 0;
-renderer.domElement.addEventListener('pointerdown', e => {
+inputCanvas.addEventListener('pointerdown', e => {
   const now = performance.now();
   if (now - lastTap < 280) { fire(); lastTap = 0; }
   else lastTap = now;
@@ -804,7 +831,12 @@ window.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDef
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  if (renderMode === 'webgl' && renderer) {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  } else if (canvas2d) {
+    canvas2d.width = window.innerWidth;
+    canvas2d.height = window.innerHeight;
+  }
 });
 
 // ============================================================
@@ -884,14 +916,232 @@ function animate() {
     state.waveTimer = 0;
   }
 
-  // 每 2 秒更新地面反射（性能平衡）
-  if (Math.floor(t * 2) !== Math.floor((t - dt) * 2)) {
+  // 每 2 秒更新地面反射（性能平衡，仅 WebGL 模式）
+  if (renderMode === 'webgl' && renderer && Math.floor(t * 2) !== Math.floor((t - dt) * 2)) {
     mech.group.visible = false;
     cubeCam.position.copy(mech.group.position);
     cubeCam.update(renderer, scene);
     mech.group.visible = true;
   }
 
-  renderer.render(scene, camera);
+  if (renderMode === 'webgl' && renderer) {
+    renderer.render(scene, camera);
+  } else if (renderMode === 'canvas2d' && ctx2d) {
+    renderCanvas2D(t);
+  }
 }
+
+// ============================================================
+// Canvas2D 降级渲染
+// ============================================================
+const _projV = new THREE.Vector3();
+function project3D(worldPos) {
+  _projV.copy(worldPos).project(camera);
+  return {
+    x: (_projV.x * 0.5 + 0.5) * window.innerWidth,
+    y: (-_projV.y * 0.5 + 0.5) * window.innerHeight,
+    z: _projV.z,
+    visible: _projV.z > -1 && _projV.z < 1
+  };
+}
+
+function renderCanvas2D(t) {
+  const W = canvas2d.width, H = canvas2d.height;
+  const ctx = ctx2d;
+
+  // 天空渐变
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+  skyGrad.addColorStop(0, '#2a4a6e');
+  skyGrad.addColorStop(0.55, '#5a7fa8');
+  skyGrad.addColorStop(0.8, '#c9d8e8');
+  skyGrad.addColorStop(1, '#0d151c');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 地面
+  const horizonY = H * 0.62;
+  const groundGrad = ctx.createLinearGradient(0, horizonY, 0, H);
+  groundGrad.addColorStop(0, '#1a2a38');
+  groundGrad.addColorStop(1, '#080d12');
+  ctx.fillStyle = groundGrad;
+  ctx.fillRect(0, horizonY, W, H - horizonY);
+
+  // 地平线雾带
+  ctx.fillStyle = 'rgba(120,160,200,0.25)';
+  ctx.fillRect(0, horizonY - 8, W, 16);
+
+  // 云层
+  for (const c of cloudGroup.children) {
+    const p = project3D(c.position);
+    if (!p.visible || p.z > 0.9) continue;
+    const sc = c.scale.x * (1 / (1 + p.z * 3));
+    ctx.globalAlpha = c.material.opacity * 0.8;
+    ctx.fillStyle = '#dfe8f2';
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y, sc * 0.5, sc * 0.22, 0, 0, TAU);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // 收集所有可绘制对象并按 z 排序（远→近）
+  const drawList = [];
+
+  // 目标
+  for (const tg of state.targets) {
+    const p = project3D(tg.group.position);
+    if (!p.visible) continue;
+    const color = '#' + tg.mat.color.getHexString();
+    const r = Math.max(8, tg.radius * (1 / (1 + p.z * 4)) * 35);
+    drawList.push({ z: p.z, fn: () => {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(t * 0.5 + tg.bobPhase);
+      ctx.fillStyle = color;
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 12;
+      if (tg.kind === 'sphere' || tg.kind === 'icosa') {
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill(); ctx.stroke();
+      } else if (tg.kind === 'torus') {
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, r * 0.5, 0, TAU); ctx.fill();
+      } else {
+        ctx.fillRect(-r, -r, r * 2, r * 2); ctx.strokeRect(-r, -r, r * 2, r * 2);
+      }
+      ctx.restore();
+    }});
+  }
+
+  // Boss
+  if (state.boss && state.boss.alive) {
+    const p = project3D(state.boss.group.position);
+    if (p.visible) {
+      const r = Math.max(30, state.boss.radius * (1 / (1 + p.z * 4)) * 35);
+      drawList.push({ z: p.z, fn: () => {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(state.boss.group.rotation.y);
+        ctx.fillStyle = '#ff4d9d';
+        ctx.strokeStyle = '#ffd1e6';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#ff4d9d';
+        ctx.shadowBlur = 25;
+        // 星形花瓣
+        for (let i = 0; i < 8; i++) {
+          ctx.save();
+          ctx.rotate((i / 8) * TAU);
+          ctx.beginPath();
+          ctx.ellipse(r * 0.8, 0, r * 0.7, r * 0.35, 0, 0, TAU);
+          ctx.fill(); ctx.stroke();
+          ctx.restore();
+        }
+        // 中心
+        ctx.shadowBlur = 30;
+        ctx.fillStyle = '#ffe14d';
+        ctx.beginPath(); ctx.arc(0, 0, r * 0.5, 0, TAU); ctx.fill();
+        ctx.restore();
+      }});
+    }
+  }
+
+  // 弹丸
+  for (const p of state.projectiles) {
+    const sp = project3D(p.pos);
+    if (!sp.visible) continue;
+    // 拖尾
+    if (p.trailPts.length > 1) {
+      const tp = project3D(p.trailPts[0]);
+      ctx.strokeStyle = 'rgba(136,255,221,0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(tp.x, tp.y);
+      ctx.lineTo(sp.x, sp.y);
+      ctx.stroke();
+    }
+    drawList.push({ z: sp.z, fn: () => {
+      ctx.fillStyle = '#66ffcc';
+      ctx.shadowColor = '#66ffcc';
+      ctx.shadowBlur = 15;
+      ctx.beginPath(); ctx.arc(sp.x, sp.y, 4, 0, TAU); ctx.fill();
+      ctx.shadowBlur = 0;
+    }});
+  }
+
+  // 爆炸碎片
+  for (const e of state.explosions) {
+    for (const s of e.shards) {
+      const sp = project3D(s.position);
+      if (!sp.visible) continue;
+      const col = '#' + s.material.color.getHexString();
+      drawList.push({ z: sp.z, fn: () => {
+        ctx.fillStyle = col;
+        ctx.shadowColor = col;
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(sp.x, sp.y, 3, 0, TAU); ctx.fill();
+      }});
+    }
+    // 闪光
+    if (e.life > 0) {
+      const sp = project3D(e.group.position);
+      if (sp.visible) {
+        const k = clamp(1 - e.life / 1.4, 0, 1);
+        const r = (10 + k * 60) * e.flashScale;
+        drawList.push({ z: sp.z - 0.001, fn: () => {
+          const g = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, r);
+          g.addColorStop(0, `rgba(255,255,200,${(1 - k) * 0.9})`);
+          g.addColorStop(1, 'rgba(255,255,200,0)');
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(sp.x, sp.y, r, 0, TAU); ctx.fill();
+        }});
+      }
+    }
+  }
+
+  // 按 z 排序绘制（远的先画）
+  drawList.sort((a, b) => b.z - a.z);
+  for (const d of drawList) d.fn();
+
+  // 机甲（始终在最前）
+  const mp = project3D(mech.group.position);
+  if (mp.visible) {
+    const scale = 1 / (1 + mp.z * 4);
+    ctx.save();
+    ctx.translate(mp.x, mp.y);
+    // 推进光
+    ctx.fillStyle = 'rgba(51,255,221,0.3)';
+    ctx.beginPath(); ctx.arc(-30 * scale, 20 * scale, 18 * scale, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(30 * scale, 20 * scale, 18 * scale, 0, TAU); ctx.fill();
+    // 主体
+    ctx.fillStyle = '#1c2228';
+    ctx.strokeStyle = '#33ffdd';
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = '#33ffdd';
+    ctx.shadowBlur = 10;
+    ctx.fillRect(-18 * scale, -20 * scale, 36 * scale, 40 * scale);
+    ctx.strokeRect(-18 * scale, -20 * scale, 36 * scale, 40 * scale);
+    // 胸甲
+    ctx.fillStyle = '#33ffdd';
+    ctx.fillRect(-8 * scale, -8 * scale, 16 * scale, 5 * scale);
+    // 头部
+    ctx.fillStyle = '#0e1216';
+    ctx.fillRect(-10 * scale, -32 * scale, 20 * scale, 14 * scale);
+    ctx.fillStyle = '#33ffdd';
+    ctx.fillRect(-6 * scale, -28 * scale, 12 * scale, 3 * scale);
+    // 侧舱
+    ctx.fillStyle = '#1c2228';
+    ctx.fillRect(-38 * scale, -16 * scale, 18 * scale, 34 * scale);
+    ctx.fillRect(20 * scale, -16 * scale, 18 * scale, 34 * scale);
+    ctx.fillStyle = '#33ffdd';
+    ctx.fillRect(-34 * scale, -2 * scale, 10 * scale, 8 * scale);
+    ctx.fillRect(24 * scale, -2 * scale, 10 * scale, 8 * scale);
+    // 炮管
+    ctx.fillStyle = '#0e1216';
+    ctx.fillRect(-26 * scale, -28 * scale, 6 * scale, 22 * scale);
+    ctx.fillRect(20 * scale, -28 * scale, 6 * scale, 22 * scale);
+    ctx.restore();
+  }
+  ctx.shadowBlur = 0;
+}
+
 animate();
