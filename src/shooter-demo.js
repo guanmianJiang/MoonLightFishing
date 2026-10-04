@@ -125,11 +125,10 @@ function makeCloudTexture() {
   return new THREE.CanvasTexture(c);
 }
 
-// ---- 地面（暗色反射面） ----
+// ---- 地面（暗色） ----
 const groundGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
 const groundMat = new THREE.MeshStandardMaterial({
-  color: 0x0d151c, metalness: 0.85, roughness: 0.28,
-  envMapIntensity: 0.6
+  color: 0x0d151c, metalness: 0.4, roughness: 0.7,
 });
 const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI / 2;
@@ -144,11 +143,6 @@ scene.add(ground);
   grid.position.y = 0.02;
   scene.add(grid);
 }
-
-// 用 CubeCamera 给地面提供反射
-const cubeRT = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType });
-const cubeCam = new THREE.CubeCamera(0.5, 200, cubeRT);
-groundMat.envMap = cubeRT.texture;
 
 // ============================================================
 // 机甲角色
@@ -306,17 +300,11 @@ class Target {
       case 'icosa': geo = new THREE.IcosahedronGeometry(0.85 * s, 0); break;
     }
     this.mesh = new THREE.Mesh(geo, mat);
-    this.mesh.castShadow = true;
+    this.mesh.castShadow = false;
     this.group.add(this.mesh);
 
     // 保存原始颜色，用于命中闪白恢复
     this.origColor = new THREE.Color(color);
-
-    // 发光轮廓
-    const edges = new THREE.EdgesGeometry(geo);
-    const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
-    const wire = new THREE.LineSegments(edges, lineMat);
-    this.group.add(wire);
 
     this.spin = new THREE.Vector3(rand(-1, 1), rand(-1, 1), rand(-1, 1)).multiplyScalar(0.8);
     this.bobPhase = rand(0, TAU);
@@ -369,16 +357,13 @@ class Projectile {
     const mat = new THREE.MeshBasicMaterial({ color: 0x66ffcc });
     const glow = new THREE.MeshBasicMaterial({ color: 0xaaffee, transparent: true, opacity: 0.5 });
 
-    this.bolt = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), mat);
+    this.bolt = new THREE.Mesh(_boltGeo, mat);
     this.bolt.position.copy(this.pos);
 
-    this.halo = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), glow);
+    this.halo = new THREE.Mesh(_haloGeo, glow);
     this.halo.position.copy(this.pos);
 
-    this.light = new THREE.PointLight(0x66ffcc, 2.2, 6, 2);
-    this.light.position.copy(this.pos);
-
-    scene.add(this.bolt, this.halo, this.light);
+    scene.add(this.bolt, this.halo);
 
     // 拖尾（用线段历史）
     this.trailPts = [origin.clone()];
@@ -394,7 +379,6 @@ class Projectile {
     this.pos.addScaledVector(this.dir, this.speed * dt);
     this.bolt.position.copy(this.pos);
     this.halo.position.copy(this.pos);
-    this.light.position.copy(this.pos);
 
     this.trailPts.push(this.pos.clone());
     if (this.trailPts.length > 20) this.trailPts.shift();
@@ -413,9 +397,9 @@ class Projectile {
   }
 
   dispose() {
-    scene.remove(this.bolt, this.halo, this.light, this.trail);
-    this.bolt.geometry.dispose();
-    this.halo.geometry.dispose();
+    scene.remove(this.bolt, this.halo, this.trail);
+    this.bolt.material.dispose();
+    this.halo.material.dispose();
     this.trailGeo.dispose();
   }
 }
@@ -432,27 +416,18 @@ class Explosion {
     scene.add(this.group);
 
     // 闪光球
-    this.flash = new THREE.Mesh(
-      new THREE.SphereGeometry(0.6 * scale, 16, 12),
+    this.flash = new THREE.Mesh(_flashGeo,
       new THREE.MeshBasicMaterial({ color: 0xffffcc, transparent: true, opacity: 1 })
     );
     this.group.add(this.flash);
 
-    // 点光
-    this.light = new THREE.PointLight(color, 6 * scale, 14 * scale, 2);
-    this.group.add(this.light);
-
     // 碎片
     this.shards = [];
-    const count = Math.floor(14 * scale);
+    const count = Math.floor(8 * scale);
     for (let i = 0; i < count; i++) {
-      const shardColor = pick([color, 0xffffff, 0xffe14d, TARGET_COLORS[randi(0, TARGET_COLORS.length - 1)]]);
-      const g = pick([
-        new THREE.BoxGeometry(0.12, 0.12, 0.12),
-        new THREE.TetrahedronGeometry(0.14),
-        new THREE.SphereGeometry(0.08, 6, 5)
-      ]);
-      const m = new THREE.MeshStandardMaterial({ color: shardColor, emissive: shardColor, emissiveIntensity: 0.6, metalness: 0.3, roughness: 0.4 });
+      const shardColor = pick([color, 0xffffff, 0xffe14d]);
+      const g = pick(_shardGeos);
+      const m = new THREE.MeshBasicMaterial({ color: shardColor, transparent: true, opacity: 1 });
       const shard = new THREE.Mesh(g, m);
       shard.position.copy(pos);
       const dir = new THREE.Vector3(rand(-1, 1), rand(0.2, 1.2), rand(-1, 1)).normalize();
@@ -492,7 +467,6 @@ class Explosion {
     const fs = (0.6 + k * 4) * this.flashScale;
     this.flash.scale.setScalar(fs);
     this.flash.material.opacity = (1 - k) * 0.9;
-    this.light.intensity = (1 - k) * 6 * this.flashScale;
 
     // 碎片
     for (let i = this.shards.length - 1; i >= 0; i--) {
@@ -505,10 +479,9 @@ class Explosion {
       s.rotation.z += s.userData.spin.z * dt;
       if (s.position.y < 0.1) { s.position.y = 0.1; s.userData.vel.y *= -0.3; s.userData.vel.x *= 0.6; s.userData.vel.z *= 0.6; }
       if (s.userData.life <= 0) {
-        scene.remove(s); s.geometry.dispose(); s.material.dispose();
+        scene.remove(s); s.material.dispose();
         this.shards.splice(i, 1);
       } else {
-        s.material.emissiveIntensity = 0.6 * (s.userData.life / 1.3);
         s.material.opacity = clamp(s.userData.life, 0, 1);
         s.material.transparent = true;
       }
@@ -531,7 +504,6 @@ class Explosion {
     if (this.life <= 0 && this.shards.length === 0 && this.smoke.length === 0) {
       this.alive = false;
       scene.remove(this.group);
-      this.flash.geometry.dispose();
       this.flash.material.dispose();
     }
   }
@@ -549,6 +521,16 @@ function makeSmokeTexture() {
   return new THREE.CanvasTexture(c);
 }
 const smokeTex = makeSmokeTexture();
+
+// 共享几何体（避免重复创建）
+const _boltGeo = new THREE.SphereGeometry(0.16, 10, 8);
+const _haloGeo = new THREE.SphereGeometry(0.32, 10, 8);
+const _flashGeo = new THREE.SphereGeometry(0.6, 12, 8);
+const _shardGeos = [
+  new THREE.BoxGeometry(0.12, 0.12, 0.12),
+  new THREE.TetrahedronGeometry(0.14),
+  new THREE.SphereGeometry(0.08, 6, 5)
+];
 
 // ============================================================
 // Boss（粉色星形/花朵）
@@ -575,13 +557,13 @@ class Boss {
       petal.rotation.y = -a;
       petal.rotation.z = Math.PI / 2;
       petal.scale.set(1.4, 0.5, 1.4);
-      petal.castShadow = true;
+      petal.castShadow = false;
       this.group.add(petal);
     }
     // 中心球
     const core = new THREE.Mesh(new THREE.SphereGeometry(1.1, 20, 16),
       new THREE.MeshStandardMaterial({ color: 0xffe14d, emissive: 0xffaa22, emissiveIntensity: 0.8 }));
-    core.castShadow = true;
+    core.castShadow = false;
     this.group.add(core);
     this.core = core;
 
@@ -900,14 +882,6 @@ function animate() {
     }
   } else {
     state.waveTimer = 0;
-  }
-
-  // 每 2 秒更新地面反射（性能平衡）
-  if (Math.floor(t * 2) !== Math.floor((t - dt) * 2)) {
-    mech.group.visible = false;
-    cubeCam.position.copy(mech.group.position);
-    cubeCam.update(renderer, scene);
-    mech.group.visible = true;
   }
 
   renderer.render(scene, camera);
